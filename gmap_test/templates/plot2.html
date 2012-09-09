@@ -1,0 +1,222 @@
+{% extends "main.html" %}
+
+{% block header %}
+	<!--<h1>{{ header_text }}</h1>-->
+	<style type="text/css">
+html, body {
+  font-family: sans-serif;
+  font-size: 16px;
+  height: 100%;
+  margin: 0px;
+}
+
+#map_canvas {
+  height: 100%;
+}
+	</style>
+{% end %}
+
+{% block body %}
+	
+	<div id="map_canvas" style="width:100%; height:60%; margin-bottom:10px"></div>
+	
+{% end %}
+
+{% block footer %}
+	<!--{{ footer_text }}-->
+{% end %}
+
+{% block script_include %}
+    <script src="http://maps.google.com/maps/api/js?sensor=false&language=en"></script>
+    
+
+<!--[if lte IE 8]>
+<script language="javascript" type="text/javascript" src="{{ static_url("js/flot/excanvas.min.js") }}">
+<![endif]-->
+<script language="javascript" type="text/javascript" src="{{ static_url("js/flot/jquery.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("js/flot/jquery.flot.js") }}"></script>
+{% end %}
+
+{% block script %}
+<script type="text/javascript">
+      var map; //map object
+      
+      var latlng; //map center
+      var plot; //chart plotter
+      
+      var colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00']; //random color of polygons
+      
+      function initialize() {
+        latlng = new google.maps.LatLng(33.644206,-117.841188);
+        var mapOptions = {
+          zoom: 18,
+          center: latlng,
+          mapTypeId: google.maps.MapTypeId.HYBRID
+        }
+        map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
+        map.setTilt(0);
+        /*
+        marker = new google.maps.Marker({
+          map:map,
+          draggable:false,
+          animation: google.maps.Animation.DROP,
+          position: latlng
+        });
+        google.maps.event.addListener(marker, 'click', showInfo);
+        */
+        // Initialize JSONP request
+        var script = document.createElement('script');
+        var url = ['https://www.googleapis.com/fusiontables/v1/query?'];
+        url.push('sql=');
+        var query = 'SELECT Building_Name, geometry FROM ' +
+            '1j-etiz5F0tru3381ZxIt5YHCn76L9zC6_t9ERyk';
+        var encodedQuery = encodeURIComponent(query);
+        url.push(encodedQuery);
+        url.push('&callback=drawMap');
+        url.push('&key=AIzaSyBJ1jz6XZalqWaznfQUz6pu6p2mDCjQ26Y');
+        script.src = url.join('');
+        var body = document.getElementsByTagName('body')[0];
+        
+        body.appendChild(script);		
+     }
+     
+     
+     var lastTouchedPoly; 
+     function drawMap(data) {
+        var rows = data['rows'];
+        
+        for (var i in rows) {
+            var newCoordinates = [];
+            var buildingName = rows[i][0];
+            
+            newCoordinates = constructNewCoordinates(rows[i][1]['geometry']);
+            
+            var randomnumber = Math.floor(Math.random() * 4);
+            var building = new google.maps.Polygon({
+              paths: newCoordinates,
+              strokeColor: colors[randomnumber],
+              strokeOpacity: 0,
+              strokeWeight: 1,
+              fillColor: colors[randomnumber],
+              fillOpacity: 0.3
+            });
+            google.maps.event.addListener(building, 'mouseover', function() {
+              this.setOptions({fillOpacity: 1});
+              if(this != lastTouchedPoly){
+              	showInfo();
+              	lastTouchedPoly = this;
+              }
+            });
+            google.maps.event.addListener(building, 'mouseout', function() {
+              this.setOptions({fillOpacity: 0.3});
+            });
+
+            building.setMap(map);
+        }
+      }
+
+      function constructNewCoordinates(polygon) {
+        var newCoordinates = [];
+        var coordinates = polygon['coordinates'][0];
+        for (var i in coordinates) {
+          newCoordinates.push(
+              new google.maps.LatLng(coordinates[i][1], coordinates[i][0]));
+        }
+        return newCoordinates;
+      }    
+      
+	var data = [], totalPoints = 300;
+	function getRandomData() {
+		//if (data.length > 0)
+		//	data = data.slice(1);
+		data = [];
+		
+		while (data.length < totalPoints){
+			var prev = data.length > 0 ? data[data.length - 1] : 50;
+			var y = prev + Math.random() * 10 - 5;
+			if (y < 0)
+				y = 0;
+			if (y > 100)
+				y = 100;
+			data.push(y);
+		}
+
+		var res = [];
+		for (var i = 0; i < data.length; ++i)
+			res.push([i, data[i]]);
+		return res;
+	}
+
+	function onDataReceived(series) {
+		if (data.length > 0){
+			data = data.slice(0, -1);
+		}
+
+		data.unshift(series.point);
+	}
+
+	function dataToRes() {
+		var res = [];
+		for (var i = 0; i < data.length; ++i)
+			res.push([i, data[i]]);
+		return res;
+	}
+
+	var timeVar;
+	var updateInterval = 1000;
+	var dataurl = "point";
+	var div;
+	
+	function showInfo() {
+    	var body = document.getElementsByTagName('body')[0];    	
+    
+        if(lastTouchedPoly!=undefined){
+        	//stop interval update if any exists
+			clearTimeout(timeVar);
+			
+        	//remove existing chart
+        	div.parentNode.removeChild(div);
+		}
+		
+		div = document.createElement('DIV');
+				
+		div.style.cssText = 'position:relative; width:400px; height:200px; margin:auto';
+		
+		// setup plot
+		var options = {
+	        	series: { shadowSize: 0 }, // drawing is faster without shadows
+	        	yaxis: { position: 'right', show: true },
+	        	xaxis: { show: true }
+		};					
+			  
+		plot = $.plot(div, [ getRandomData() ], options);
+		
+	    //add new div to body
+	    body.appendChild(div);
+	    currentDiv = div;
+		update();
+
+	}
+      
+    function update() {
+		$.ajax({
+			url: dataurl,
+			cache: false,
+			method: 'GET',
+			dataType: 'json',
+			success: onDataReceived
+		});
+
+		plot.setData([ dataToRes() ]);
+//		plot.setupGrid();
+		plot.draw();
+
+		timeVar = setTimeout(update, updateInterval);
+	}
+
+
+google.maps.event.addDomListener(window, 'load', initialize);
+
+
+</script>
+{% end %}
