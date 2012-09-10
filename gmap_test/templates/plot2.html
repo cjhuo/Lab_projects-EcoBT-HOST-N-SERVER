@@ -64,6 +64,8 @@ html, body {
         });
         google.maps.event.addListener(marker, 'click', showInfo);
         */
+        
+        
         // Initialize JSONP request
         var script = document.createElement('script');
         var url = ['https://www.googleapis.com/fusiontables/v1/query?'];
@@ -100,10 +102,11 @@ html, body {
               fillColor: colors[randomnumber],
               fillOpacity: 0.3
             });
+            building.name = buildingName;
             google.maps.event.addListener(building, 'mouseover', function() {
               this.setOptions({fillOpacity: 1});
               if(this != lastTouchedPoly){
-              	showInfo();
+              	showInfo(this.name);
               	lastTouchedPoly = this;
               }
             });
@@ -167,7 +170,7 @@ html, body {
 	var dataurl = "point";
 	var div;
 	
-	function showInfo() {
+	function showInfo(buildingName) {
     	var body = document.getElementsByTagName('body')[0];    	
     
         if(lastTouchedPoly!=undefined){
@@ -179,8 +182,17 @@ html, body {
 		}
 		
 		div = document.createElement('DIV');
+		
+		var title = document.createElement("p");
+		title.style.cssText = 'font-size:20px; text-align:center';
+		var titleText = document.createTextNode(buildingName);
+		title.appendChild(titleText);
+		
+		div.appendChild(title);
+		
+		var chart = document.createElement('DIV');
 				
-		div.style.cssText = 'position:relative; width:400px; height:200px; margin:auto';
+		chart.style.cssText = 'position:relative; width:400px; height:200px; margin:auto';
 		
 		// setup plot
 		var options = {
@@ -189,7 +201,9 @@ html, body {
 	        	xaxis: { show: true }
 		};					
 			  
-		plot = $.plot(div, [ getRandomData() ], options);
+		plot = $.plot(chart, [ getRandomData() ], options);
+		
+		div.appendChild(chart);
 		
 	    //add new div to body
 	    body.appendChild(div);
