@@ -13,6 +13,8 @@ define("port", default=8000, help="run on the given port", type=int)
 
 from fakePlot import PointHandler
 
+from db.Models import DataSource, Device, DataLog
+
 
 class Application(tornado.web.Application):
     def __init__(self):
@@ -29,6 +31,10 @@ class Application(tornado.web.Application):
             debug=True,
         )
         tornado.web.Application.__init__(self, handlers, **settings)
+        
+        ds = DataSource()
+        if ds.hasEngine():
+            print 'DB engine is on, data file for storage is %s' % ds.getDBPATH().split('sqlite:')[1].strip('/')
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -50,7 +56,6 @@ class PlotHandler(tornado.web.RequestHandler):
             footer_text="Simple plot test",
         )
 
-
 if __name__ == "__main__":
     print "Running on localhost:8000"
     tornado.options.parse_command_line()
@@ -59,5 +64,7 @@ if __name__ == "__main__":
     
     #open a browser for the web interface
     webbrowser.open('http://localhost:8000/plot')
+    
+    #start web server
     tornado.ioloop.IOLoop.instance().start()
     

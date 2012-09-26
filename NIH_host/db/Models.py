@@ -43,6 +43,8 @@ class DataSource():
         
     def hasEngine(self):
         return self.engine != None
+    def getDBPATH(self):
+        return DB_PATH
     
     
 #ORM Models
