@@ -3,6 +3,7 @@ import tornado.httpserver
 import tornado.ioloop
 import tornado.options
 import os.path
+import webbrowser
 
 import sys
 sys.dont_write_bytecode = True
@@ -18,15 +19,13 @@ class Application(tornado.web.Application):
         handlers = [
             (r'/', MainHandler),
             (r'/plot', PlotHandler),
-            (r'/plot2', PlotHandler2),
-            (r'/point', PointHandler),
-            (r'/one', OneHandler)
+            (r'/point', PointHandler)
         ]
         settings = dict(
             template_path=os.path.join(
-                os.path.dirname(__file__), "templates"),
+                os.path.dirname(__file__), "../templates"),
             static_path=os.path.join(
-                os.path.dirname(__file__), "static"),
+                os.path.dirname(__file__), "../static"),
             debug=True,
         )
         tornado.web.Application.__init__(self, handlers, **settings)
@@ -51,27 +50,14 @@ class PlotHandler(tornado.web.RequestHandler):
             footer_text="Simple plot test",
         )
 
-class PlotHandler2(tornado.web.RequestHandler):
-    def get(self):
-        self.render(
-            "plot2.html",
-            page_title = "GMap+Tornado Test2",
-            header_text = "Generate a plot",
-            footer_text = "Simple plot test",
-        )
-
-class OneHandler(tornado.web.RequestHandler):
-    def get(self):
-        self.render(
-            "time_series.html",
-            page_title = "one graph test",
-            header_text = "Generate a plot",
-            footer_text = "Simple plot test",
-        )
 
 if __name__ == "__main__":
     print "Running on localhost:8000"
     tornado.options.parse_command_line()
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(options.port)
+    
+    #open a browser for the web interface
+    webbrowser.open('http://localhost:8000/plot')
     tornado.ioloop.IOLoop.instance().start()
+    

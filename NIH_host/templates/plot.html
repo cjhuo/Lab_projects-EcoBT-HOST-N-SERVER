@@ -5,7 +5,7 @@
 {% end %}
 
 {% block body %}
-{}
+
 <div id="chart" style="position: relative; width: 600px; height:300px;"></div>
 {% end %}
 
@@ -20,10 +20,6 @@
 
 <link type="text/css" href="{{ static_url("css/smoothness/jquery-ui-1.8.23.custom.css") }}" rel="stylesheet" />
 <script language="javascript" type="text/javascript" src="{{ static_url("js/jquery-ui-1.8.23.custom.min.js") }}"></script>
-{% end %}
+<script language="javascript" type="text/javascript" src="{{ static_url("js/plot.js") }}"></script>
 
-{% block script %}
-<script type="text/javascript">
-
-</script>
 {% end %}
