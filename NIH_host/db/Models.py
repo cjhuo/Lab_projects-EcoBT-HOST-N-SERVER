@@ -49,7 +49,7 @@ class DataSource():
     
 class Device(Base):
     __tablename__ = 'device'
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=True)
     description = Column(String(255), nullable=True)
     
@@ -59,7 +59,7 @@ class Device(Base):
         
 class DataLog(Base):
     __tablename__ = 'datalog'
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Integer, primary_key=True)
     dId = Column(BigInteger, nullable=False)
     timestamp = Column(DateTime, nullable=False)
     data = Column(PickleType, nullable=True)
@@ -71,6 +71,18 @@ class DataLog(Base):
        
             
             
+from datetime import datetime            
 #testcase    
 if __name__ == '__main__':
-    DataSource()
+    ds = DataSource()
+    print ds.hasEngine()
+    session = ds.getSession()
+    device = Device('test', 'testDecrip')
+    session.add(device)
+    session.commit()
+    
+    dataLog = DataLog(device.id, datetime.now(), 'testData')
+    session.add(dataLog)
+    session.commit()
+    dl = session.query(DataLog).filter(DataLog.dId == device.id).one()
+    print dl.timestamp, dl.data
