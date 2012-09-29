@@ -1,0 +1,30 @@
+{% extends "main.html" %}
+
+{% block header %}
+	{{ header_text }}
+{% end %}
+
+{% block body %}
+
+<div id="chart" style="position: relative; width: 600px; height:300px;"></div>
+{% end %}
+
+{% block footer %}
+	{{ footer_text }}
+{% end %}
+
+{% block script_include %}
+<script language="javascript" type="text/javascript" src="{{ static_url("js/flot/jquery.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("js/flot/jquery.flot.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("js/flot/jquery.flot.resize.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("js/flot/jquery.flot.crosshair.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("js/flot/jquery.flot.selection.js") }}"></script>
+
+<link type="text/css" href="{{ static_url("css/smoothness/jquery-ui-1.8.23.custom.css") }}" rel="stylesheet" />
+<script language="javascript" type="text/javascript" src="{{ static_url("js/jquery-ui-1.8.23.custom.min.js") }}"></script>
+
+{% end %}
+
+{% block script %}
+
+{% end %}

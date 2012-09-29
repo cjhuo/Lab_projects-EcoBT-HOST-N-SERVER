@@ -36,8 +36,8 @@ $(function () {
 	// setup graph
 	var options = {
 		series: {shadowSize: 0},
-		yaxis:  {min: -180, max: 180, ticks: 10},
-		xaxis:  {show: true}
+		yaxis:  { ticks: 2},
+		xaxis:  {tickLength:0, show: true}
 	};
 
 	function generatePlot(){
@@ -83,12 +83,12 @@ $(function () {
 		});
 
 		plot.setData([ dataToRes() ]);
-		range = yaxisRange();
+		/*range = yaxisRange();
 		var opts = plot.getOptions();
 		for (var i = 0; i< opts.yaxes.length; i++){
 			opts.yaxes[i].min = range[0];
 			opts.yaxes[i].max = range[1];
-		}
+		}*/
 		plot.setupGrid();
 		plot.draw();
 
