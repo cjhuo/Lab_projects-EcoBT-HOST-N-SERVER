@@ -11,7 +11,7 @@ sys.dont_write_bytecode = True
 from tornado.options import define, options
 define("port", default=8000, help="run on the given port", type=int)
 
-from fakePlot import PointHandler
+from fakePlot import PointHandler, DSPHandler
 
 from db.Models import DataSource, Device, DataLog
 
@@ -23,7 +23,9 @@ class Application(tornado.web.Application):
         handlers = [
             (r'/', MainHandler),
             (r'/plot', PlotHandler),
-            (r'/point', PointHandler, dict(ds = ds))
+            (r'/analysis', AnalysisHandler),
+            (r'/point', PointHandler, dict(ds = ds)),
+            (r'/dsp', DSPHandler)
         ]
         settings = dict(
             template_path=os.path.join(
@@ -56,7 +58,17 @@ class PlotHandler(tornado.web.RequestHandler):
             header_text="Generate a plot",
             footer_text="Simple plot test",
         )
-
+        
+        
+class AnalysisHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render(
+            "analysis.html",
+            page_title="Signal Analysis Interface",
+            header_text="Signal Analysis Interface",
+            footer_text="",
+        )
+        
 if __name__ == "__main__":
     print "Running on localhost:8000"
     tornado.options.parse_command_line()

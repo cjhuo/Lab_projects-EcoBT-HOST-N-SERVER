@@ -190,9 +190,15 @@ html, body {
 		
 		div.appendChild(title);
 		
-		var chart = document.createElement('DIV');
-				
-		chart.style.cssText = 'position:relative; width:400px; height:200px; margin:auto';
+		//var chart = document.createElement('DIV');
+		//chart.style.cssText = 'position:relative; width:400px; height:200px; margin:auto';
+		var chart = $('<div/>').css( {
+            position: 'relative',
+            width: '400px',
+            height: '200px',
+            margin: 'auto'
+         });		
+		
 		
 		// setup plot
 		var options = {
@@ -203,7 +209,8 @@ html, body {
 			  
 		plot = $.plot(chart, [ getRandomData() ], options);
 		
-		div.appendChild(chart);
+		chart.appendTo(div);
+		//div.appendChild(chart);
 		
 	    //add new div to body
 	    body.appendChild(div);

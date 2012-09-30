@@ -51,3 +51,41 @@ class PointHandler(tornado.web.RequestHandler):
         dl = session.query(DataLog).filter(DataLog.dId == device.id).order_by(desc(DataLog.timestamp)).one()
         print dl.timestamp, dl.data
         session.close()
+        
+class DSPHandler(tornado.web.RequestHandler):
+    def get(self):        
+        datasets = self.fakeData(2)#should be replaced by ecg dsp data generation module
+        print datasets
+        val = {'dspData': datasets}
+        self.write(val)
+           
+    ''' 
+    generate data for n channels with 100 data each, ranged from (-100, 100)
+    The datasets dict should have the structure as below:
+    datasets = {
+                    "channel1": {
+                        label: "channel",
+                        data: [array of [x, y]]
+                    },
+                    "channel2": {
+                        label: "channel2",
+                        data: [array of [x, y]]
+                    }
+                }
+    '''
+    def fakeData(self, n):
+        datasets = dict()
+        for i in range(n):
+            data = [[j, random.randint(-100, 100)] for j in range(100)]
+            label = "channel" + str(i)
+            datasets[label] = dict()
+            datasets[label]['data'] = data 
+            datasets[label]['label'] = label
+        return datasets
+
+        
+        
+        
+        
+        
+            

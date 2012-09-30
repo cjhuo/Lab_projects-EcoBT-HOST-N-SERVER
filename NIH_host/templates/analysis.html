@@ -1,12 +1,12 @@
 {% extends "main.html" %}
 
 {% block header %}
-	{{ header_text }}
+	<h1>{{ header_text }}</h1>
 {% end %}
 
 {% block body %}
 
-<div id="chart" style="position: relative; width: 600px; height:300px;"></div>
+
 {% end %}
 
 {% block footer %}
@@ -22,9 +22,125 @@
 
 <link type="text/css" href="{{ static_url("css/smoothness/jquery-ui-1.8.23.custom.css") }}" rel="stylesheet" />
 <script language="javascript" type="text/javascript" src="{{ static_url("js/jquery-ui-1.8.23.custom.min.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("js/jquery-ui-1.8.23.custom.min.js") }}"></script>
 
 {% end %}
 
 {% block script %}
+<script type="text/javascript">
+$(function () {
+	var dataurl = 'dsp'; //ajax call url
+	
+	var datasets; //store datasets
+	var diagram; //store DOM object of plot div
+	var choice;  //store DOM objects of checkbox of channels
+	
+	function getAndProcessData() { //issue ajax call and further process the data on sucess
+		$.ajax({
+			url: dataurl,
+			cache: false,
+			method: 'GET',
+			dataType: 'json',
+			success: onDataReceived
+		});
+	}
+	
+    /* 
+	    data retrieved from server for n channels with 100 data each, ranged from (-100, 100)
+	    should have the structure as below:
+	    datasets.dspData = {
+	                    "channel1": {
+	                        'label': "channel1",
+	                        'data': [array of [x, y]]
+	                    },
+	                    "channel2": {
+	                        'label': "channel2",
+	                        'data': [array of [x, y]]
+	                    }
+	                }
+    */
+    function onDataReceived(data) { //setup plot after retrieving data
+        datasets = extractDatasets(data); //JSON {'dspData': datasets}
+        addPlot(); 
+		addChoices();
+		plotAccordingToChoices();
 
+    }
+	    
+	function extractDatasets(data) {
+		return data.dspData;
+	}
+    
+    function addPlot() { 
+    	/*//generate one plot for each channel
+    	var diagram = $('<div id="channel'+ index +'"/>').css( {
+            position: 'relative',
+            width: '500px',
+            height: '200px',
+            margin: 'auto',
+            padding: '2px'
+        });
+    	*/
+    		
+    	//plot all channels on one plot
+    	diagram = $('<div id="diagram" ></div>').css( {
+            position: 'relative',
+            width: '600px',
+            height: '300px',
+            margin: 'auto',
+            padding: '2px'
+        });
+    	diagram.appendTo("body");
+    }
+
+    
+    function addChoices() {
+        var i = 0;
+        choice = $('<p id="choices" style="font-weight:bold;">Show:</p>').css( {
+            position: 'relative',
+            margin: 'auto',
+            padding: '2px',
+            textAlign: 'center'
+        });
+        var checked = 0;
+        $.each(datasets, function(key, val){
+        	val.color = i; //hard-code to assign a color to each channel choice
+        	
+        	//generate radiobox for each channel 
+        	var domStr = '<br/><input type="radio" name="channel" id="id' + key 
+        	+ '" value="' + key + '"' + (checked==0?' checked':'') + '>' 
+        	+'<label style="font-weight:bold;" for="id' + key + '">'+ val.label + '</label>';
+        	
+        	choice.append(domStr);
+        	
+        	++i;
+        });
+        choice.appendTo("body");
+		
+		choice.find("input").click(plotAccordingToChoices);
+    }
+    
+    function plotAccordingToChoices() {
+        var data = [];
+
+        choice.find("input:checked").each(function () {
+            var key = $(this).attr("value");
+
+            if (key && datasets[key])
+                data.push(datasets[key]);
+        });
+        options = {
+                yaxis: { show: true },
+                xaxis: { tickDecimals: 0 }
+            };
+        if (data.length > 0)       	
+            $.plot(diagram, data, options);
+        
+    }
+
+    	
+    getAndProcessData();
+});
+
+</script>
 {% end %}
