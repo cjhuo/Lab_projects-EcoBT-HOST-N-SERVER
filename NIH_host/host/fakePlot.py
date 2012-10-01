@@ -52,6 +52,12 @@ class PointHandler(tornado.web.RequestHandler):
         print dl.timestamp, dl.data
         session.close()
         
+class SubmitHandler(tornado.web.RequestHandler):
+    def post(self): 
+        data = self.get_argument("data")
+        print data
+        #self.write({'test': 'test'})
+        
 class DSPHandler(tornado.web.RequestHandler):
     def get(self):        
         datasets = self.fakeData(2)#should be replaced by ecg dsp data generation module

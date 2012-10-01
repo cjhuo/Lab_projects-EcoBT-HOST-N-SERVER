@@ -11,7 +11,7 @@ sys.dont_write_bytecode = True
 from tornado.options import define, options
 define("port", default=8000, help="run on the given port", type=int)
 
-from fakePlot import PointHandler, DSPHandler
+from fakePlot import PointHandler, DSPHandler, SubmitHandler
 
 from db.Models import DataSource, Device, DataLog
 
@@ -25,7 +25,8 @@ class Application(tornado.web.Application):
             (r'/plot', PlotHandler),
             (r'/analysis', AnalysisHandler),
             (r'/point', PointHandler, dict(ds = ds)),
-            (r'/dsp', DSPHandler)
+            (r'/dsp', DSPHandler),
+            (r'/submit', SubmitHandler)
         ]
         settings = dict(
             template_path=os.path.join(

@@ -13,7 +13,9 @@
  */
 
 $(function () {
-	var dataurl = 'dsp'; //ajax call url
+	//ajax call urls
+	var dataurl = 'dsp'; 
+	var submitUrl = 'submit'; 
 	
 	var datasets; //store datasets
 	var diagram; //store DOM object of plot div
@@ -31,7 +33,7 @@ $(function () {
 		$.ajax({
 			url: dataurl,
 			cache: false,
-			method: 'GET',
+			type: 'GET',
 			dataType: 'json',
 			success: onDataReceived
 		});
@@ -263,9 +265,36 @@ $(function () {
 				if(peaks.length == 2) {
 					submit = $('<input id="submit" type="button" value="submit" >');
 					submit.appendTo(choice);
+					submit.click(doSubmit);
 				}
             }
         });
+    }	
+    
+    /* submit the peak information to server */
+    function doSubmit() {
+    	/* data to be sent should follow fomat as:
+    		data = {'channel': channelNo,
+    				'peaks': array of peak, e.g. [[1, 20], [5, 40]]
+    		}
+    	*/
+    	var pdata = {'channel': peaks[0].series.label.substring(8),
+    			'peaks': [
+    			          [peaks[0].datapoint[0], peaks[0].datapoint[1]], 
+    			          [peaks[1].datapoint[0], peaks[1	].datapoint[1]]
+    			          ]
+    			
+    	}
+		$.ajax({
+			type: 'POST',
+			url: submitUrl,
+			dataType: 'json',
+			cache: false,
+			data: {"data":JSON.stringify(pdata)},
+		}).done(function(){
+				alert('Peak Points sent to server!' /*+ JSON.stringify(msg)*/);
+				plotAccordingToChoices();				
+ 		});
     }
     
     getAndProcessData();
