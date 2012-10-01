@@ -126,7 +126,7 @@ $(function () {
         options = {
         		series: {
         			lines: { show: true, fill: true },
-        			points: { show: true }
+        			points: { show: true, radius: 5 /*symbol: "diamond"*/ }
         		},
         		//crosshair: { mode: "x" },
         		grid: { hoverable: true, clickable: true },
