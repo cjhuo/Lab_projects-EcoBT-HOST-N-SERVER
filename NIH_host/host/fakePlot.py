@@ -76,8 +76,8 @@ class DSPHandler(tornado.web.RequestHandler):
     def fakeData(self, n):
         datasets = dict()
         for i in range(n):
-            data = [[j, random.randint(-100, 100)] for j in range(100)]
-            label = "channel" + str(i)
+            data = [[j, random.randint(-100, 100)] for j in range(100)]            
+            label = "channel " + str(i)
             datasets[label] = dict()
             datasets[label]['data'] = data 
             datasets[label]['label'] = label
