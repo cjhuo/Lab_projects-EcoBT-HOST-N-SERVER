@@ -1,6 +1,14 @@
 /* Main script for analysis.html page.
  *
- * .
+ *   <p>1. Choose a radio button to pick the channel you want to analyze
+ *   <br>
+ *      2. Zoom to the range where you feel comfortable to pick start and end peak points
+ *   <br>
+ *      3. Pick 2 peak points and hit submit for further analysis in range between those 2 peak points
+ *   <br>
+ *      <b>Note:</b> <br>
+ *      a) Click a point you picked will de-select the point <br>
+ *      b) You can always go back to the original state by choose any of the radio buttons</p>
  *
  */
 
@@ -177,12 +185,10 @@ $(function () {
     
     function addOverview(data) {
     	//generate div to contain overview plot
-    	overview = $('<div id="overview"></div>').css( {
+    	overview = $('<div id="overview" style="margin-top:50px;margin-right: auto;margin-left: auto"></div>').css( {
             position: 'relative',
             width: '200px',
             height: '100px',
-            margin: 'auto',
-            padding: '1px'
         });
     	overview.appendTo("body");    	
     }
