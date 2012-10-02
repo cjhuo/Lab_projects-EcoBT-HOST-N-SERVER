@@ -79,7 +79,7 @@ $(function () {
     		
     	//plot all channels on one plot
     	diagram = $('<div id="diagram" ></div>').css( {
-            position: 'relative',
+            position: 'right',
             width: '800px',
             height: '400px',
             margin: 'auto',
@@ -93,6 +93,7 @@ $(function () {
         var i = 0;
         choice = $('<div id="choices">Show:</div>').css( {
             position: 'relative',
+            width: '10%',
             cssFloat: 'left',
 			fontWeight: 'bold',
 			margin: 'auto',
@@ -128,9 +129,9 @@ $(function () {
         options = {
         		series: {
         			lines: { show: true, fill: true },
-        			points: { show: true, radius: 5 /*symbol: "diamond"*/ }
+        			points: { show: true, radius: 2 /*symbol: "diamond"*/ }
         		},
-        		//crosshair: { mode: "x" },
+        		crosshair: { mode: "x" },
         		grid: { hoverable: true, clickable: true },
                 yaxis: { show: true },
                 xaxis: { autoscaleMargin: 0.002, tickDecimals: 0 },

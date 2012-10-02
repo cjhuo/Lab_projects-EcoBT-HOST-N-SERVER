@@ -7,6 +7,8 @@ from datetime import datetime
 
 from sqlalchemy.sql import desc
 
+from ecg.ECG_reader import *
+
 
 class SensorPlot(tornado.web.UIModule):
     def render(self):
@@ -80,6 +82,8 @@ class DSPHandler(tornado.web.RequestHandler):
                 }
     '''
     def fakeData(self, n):
+        return getTestData()
+        '''
         datasets = dict()
         for i in range(n):
             data = [[j, random.randint(-100, 100)] for j in range(100)]            
@@ -88,6 +92,7 @@ class DSPHandler(tornado.web.RequestHandler):
             datasets[label]['data'] = data 
             datasets[label]['label'] = label
         return datasets
+        '''
 
         
         

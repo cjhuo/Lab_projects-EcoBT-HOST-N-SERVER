@@ -1,4 +1,4 @@
-__author__ = 'leetop'
+__authors__ = 'leetop, cj'
 
 import dicom
 import struct
@@ -7,6 +7,35 @@ import numpy
 import ECG
 
 #from pylab import *
+
+def getTestData():
+    ds = dicom.read_file("Uploads/39DA47B7.dcm")
+    
+    
+    length =  len(ds.WaveformSequence[0].WaveformData)
+    
+    format="<"+str(length/2)+"h"
+    
+    wavedata = list(struct.unpack(format,ds.WaveformSequence[0].WaveformData))
+
+    wavech = [
+                [
+                    elem for index, elem in enumerate( wavedata ) if index % 12 == channel_number
+                ] for channel_number in range( 12 )
+            ]
+    print 'there is ', len(wavech), ' channels in the test dicom'
+    
+    #create dataset dict to be sent to web server and fill in data
+    datasets = dict()
+    for i in range(len(wavech)):
+        data = [[j, wavech[i][j]] for j in range(len(wavech[i]))]            
+        label = "channel " + str(i)
+        datasets[label] = dict()
+        datasets[label]['data'] = data 
+        datasets[label]['label'] = label
+    return datasets
+
+ 
 
 def main() :
     ds = dicom.read_file("Uploads/39DA47B7.dcm")
@@ -21,16 +50,16 @@ def main() :
                     elem for index, elem in enumerate( wavedata ) if index % 12 == channel_number
                 ] for channel_number in range( 12 )
             ]
-    #print wavech
+    print len(wavech)
     info = dict()
 
     ecg = ECG.Ecg(wavech,info)
     filtered = ecg.bpfilter(numpy.array(wavech[0]).transpose())
     diffdata = scipy.diff(filtered)
     sqdata = abs(diffdata)
-    print len(sqdata)
+    #print len(sqdata)
     int_data = ecg.mw_integrate(sqdata)
-    print int_data
+    print int_data[:34]
     '''
     figure()
     subplot(611)
