@@ -63,7 +63,7 @@ class SubmitHandler(tornado.web.RequestHandler):
 class DSPHandler(tornado.web.RequestHandler):
     def get(self):        
         datasets = self.fakeData(2)#should be replaced by ecg dsp data generation module
-        print datasets
+        #print datasets
         val = {'dspData': datasets}
         self.write(val)
            

@@ -80,7 +80,7 @@ $(function () {
     	//plot all channels on one plot
     	diagram = $('<div id="diagram" ></div>').css( {
             position: 'right',
-            width: '800px',
+            width: '70%',
             height: '400px',
             margin: 'auto',
             padding: '2px'
@@ -90,7 +90,7 @@ $(function () {
 
     
     function addChoices() {
-        var i = 0;
+        var i = 12;
         choice = $('<div id="choices">Show:</div>').css( {
             position: 'relative',
             width: '10%',
@@ -102,6 +102,7 @@ $(function () {
         var checked = 0;
         $.each(datasets, function(key, val){
         	val.color = i; //hard-code to assign a color to each channel choice
+        	val.highlightColor = i+7;
         	
         	//generate radiobox for each channel 
         	var domStr = '<br/><input type="radio" name="channel" id="id' + key 
@@ -131,6 +132,7 @@ $(function () {
         			lines: { show: true, fill: true },
         			points: { show: true, radius: 2 /*symbol: "diamond"*/ }
         		},
+        		
         		crosshair: { mode: "x" },
         		grid: { hoverable: true, clickable: true },
                 yaxis: { show: true },
@@ -179,6 +181,13 @@ $(function () {
             
             // don't fire event on the overview to prevent eternal loop
             overviewPlot.setSelection(ranges, true);
+            
+            if(peaks.length > 0) {
+            	for(var i=0; i<peaks.length; ++i){
+            		plot.highlight(peaks[i].seriesIndex, peaks[i].dataIndex);
+            	}
+            }
+
     	});
     	
     	//bind select event for overview plot
@@ -283,7 +292,7 @@ $(function () {
     	var pdata = {'channel': peaks[0].series.label.substring(8),
     			'peaks': [
     			          [peaks[0].datapoint[0], peaks[0].datapoint[1]], 
-    			          [peaks[1].datapoint[0], peaks[1	].datapoint[1]]
+    			          [peaks[1].datapoint[0], peaks[1].datapoint[1]]
     			          ]
     			
     	}
