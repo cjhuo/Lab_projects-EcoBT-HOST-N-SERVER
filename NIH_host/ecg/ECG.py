@@ -2,6 +2,7 @@ __author__ = 'leetop'
 import scipy
 import scipy.signal
 import numpy
+#import pylab
 
 class QrsDetectionError(Exception):
     def __init__(self, value):
@@ -46,7 +47,7 @@ class Ecg() :
         Nyq = self.samplingrate / 2
 
         wn = [5.0/ Nyq, 15.0 / Nyq]
-        b,a = scipy.signal.butter(2, wn, btype = 'bandpass')
+        b,a = scipy.signal.butter(3, wn, btype = 'bandpass')
 
         return scipy.signal.filtfilt(b,a,ecg)
 
@@ -73,7 +74,7 @@ class Ecg() :
 
         self.filtered_ecg = self.bpfilter(self.raw_ecg)
         self.diff_ecg  = scipy.diff(self.filtered_ecg)
-        self.sq_ecg = abs(self.diff_ecg)
+        self.sq_ecg = (self.diff_ecg)*(self.diff_ecg.transpose())
         self.int_ecg = self.mw_integrate(self.sq_ecg)
 
         # Construct buffers with last 8 values
@@ -83,7 +84,8 @@ class Ecg() :
         self.checkPeaks(peaks, self.int_ecg)
 
         # compensate for delay during integration
-        self.QRSpeaks -= 40 * (self.samplingrate / 1000)
+        self.QRSpeaks = scipy.array(self.QRSpeaks)
+        self.QRSpeaks -= 40 * self.samplingrate / 1000
 
         print "length of qrs peaks and ecg", len(self.QRSpeaks), len(self.raw_ecg)
 
@@ -118,13 +120,10 @@ class Ecg() :
 
         for peak_index, peak_amplitude in zip(all_peaks, peak_amplitudes):
 
-            if peak_index - peak_candidate_index <= minimumRR and\
-               peak_amplitude > peak_candidate_amplitude:
+            if peak_index - peak_candidate_index <= minimumRR and peak_amplitude > peak_candidate_amplitude :
                 peak_candidate_index = peak_index
                 peak_candidate_amplitude = peak_amplitude
 
-            # if new peak is more than 200 ms away, candidate is added to
-            # final peak and new peak becomes candidate
             elif peak_index - peak_candidate_index > minimumRR:
                 final_peaks.append(peak_candidate_index)
                 peak_candidate_index = peak_index
@@ -159,13 +158,13 @@ class Ecg() :
             else:
                 self.acceptasNoise(peak, amplitude)
 
-            self.QRSpeaks = scipy.array(self.QRSpeaks)
+#            self.QRSpeaks = scipy.array(self.QRSpeaks)
 
         return
 
     def acceptasQRS(self, peak, amplitude):
-        self.QRSpeaks.append(peak)
 
+        self.QRSpeaks.append(peak)
         self.signal_peak_buffer.pop(0)
         self.signal_peak_buffer.append(amplitude)
 
@@ -176,3 +175,45 @@ class Ecg() :
     def acceptasNoise(self, peak, amplitude):
         self.noise_peak_buffer.pop(0)
         self.noise_peak_buffer.append(amplitude)
+'''
+    def visualize_qrs_detection(self, savefilename = False):
+        ecglength = len(self.raw_ecg)
+        ten_seconds = 10 * self.samplingrate
+
+        if ecglength > ten_seconds:
+            segmentend = ten_seconds
+        elif ecglength < ten_seconds:
+            segmentend = ecglength
+
+        segmentQRSpeaks = [peak for peak in self.QRSpeaks if peak < segmentend]
+
+
+
+        pylab.figure()
+        pylab.subplot(611)
+        pylab.plot(self.raw_ecg[:segmentend])
+        pylab.ylabel('Raw ECG', rotation='horizontal')
+        pylab.subplot(612)
+        pylab.plot(self.filtered_ecg[:segmentend])
+        pylab.ylabel('Filtered ECG',rotation='horizontal')
+        pylab.subplot(613)
+        pylab.plot(self.diff_ecg[:segmentend])
+        pylab.ylabel('Differential',rotation='horizontal')
+        pylab.subplot(614)
+        pylab.plot(self.sq_ecg[:segmentend])
+        pylab.ylabel('Squared differential',rotation='horizontal')
+        pylab.subplot(615)
+        pylab.plot(self.int_ecg[:segmentend])
+        pylab.ylabel('Integrated', rotation='horizontal')
+        pylab.subplot(616)
+        pylab.hold(True)
+        pylab.plot(self.raw_ecg[:segmentend])
+        pylab.stem(segmentQRSpeaks, self.raw_ecg[segmentQRSpeaks], markerfmt='ro', basefmt='', linefmt='')
+        pylab.hold(False)
+        pylab.ylabel('QRS peaks', rotation='horizontal')
+
+        if savefilename:
+            pylab.savefig(savefilename)
+        else:
+            pylab.show()
+'''

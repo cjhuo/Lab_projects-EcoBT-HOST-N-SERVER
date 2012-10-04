@@ -25,15 +25,12 @@ def getTestData():
             ]
     print 'there is ', len(wavech), ' channels in the test dicom'
     
-    #create dataset dict to be sent to web server and fill in data
-    datasets = dict()
-    for i in range(len(wavech)):
-        data = [[j, wavech[i][j]] for j in range(len(wavech[i]))]            
-        label = "channel " + str(i)
-        datasets[label] = dict()
-        datasets[label]['data'] = data 
-        datasets[label]['label'] = label
-    return datasets
+    info = dict()
+    ecg = ECG.Ecg(wavech,info)
+
+    peaks = ecg.qrsDetect().tolist()
+    
+    return (wavech, peaks)
 
  
 
@@ -54,12 +51,14 @@ def main() :
     info = dict()
 
     ecg = ECG.Ecg(wavech,info)
+    
     filtered = ecg.bpfilter(numpy.array(wavech[0]).transpose())
     diffdata = scipy.diff(filtered)
     sqdata = abs(diffdata)
     #print len(sqdata)
     int_data = ecg.mw_integrate(sqdata)
-    print int_data[:34]
+    
+    print ecg.qrsDetect(qrslead=3)
     '''
     figure()
     subplot(611)

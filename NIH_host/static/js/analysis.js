@@ -18,6 +18,8 @@ $(function () {
 	var submitUrl = 'submit'; 
 	
 	var datasets; //store datasets
+	var peaks; //store indice of peak points for channels 
+			   //only need 1-d array since peak indice for every channel are the same
 	var diagram; //store DOM object of plot div
 	var overview; //store DOM object of overview plot
 	var choice;  //store DOM objects of checkbox of channels
@@ -27,7 +29,7 @@ $(function () {
     var peakText;// store DOM object of peak point
     var submit; //store DOM object of submit button
     
-    var peaks = [];
+    var selectedPoints = [];
 
 	function getAndProcessData() { //issue ajax call and further process the data on sucess
 		$.ajax({
@@ -40,9 +42,8 @@ $(function () {
 	}
 	
     /* 
-	    data retrieved from server for n channels with 100 data each, ranged from (-100, 100)
-	    should have the structure as below:
-	    datasets.dspData = {
+	    Data received should have the structure as below:
+	    data.dspData = {
 	                    "channel1": {
 	                        'label': "channel1",
 	                        'data': [array of [x, y]]
@@ -52,9 +53,14 @@ $(function () {
 	                        'data': [array of [x, y]]
 	                    }
 	                }
+	    data.peaks = [index of 1st peak, index of 2nd peak, ...]
+	    
+	    for fakePlot only:
+	    	data retrieved from server for n channels with 100 data each, ranged from (-100, 100)
+	    
     */
     function onDataReceived(data) { //setup plot after retrieving data
-        datasets = extractDatasets(data); //JSON {'dspData': datasets}         
+        extractDatasets(data); //JSON {'dspData': datasets, 'peaks': indice of peak points}         
 		addChoices(); //add channel radio buttons
 		addPlot();  //generate main plot div
 		addOverview(); // generate overview plot div
@@ -63,7 +69,9 @@ $(function () {
     }
 	    
 	function extractDatasets(data) {
-		return data.dspData;
+		datasets = data.dspData;
+		
+		peaks = data.peaks;
 	}
     
     function addPlot() { 
@@ -90,7 +98,7 @@ $(function () {
 
     
     function addChoices() {
-        var i = 12;
+        var i = 1;
         choice = $('<div id="choices">Show:</div>').css( {
             position: 'relative',
             width: '10%',
@@ -102,8 +110,11 @@ $(function () {
         var checked = 0;
         $.each(datasets, function(key, val){
         	val.color = i; //hard-code to assign a color to each channel choice
-        	val.highlightColor = i+7;
-        	
+        	val.lines = { show: true, fill: true }; //do not need to show point nor
+        	val.points = { show: false};				//hoverable nor clickable on points
+        	val.hoverable = false;					//which are not peaks
+        	val.clickable = false;
+			
         	//generate radiobox for each channel 
         	var domStr = '<br/><input type="radio" name="channel" id="id' + key 
         	+ '" value="' + key + '"' + (checked==0?' checked':'') + '>' 
@@ -120,19 +131,30 @@ $(function () {
     
     function plotAccordingToChoices() {
         var data = [];
+        var peakSeries = {};
 
         choice.find("input:checked").each(function () {
             var key = $(this).attr("value");
 
             if (key && datasets[key])
                 data.push(datasets[key]);
+            
+            //setting up peaks series           
+            peakSeries.data = [];
+            $.each(peaks, function(i,val) {
+            	peakSeries.data.push(datasets[key].data[val]);
+            });
+            peakSeries.lines = { show: false};
+            peakSeries.points = { show: true, radius: 5 };
+            data.push(peakSeries);
         });
+        
         options = {
-        		series: {
+        		/*series: {
         			lines: { show: true, fill: true },
-        			points: { show: true, radius: 2 /*symbol: "diamond"*/ }
+        			points: { show: true, radius: 2 symbol: "diamond" }
         		},
-        		
+        		*/
         		crosshair: { mode: "x" },
         		grid: { hoverable: true, clickable: true },
                 yaxis: { show: true },
@@ -143,12 +165,12 @@ $(function () {
 	        if(diagram) {//just in case the plot div is not yet generated when user starts to click radio buttons
 	        	/* re-initialize every parameter */
 	        	diagram.unbind();
-	        	peaks = [];
+	        	selectedPoints = [];
 				if(peakText)
 					peakText.remove();
 				if(submit)
 					submit.remove();
-	        	
+				
 				/* re-plot everything */
 	            plot = $.plot(diagram, data, options);
 	            addHoverEvent();
@@ -182,9 +204,9 @@ $(function () {
             // don't fire event on the overview to prevent eternal loop
             overviewPlot.setSelection(ranges, true);
             
-            if(peaks.length > 0) {
-            	for(var i=0; i<peaks.length; ++i){
-            		plot.highlight(peaks[i].seriesIndex, peaks[i].dataIndex);
+            if(selectedPoints.length > 0) {
+            	for(var i=0; i<selectedPoints.length; ++i){
+            		plot.highlight(selectedPoints[i].seriesIndex, selectedPoints[i].dataIndex);
             	}
             }
 
@@ -226,29 +248,29 @@ $(function () {
     function addClickEvent() {//click to select peak points
         diagram.bind("plotclick", function (event, pos, item) {
             if (item) {           	
-            	if(peaks.length > 0) {
+            	if(selectedPoints.length > 0) {
             		var index = -1;
-            		$.each(peaks, function(i, val) {
+            		$.each(selectedPoints, function(i, val) {
             			if(val.datapoint[0]==item.datapoint[0] && val.datapoint[1]==item.datapoint[1])
             				index = i;
             		});
             		/*
-            		for(var i=0; i<peaks.length; ++i) {
-            			if(peaks[i][0]==item.datapoint[0] && peaks[i][1]==item.datapoint[1])
+            		for(var i=0; i<selectedPoints.length; ++i) {
+            			if(selectedPoints[i][0]==item.datapoint[0] && selectedPoints[i][1]==item.datapoint[1])
             				index = i;
             		}
             		*/
             		if(index != -1) {            			
             			plot.unhighlight(item.series, item.datapoint);
-            			peaks.splice(index, 1);          			
+            			selectedPoints.splice(index, 1);          			
             		}
-            		else if(peaks.length < 2){ //only store 2 peak points
-            			peaks.push(item); //add only x, y to peaks array
+            		else if(selectedPoints.length < 2){ //only store 2 peak points
+            			selectedPoints.push(item); //add only x, y to selectedPoints array
             			plot.highlight(item.series, item.datapoint);	                   	
             		}
             	}
-            	else { //peaks.length == 0           		
-        			peaks.push(item); //add only x, y to peaks array
+            	else { //selectedPoints.length == 0           		
+        			selectedPoints.push(item); //add only x, y to selectedPoints array
         			plot.highlight(item.series, item.datapoint);
             	}
             	//$("#clickdata").text("You clicked point " + item.dataIndex + " in " + item.series.label + ".");
@@ -257,13 +279,13 @@ $(function () {
 				/* show peak selection in peakText div */
 				if(peakText)
 					peakText.remove();
-				if(peaks.length > 0){
-					peakText = $('<p id="peaks" ></p>').css( {
+				if(selectedPoints.length > 0){
+					peakText = $('<p id="selectedPoints" ></p>').css( {
 			            position: 'relative',
 						fontWeight: 'bold'
 			        });
 			    	peakText.appendTo(choice);
-					$.each(peaks, function(i, val) {
+					$.each(selectedPoints, function(i, val) {
 						var domStr = 'You clicked point (x: ' + val.datapoint[0] + ', y: '
 						+ val.datapoint[1] + ') in ' + val.series.label + '.<br>'
 						peakText.append(domStr);
@@ -273,10 +295,12 @@ $(function () {
 				/* show submit button when there are 2 peak points selected */
 				if(submit)
 					submit.remove();
-				if(peaks.length == 2) {
+				if(selectedPoints.length == 2) {
 					submit = $('<input id="submit" type="button" value="submit" >');
 					submit.appendTo(choice);
 					submit.click(doSubmit);
+					
+					//use setSelection to plot selection between 2 points, TBD
 				}
             }
         });
@@ -286,16 +310,18 @@ $(function () {
     function doSubmit() {
     	/* data to be sent should follow fomat as:
     		data = {'channel': channelNo,
-    				'peaks': array of peak, e.g. [[1, 20], [5, 40]]
+    				'selectedPoints': array of peak, e.g. [[1, 20], [5, 40]]
     		}
     	*/
-    	var pdata = {'channel': peaks[0].series.label.substring(8),
-    			'peaks': [
-    			          [peaks[0].datapoint[0], peaks[0].datapoint[1]], 
-    			          [peaks[1].datapoint[0], peaks[1].datapoint[1]]
+    	alert('here');
+    	var pdata = {//'channel': selectedPoints[0].series.label.substring(8),
+    			'selectedPoints': [
+    			          [selectedPoints[0].datapoint[0], selectedPoints[0].datapoint[1]], 
+    			          [selectedPoints[1].datapoint[0], selectedPoints[1].datapoint[1]]
     			          ]
     			
-    	}
+    	};
+    	
 		$.ajax({
 			type: 'POST',
 			url: submitUrl,

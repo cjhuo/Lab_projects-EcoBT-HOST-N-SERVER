@@ -7,7 +7,7 @@ from datetime import datetime
 
 from sqlalchemy.sql import desc
 
-from ecg.ECG_reader import *
+import ecg.ECG_reader
 
 
 class SensorPlot(tornado.web.UIModule):
@@ -62,10 +62,28 @@ class SubmitHandler(tornado.web.RequestHandler):
         
 class DSPHandler(tornado.web.RequestHandler):
     def get(self):        
-        datasets = self.fakeData(2)#should be replaced by ecg dsp data generation module
-        #print datasets
-        val = {'dspData': datasets}
+        #val = self.fakeData()  #should be replaced by ecg dsp data generation module
+        val = self.getDataFromDicomFile()
         self.write(val)
+        
+    def getDataFromDicomFile(self):
+        wavech, peaks = ecg.ECG_reader.getTestData()
+        
+        #create dataset dict to be sent to web server and fill in data
+        datasets = dict()
+        for i in range(len(wavech)):
+            data = [[j, wavech[i][j]] for j in range(len(wavech[i]))]            
+            label = "channel " + str(i)
+            datasets[label] = dict()
+            datasets[label]['data'] = data 
+            datasets[label]['label'] = label
+            
+        #add peak information to structure to be sent to frontend
+        
+        val = {'dspData': datasets, 'peaks': peaks}
+        #print val
+        return val
+   
            
     ''' 
     generate data for n channels with 100 data each, ranged from (-100, 100)
@@ -78,12 +96,11 @@ class DSPHandler(tornado.web.RequestHandler):
                     "channel2": {
                         label: "channel2",
                         data: [array of [x, y]]
-                    }
+                    },
+                    "peaks": [index of 1st peak, index of 2nd peak, ...]
                 }
     '''
-    def fakeData(self, n):
-        return getTestData()
-        '''
+    def fakeData(self, n=2):
         datasets = dict()
         for i in range(n):
             data = [[j, random.randint(-100, 100)] for j in range(100)]            
@@ -91,12 +108,12 @@ class DSPHandler(tornado.web.RequestHandler):
             datasets[label] = dict()
             datasets[label]['data'] = data 
             datasets[label]['label'] = label
-        return datasets
-        '''
-
+        return (datasets,[])
         
         
-        
+if __name__ == "__main__":
+    DSPHandler().getDataFromDicomFile()
+       
         
         
             
