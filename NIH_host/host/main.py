@@ -77,7 +77,7 @@ if __name__ == "__main__":
     http_server.listen(options.port)
     
     #open a browser for the web interface
-    webbrowser.open_new('http://localhost:8000/plot')
+    webbrowser.open_new('http://localhost:8000/')
     
     #start web server
     tornado.ioloop.IOLoop.instance().start()
