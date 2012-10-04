@@ -313,7 +313,6 @@ $(function () {
     				'selectedPoints': array of peak, e.g. [[1, 20], [5, 40]]
     		}
     	*/
-    	alert('here');
     	var pdata = {//'channel': selectedPoints[0].series.label.substring(8),
     			'selectedPoints': [
     			          [selectedPoints[0].datapoint[0], selectedPoints[0].datapoint[1]], 
