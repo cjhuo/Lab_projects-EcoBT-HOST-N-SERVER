@@ -104,7 +104,7 @@ $(function () {
             width: '10%',
             cssFloat: 'left',
 			fontWeight: 'bold',
-			margin: 'auto',
+			margin: 'auto'
             //textAlign: 'center'
         });
         var checked = 0;
@@ -146,13 +146,15 @@ $(function () {
             });
             peakSeries.lines = { show: false};
             peakSeries.points = { show: true, radius: 5 };
+            peakSeries.color = 'red';
             data.push(peakSeries);
         });
         
         options = {
         		/*series: {
         			lines: { show: true, fill: true },
-        			points: { show: true, radius: 2 symbol: "diamond" }
+        			points: { show: true, radius: 2, symbol: "diamond" },
+        			highlightColor: 2
         		},
         		*/
         		crosshair: { mode: "x" },
@@ -223,7 +225,7 @@ $(function () {
     	overview = $('<div id="overview" style="margin-top:50px;margin-right: auto;margin-left: auto"></div>').css( {
             position: 'relative',
             width: '200px',
-            height: '100px',
+            height: '100px'
         });
     	overview.appendTo("body");    	
     }
@@ -233,8 +235,8 @@ $(function () {
     	var opts = {
     	        legend: { show: false },
     	        series: {
-    	            lines: { show: true, lineWidth: 1 },
-    	            shadowSize: 0
+    	            lines: { show: true, lineWidth: 1 }
+    	            //shadowSize: 0
     	        },
     	        xaxis: { ticks: 4 },
     	        yaxis: { ticks: 3, autoscaleMargin: 0.1 },
@@ -262,16 +264,19 @@ $(function () {
             		*/
             		if(index != -1) {            			
             			plot.unhighlight(item.series, item.datapoint);
+            			overviewPlot.unhighlight(item.seriesIndex, item.dataIndex);
             			selectedPoints.splice(index, 1);          			
             		}
             		else if(selectedPoints.length < 2){ //only store 2 peak points
             			selectedPoints.push(item); //add only x, y to selectedPoints array
-            			plot.highlight(item.series, item.datapoint);	                   	
+            			plot.highlight(item.series, item.datapoint);
+            			overviewPlot.highlight(item.seriesIndex, item.dataIndex);
             		}
             	}
             	else { //selectedPoints.length == 0           		
         			selectedPoints.push(item); //add only x, y to selectedPoints array
         			plot.highlight(item.series, item.datapoint);
+        			overviewPlot.highlight(item.seriesIndex, item.dataIndex);
             	}
             	//$("#clickdata").text("You clicked point " + item.dataIndex + " in " + item.series.label + ".");
 				//alert(JSON.stringify(peakText));
@@ -279,29 +284,54 @@ $(function () {
 				/* show peak selection in peakText div */
 				if(peakText)
 					peakText.remove();
+				/* remove submit button if any */
+				if(submit)
+					submit.remove();
 				if(selectedPoints.length > 0){
 					peakText = $('<p id="selectedPoints" ></p>').css( {
 			            position: 'relative',
 						fontWeight: 'bold'
 			        });
 			    	peakText.appendTo(choice);
-					$.each(selectedPoints, function(i, val) {
-						var domStr = 'You clicked point (x: ' + val.datapoint[0] + ', y: '
+			    	/*$.each(selectedPoints, function(i, val) {
+						var domStr = 'You have selected peak point (x: ' + val.datapoint[0] + ', y: '
 						+ val.datapoint[1] + ') in ' + val.series.label + '.<br>'
-						peakText.append(domStr);
-					});
-				}
-				
-				/* show submit button when there are 2 peak points selected */
-				if(submit)
-					submit.remove();
-				if(selectedPoints.length == 2) {
-					submit = $('<input id="submit" type="button" value="submit" >');
-					submit.appendTo(choice);
-					submit.click(doSubmit);
-					
-					//use setSelection to plot selection between 2 points, TBD
-				}
+						peakText.append(domStr);*/
+			    	if(selectedPoints.length == 1){
+						$.each(selectedPoints, function(i, val) {
+							var domStr = 'You have picked starting point at (x: ' 
+								+ val.datapoint[0] + ', y: '
+								+ val.datapoint[1] + ') for a range, please pick the ending point.<br>';
+							peakText.append(domStr);
+						});
+			    	}else if(selectedPoints.length == 2){
+			    		var start, end;
+			    		if(selectedPoints[0].dataIndex > selectedPoints[1].dataIndex){
+			    			start = selectedPoints[1];
+			    			end = selectedPoints[0];
+			    		}else{
+			    			start = selectedPoints[0];
+			    			end = selectedPoints[1];
+			    		}
+						var domStr = 'You have picked a range starting from (x: ' 
+								+ start.datapoint[0] + ', y: '
+								+ start.datapoint[1] + ') to (x: ' 
+								+ end.datapoint[0] + ', y: '+ end.datapoint[1] 
+								+ '). Click "submit" button to send your request to server<br>';
+						peakText.append(domStr);			    		
+						
+						/* show submit button when there are 2 peak points selected */
+
+						if(selectedPoints.length == 2) {
+							submit = $('<input id="submit" type="button" value="submit" >');
+							submit.appendTo(choice);
+							submit.click(doSubmit);
+							
+							//use setSelection to plot selection between 2 points, 
+							//TBD
+						}
+			    	}
+				}		
             }
         });
     }	
@@ -326,7 +356,7 @@ $(function () {
 			url: submitUrl,
 			dataType: 'json',
 			cache: false,
-			data: {"data":JSON.stringify(pdata)},
+			data: {"data":JSON.stringify(pdata)}
 		}).done(function(){
 				alert('Peak Points sent to server!' /*+ JSON.stringify(msg)*/);
 				plotAccordingToChoices();				
@@ -359,7 +389,7 @@ $(function () {
                         y = item.datapoint[1].toFixed(2);
                     
                     showTooltip(item.pageX, item.pageY,
-                    		"(" + x + ", " + y + ") of " + item.series.label);
+                    		"(" + x + ", " + y + ")");
                 }
             }
             else {

@@ -1,16 +1,28 @@
 {% extends "main.html" %}
 
 {% block header %}
-	{{ header_text }}
+	<h1>{{ header_text }}</h1>
 {% end %}
 
 {% block body %}
+
+ 	<p style="margin-left:1%; width:600px; text-align:justify">Realtime data stream will be first pushed to database
+ 	in table 'Datalog'. Whenever there is a user open up a the page, the tornado web server will
+ 	fetch data from the table upon ajax request issued from web front-end and start to draw diagram
+ 	with the extracted data and keep fetching data and redraw the diagram in a specified time interval
+ 	(right now the time interval is 1 second). 
+ 	<br>
+ 	Database tables are modeled and manipulated by SQLAlchemy (Object Relational Mapping toolkit), new
+ 	table can be created by simply defining a object which maps a table in Database or to be created 
+ 	in Database. The model definition can also be stored in Database and later be fetched upon demand.
+ 	<br>
+    </p>
 
 <div id="chart" style="position: relative; width: 600px; height:300px;"></div>
 {% end %}
 
 {% block footer %}
-	{{ footer_text }}
+	<!--{{ footer_text }}-->
 {% end %}
 
 {% block script_include %}
