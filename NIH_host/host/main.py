@@ -45,7 +45,7 @@ class MainHandler(tornado.web.RequestHandler):
     def get(self):
         self.render(
             "index.html",
-            page_title="A Tornado Test Page",
+            page_title="ECG and SIDs portal",
             header_text="Header goes here",
             footer_text="Footer goes heare"
         )
