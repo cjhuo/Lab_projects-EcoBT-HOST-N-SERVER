@@ -6,18 +6,14 @@
 
 {% block body %}
 
-<style type="text/css">
-body {background-color:white}
-</style>
-
- 	<p style="margin-left:1%;">1. Choose a radio button to pick the channel you want to analyze
+ 	<p>1. Choose a radio button to pick the channel you want to analyze
     <br>
        2. Zoom to the range where you feel comfortable to pick start and end peak points
     <br>
        3. Pick 2 peak points and hit submit for further analysis in range between those 2 peak points
     <br>
        <b>Note:</b> <br>
-       a) Click a point you picked will de-select the point <br>
+       a) De-select the point you've already selected by clicking it again <br>
        b) You can always go back to the original state by choose any of the radio buttons
     </p>
 
@@ -28,6 +24,8 @@ body {background-color:white}
 {% end %}
 
 {% block script_include %}
+
+<link type="text/css" href="{{ static_url("css/main.css") }}" rel="stylesheet" />
 <script language="javascript" type="text/javascript" src="{{ static_url("js/flot/jquery.js") }}"></script>
 <script language="javascript" type="text/javascript" src="{{ static_url("js/flot/jquery.flot.js") }}"></script>
 <script language="javascript" type="text/javascript" src="{{ static_url("js/flot/jquery.flot.resize.js") }}"></script>

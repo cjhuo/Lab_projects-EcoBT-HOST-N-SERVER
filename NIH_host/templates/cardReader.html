@@ -1,0 +1,61 @@
+<!doctype html><title>Minimal tQuery Page</title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<link type="text/css" href="{{ static_url("css/main.css") }}" rel="stylesheet" />
+<script language="javascript" type="text/javascript" src="{{ static_url("js/jquery-1.8.2.js") }}"></script>
+
+<script language="javascript" type="text/javascript" src="{{ static_url("js/highstock/highstock.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("js/highstock/highcharts-more.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("js/highstock/modules/exporting.js") }}"></script>
+
+<body>
+<style>
+#cardReader, #firmware, #reboot, #wipeout, #setRTC {
+margin:20px 0px 20px 0px;border:2px;border:2px solid #a1a1a1;
+padding:10px 40px; 
+background:#dddddd;
+width:300px;
+border-radius:25px;
+-moz-border-radius:25px; /* Firefox 3.6 and earlier */
+}
+
+</style>
+<div id="container" style="width: 300px; height: 500px; float: left;">
+<div id="cardReader">
+<h2>Card loader</h2>
+<input type="button" value="Load log card"><br><br>
+Patient ID: <input type="text" name="id" value="" style="float:right" disabled><br>
+Card cycle: <input type="text" name="card" value="" style="float:right" disabled><br>
+Node cycle: <input type="text" name="node" value="" style="float:right" disabled><br>
+Battery status: <input type="text" name="battery" value="" style="float:right" disabled><br>
+RT clock: <input type="text" name="battery" value="" style="float:right" disabled><br> 
+ <p style="margin:20px 0px 0px 0px;">
+ *Hit 'Load log card' button to copy data from card on node to database server automatically
+ <br>card will be wiped out after loading and new settings, such as patient id, can be assigned to the card</p>
+ </div>
+
+<div id="firmware">
+<h2>Firmware Updater</h2>
+<input type="file"><br>
+<input type="button" value="firmware update" disabled>
+</div>
+
+<div id="reboot">
+<h2>Reboot</h2>
+<input type="button" value="reboot">
+</div>
+
+<div id="wipeout">
+<h2>Wipe out memory</h2>
+<input type="button" value="Wipe!">
+</div>
+
+<div id="setRTC">
+<h2>Set RTC</h2>
+RTC: <input type="text" name="rtc" value=""><br>
+<input type="button" value="submit">
+</div>
+
+</body>
+
+
+

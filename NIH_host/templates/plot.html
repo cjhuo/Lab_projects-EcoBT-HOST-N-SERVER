@@ -5,9 +5,6 @@
 {% end %}
 
 {% block body %}
-<style type="text/css">
-body {background-color:white}
-</style>
 
  	<p style="margin-left:1%; width:600px; text-align:justify">Realtime data stream will be first pushed to database
  	in table 'Datalog'. Whenever there is a user open up a the page, the tornado web server will
@@ -29,6 +26,9 @@ body {background-color:white}
 {% end %}
 
 {% block script_include %}
+
+<link type="text/css" href="{{ static_url("css/main.css") }}" rel="stylesheet" />
+
 <script language="javascript" type="text/javascript" src="{{ static_url("js/flot/jquery.js") }}"></script>
 <script language="javascript" type="text/javascript" src="{{ static_url("js/flot/jquery.flot.js") }}"></script>
 <script language="javascript" type="text/javascript" src="{{ static_url("js/flot/jquery.flot.resize.js") }}"></script>

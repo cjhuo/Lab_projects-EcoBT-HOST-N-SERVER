@@ -36,6 +36,7 @@ $(function () {
 	// setup graph
 	var options = {
 		series: {shadowSize: 0},
+		grid: {backgroundColor:'white'},
 		yaxis:  { ticks: 2},
 		xaxis:  {tickLength:0, show: true}
 	};

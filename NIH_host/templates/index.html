@@ -1,55 +1,76 @@
-{% extends "main.html" %}
 
-{% block script_include %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Project Portal</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
-<link type="text/css" href="{{ static_url("css/menu.css") }}" rel="stylesheet" />
-<script language="javascript" type="text/javascript" src="{{ static_url("js/menu/jquery.js") }}"></script>
-<script language="javascript" type="text/javascript" src="{{ static_url("js/menu/menu.js") }}"></script>
+<!-- <link type="text/css" href="{{ static_url("css/main.css") }}" rel="stylesheet" /> -->
+<link type="text/css" href="../static/css/main.css" rel="stylesheet" />
+<script language="javascript" type="text/javascript" src="{{ static_url("js/jquery-1.8.2.js") }}"></script>
 
-<script language="javascript" type="text/javascript" src="{{ static_url("js/jquery.js") }}"></script>
 
-{% end %}
-
-{% block body %}
-
-<style type="text/css">
-* { margin:0;
-    padding:0;
+<script>
+function show(item){
+	$('#iframe1').show();
+	$('#content').hide();
+	if(item=='orientation'){
+		$('#iframe1').removeAttr('srcdoc');
+		$('#iframe1').attr('src', "orientation");
+	}
+	else if(item=='analysis'){
+		$('#iframe1').removeAttr('srcdoc');
+		$('#iframe1').attr('src', "analysis");
+	}
+	else if(item=='plot'){
+		$('#iframe1').removeAttr('srcdoc');
+		$('#iframe1').attr('src', "plot");
+	}	
+	else if(item=='temperature'){
+		$('#iframe1').removeAttr('srcdoc');
+		$('#iframe1').attr('src', "temperature");
+	}
+	else if(item=='tempAnalysis'){
+		$('#iframe1').removeAttr('srcdoc');
+		$('#iframe1').attr('src', "tempAnalysis");
+	}
+	else if(item=='cardReader'){
+		$('#iframe1').removeAttr('srcdoc');
+		$('#iframe1').attr('src', "cardReader");
+	}
+	return false;
 }
-body { background:url(static/css/images/back.jpg); }
-#menu {
-    top:20px;
-    width:80%;
-}
-#copyright {
-    font:12px 'Trebuchet MS';
-    color:#bbb;
-}
-#copyright a { color:#bbb; }
-#copyright a:hover { color:#fff; }
-</style>
+</script>
+</head>
 
-<div id="menu">
-    <ul class="menu">
-        <li><a href="#" class="parent"><span>Project UIs</span></a>
-            <div>
-            	<ul>
-                	<li><a href="/analysis" target="iframe1"><span>ECG</span></a></li>
-                	<li><a href="/plot" target="iframe1"><span>SIDs</span></a></li>
-            	</ul>
-            </div>
-        </li>
-        <li><a href="#"><span>About</span></a></li>
-        
-    </ul>
+<body>
+<div class="container">
+<div class="navbox">
+<ul class="nav">
+
+<li><a href="#" onclick="return show('plot');">Real-Time ECG Viewer</a></li>
+<li><a href="#" >Real-Time Sound Data Viewer (TBD)</a></li>
+<li><a href="#" onclick="return show('orientation');">Real-Time Orientation Viewer</a></li>
+<li><a href="#" onclick="return show('temperature');">Real-Time Temperature Viewer</a></li>
+<li><a href="#" onclick="return show('analysis');">Historical Sound Data Viewer</a></li>
+<li><a href="#" onclick="return show('tempAnalysis');">Historical Temperature Viewer</a></li>
+<li><a href="#" onclick="return show('cardReader');">Node configuration (local)</a></li>
+<li><a href="#" >Node configuration (remote TBD)</a></li>
+
+
+<li><a href="/">Home</a></li>
+</ul>
 </div>
 
-<br><br><br>
-<div>
-<iframe name="iframe1" width="100%" height="1000px" align="top" src="/analysis" frameborder="no" scrolling="yes"></iframe>
+<div class="iframe">
+<iframe name="iframe1" id="iframe1" srcdoc="
+<h1>ECG/SIDs Project Portal</h1><p>Choose operation on the left</p>"
+ seamless="seamless" frameborder="no" scrolling="yes"></iframe>
 </div>
 
-<div id="copyright" style="visibility:hidden">Use the menu style for demo purpose only for projects in CECS lab, under the copyright of <a href="http://apycom.com/">Apycom jQuery Menus</a></div>
+<div id="content"></div>
 
+</div>
 
-{% end %}
+</body>
+</html>

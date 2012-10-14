@@ -1,0 +1,195 @@
+<!doctype html><title>Minimal tQuery Page</title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<link type="text/css" href="{{ static_url("css/main.css") }}" rel="stylesheet" />
+<script language="javascript" type="text/javascript" src="{{ static_url("js/jquery-1.8.2.js") }}"></script>
+
+<script language="javascript" type="text/javascript" src="{{ static_url("js/highcharts/highcharts.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("js/highcharts/highcharts-more.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("js/highcharts/modules/exporting.js") }}"></script>
+
+<body>
+<div id="container1" style="width: 400px; height: 300px; margin: 0 auto"></div>
+<div id="container2" style="width: 400px; height: 300px; margin: 0 auto"></div>
+
+<script>
+
+$(function () {
+    
+    var chart = new Highcharts.Chart({
+    
+        chart: {
+            renderTo: 'container1',
+            type: 'gauge',
+            plotBackgroundColor: null,
+            plotBackgroundImage: null,
+            plotBorderWidth: 1,
+            plotShadow: false
+        },
+        
+        credits: {
+        	href: "http://cps.eng.uci.edu",
+        	text: "CECS Lab UI"
+        },
+        
+        title:{
+            text: 'Skin Temperature Monitor'
+        },
+        
+        pane: {
+            startAngle: -100,
+            endAngle: 100,
+
+        },
+           
+        // the value axis
+        yAxis: {
+            min: 30,
+            max: 45,
+            
+            minorTickInterval: 'auto',
+            minorTickWidth: 1,
+            minorTickLength: 10,
+            minorTickPosition: 'inside',
+            minorTickColor: '#666',
+    
+            tickInterval: 1,
+            tickWidth: 2,
+            tickPosition: 'inside',
+            tickLength: 10,
+            tickColor: '#666',
+            labels: {
+                step: 1,
+                rotation: 'auto'
+            },
+            title: {
+                text: '°C'
+            },
+            plotBands: [{
+                from: 30,
+                to: 35,
+                color: '#55BF3B' // green
+            }, {
+                from: 35,
+                to: 37,
+                color: '#DDDF0D' // yellow
+            }, {
+                from: 37,
+                to: 45,
+                color: '#DF5353' // red
+            }]
+        },
+    
+        series: [{
+            name: 'Skin',
+            data: [36],
+            yAxis: 0,
+            tooltip: {
+                valueSuffix: ' °C'
+            },
+        }]
+    
+    }, 
+    // Add some life
+    function (chart) {
+        setInterval(function () {
+            var point = chart.series[0].points[0],
+                newVal = Math.random().toFixed(2) - 0.5 + 36;
+
+
+            point.update(newVal);
+            
+        }, 3000);
+    });
+    
+    var chart1 = new Highcharts.Chart({
+        
+        chart: {
+            renderTo: 'container2',
+            type: 'gauge',
+            plotBackgroundColor: null,
+            plotBackgroundImage: null,
+            plotBorderWidth: 1,
+            plotShadow: false
+        },
+        
+        credits: {
+        	href: "http://cps.eng.uci.edu",
+        	text: "CECS Lab UI"
+        },
+        
+        title:{
+            text: 'Ambient Temperature Monitor'
+        },
+        
+        pane: {
+            startAngle: -100,
+            endAngle: 100,
+
+        },
+           
+        // the value axis
+        yAxis: {
+            min: -10,
+            max: 45,
+            
+            minorTickInterval: 'auto',
+            minorTickWidth: 1,
+            minorTickLength: 10,
+            minorTickPosition: 'inside',
+            minorTickColor: '#666',
+    
+            tickInterval: 5,
+            tickWidth: 1,
+            tickPosition: 'inside',
+            tickLength: 10,
+            tickColor: '#666',
+            labels: {
+                step: 1,
+                rotation: 'auto'
+            },
+            title: {
+                text: '°C'
+            },
+            plotBands: [{
+                from: -10,
+                to: 10,
+                color: '#55BF3B' // green
+            }, {
+                from: 10,
+                to: 30,
+                color: '#DDDF0D' // yellow
+            }, {
+                from: 30,
+                to: 45,
+                color: '#DF5353' // red
+            }]
+        },
+    
+        series: [{
+            name: 'Ambient',
+            data: [22],
+            yAxis: 0,
+            tooltip: {
+                valueSuffix: ' °C'
+            },
+        }]
+    
+    }, 
+    // Add some life
+    function (chart1) {
+        setInterval(function () {
+            var point = chart1.series[0].points[0],
+                newVal = Math.random().toFixed(2)*1 + 22;
+
+
+            point.update(newVal);
+            
+        }, 3000);
+    });
+});
+</script>
+
+</body>
+
+
+

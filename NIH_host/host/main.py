@@ -22,6 +22,10 @@ class Application(tornado.web.Application):
         
         handlers = [
             (r'/', MainHandler),
+            (r'/cardReader', CardReaderHandler),
+            (r'/tempAnalysis', TempAnalysisHandler),
+            (r'/orientation', OrientationHandler),
+            (r'/temperature', TemperatureHandler),
             (r'/plot', PlotHandler),
             (r'/analysis', AnalysisHandler),
             (r'/point', PointHandler, dict(ds = ds)),
@@ -55,9 +59,9 @@ class PlotHandler(tornado.web.RequestHandler):
     def get(self):
         self.render(
             "plot.html",
-            page_title="JQuery Plot test",
+            page_title="SIDs viewer 1",
             header_text="Generate a plot",
-            footer_text="Simple plot test",
+            footer_text="",
         )
         
         
@@ -65,10 +69,47 @@ class AnalysisHandler(tornado.web.RequestHandler):
     def get(self):
         self.render(
             "analysis.html",
-            page_title="Signal Analysis Interface",
-            header_text="Signal Analysis Interface",
+            page_title="DSP Analysis Viewer",
+            header_text="DSP Analysis Viewer",
             footer_text="",
         )
+        
+class OrientationHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render(
+            "orientation.html",
+            page_title="Orientation viewer",
+            header_text="Orientation viewer",
+            footer_text="",
+        )   
+        
+class TemperatureHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render(
+            "temperature.html",
+            page_title="temperature viewer",
+            header_text="temperature viewer",
+            footer_text="",
+        ) 
+        
+class TempAnalysisHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render(
+            "tempAnalysis.html",
+            page_title="TempAnalysis viewer",
+            header_text="TempAnalysis viewer",
+            footer_text="",
+        ) 
+        
+class CardReaderHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render(
+            "cardReader.html",
+            page_title="cardReader viewer",
+            header_text="cardReader viewer",
+            footer_text="",
+        )                
+                               
         
 if __name__ == "__main__":
     print "Running on localhost:8000"
