@@ -1,7 +1,0 @@
-GLOBAL_RULES=Warning
-JAVASCRIPT_SEMANTIC=Warning
-JAVA_COMPAT_TYPE_CHECK=Warning
-TYPE_CHECK=Warning
-VJETVALIDATION=true
-VJO_SPECIFIC=Warning
-eclipse.preferences.version=1
