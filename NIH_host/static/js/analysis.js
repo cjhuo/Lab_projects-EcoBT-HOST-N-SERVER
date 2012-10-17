@@ -156,7 +156,7 @@ $(function () {
                         }
                     },
                     title: {
-                        text: 'Wave data analysis'
+                        text: 'QRS Wave data analysis'
                     },
                     subtitle: {
                         text: document.ontouchstart === undefined ?
