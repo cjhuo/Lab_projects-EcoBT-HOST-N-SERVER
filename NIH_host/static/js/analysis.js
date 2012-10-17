@@ -181,7 +181,8 @@ $(function () {
             	        tickColor: 'red',
             	        
             	        labels: {
-            	        	step: 2
+            	        	enabled: false,
+            	        	//step: 2
             	        },
                     },
                     yAxis: {
@@ -201,6 +202,9 @@ $(function () {
             	        tickColor: 'red',
                     	title: {
                     		text: ""
+                    	},
+                    	labels: {
+                    		enabled: false
                     	}
 
                     },
