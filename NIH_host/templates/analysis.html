@@ -26,12 +26,20 @@
 {% block script_include %}
 
 <link type="text/css" href="{{ static_url("css/main.css") }}" rel="stylesheet" />
+<!--  
 <script language="javascript" type="text/javascript" src="{{ static_url("js/flot/jquery.js") }}"></script>
 <script language="javascript" type="text/javascript" src="{{ static_url("js/flot/jquery.flot.js") }}"></script>
 <script language="javascript" type="text/javascript" src="{{ static_url("js/flot/jquery.flot.resize.js") }}"></script>
 <script language="javascript" type="text/javascript" src="{{ static_url("js/flot/jquery.flot.crosshair.js") }}"></script>
 <script language="javascript" type="text/javascript" src="{{ static_url("js/flot/jquery.flot.selection.js") }}"></script>
 <script language="javascript" type="text/javascript" src="{{ static_url("js/flot/jquery.flot.symbol.js") }}"></script>
+-->
+
+<script language="javascript" type="text/javascript" src="{{ static_url("js/jquery-1.8.2.js") }}"></script>
+
+<script language="javascript" type="text/javascript" src="{{ static_url("js/highcharts/highcharts.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("js/highcharts/highcharts-more.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("js/highcharts/modules/exporting.js") }}"></script>
 
 <script language="javascript" type="text/javascript" src="{{ static_url("js/analysis.js") }}"></script>
 {% end %}
