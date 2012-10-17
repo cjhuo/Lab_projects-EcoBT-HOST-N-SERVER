@@ -166,7 +166,7 @@ $(function () {
                     xAxis: {
                     	lineColor: 'red',
                     	gridLineColor: 'red',
-                    	gridLineWidth: 2,
+                    	gridLineWidth: 1,
                     	
                     	minorTickInterval: 'auto',
             	        minorTickWidth: 1,
@@ -182,12 +182,11 @@ $(function () {
             	        
             	        labels: {
             	        	step: 2
-            	        }
-
+            	        },
                     },
                     yAxis: {
                     	lineColor: 'red',
-                    	gridLineColor: 'red',
+                    	gridLineColor: 'red',                    	
                     	
                     	minorTickInterval: 'auto',
             	        minorTickWidth: 1,
@@ -200,6 +199,9 @@ $(function () {
             	        tickPosition: 'inside',
             	        //tickLength: 10,
             	        tickColor: 'red',
+                    	title: {
+                    		text: ""
+                    	}
 
                     },
                     tooltip: {

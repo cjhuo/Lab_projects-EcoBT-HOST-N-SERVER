@@ -9,7 +9,7 @@ import ECG
 #from pylab import *
 
 def getTestData():
-    ds = dicom.read_file("Uploads/39DA47B7.dcm")
+    ds = dicom.read_file("./Uploads/39DA47B7.dcm")
     
     
     length =  len(ds.WaveformSequence[0].WaveformData)
