@@ -141,6 +141,9 @@ $(function () {
                     chart: {
                         renderTo: 'diagram',
                         zoomType: 'x',
+                        animation: {
+                            duration: 1000
+                        },
                         type: 'line'
                     },
                     credits: {
@@ -170,14 +173,14 @@ $(function () {
                     	
                     	minorTickInterval: 'auto',
             	        minorTickWidth: 1,
-            	        //minorTickLength: 10,
+            	        minorTickLength: 0,
             	        minorTickPosition: 'inside',
             	        minorTickColor: 'red',
             	
             	        tickPixelInterval: 30,
             	        tickWidth: 2,
             	        tickPosition: 'inside',
-            	        //tickLength: 10,
+            	        tickLength: 0,
             	        tickColor: 'red',
             	        
             	        labels: {
@@ -191,14 +194,14 @@ $(function () {
                     	
                     	minorTickInterval: 'auto',
             	        minorTickWidth: 1,
-            	        //minorTickLength: 10,
+            	        minorTickLength: 0,
             	        minorTickPosition: 'inside',
             	        minorTickColor: 'red',
             	
             	        tickPixelInterval: 30,
             	        tickWidth: 2,
             	        tickPosition: 'inside',
-            	        //tickLength: 10,
+            	        tickLength: 0,
             	        tickColor: 'red',
                     	title: {
                     		text: ""
@@ -228,10 +231,7 @@ $(function () {
                             enableMouseTracking: true
                         }
                     },
-                    series: [{
-                        name: key,
-                        data: []
-                    }]
+                    series: []
         };
     
         if (data.length > 0)
@@ -244,7 +244,11 @@ $(function () {
 	        	
 	        	//loading data
 	        	plot.showLoading('Loading data from server...');
-	        	plot.series[0].setData(data);
+	        	plot.addSeries({
+                        name: key,
+                        data: data
+	        	});
+	        	//plot.series[0].setData(data);
 	        	plot.hideLoading();
 	        	
 	        	//end loading data
