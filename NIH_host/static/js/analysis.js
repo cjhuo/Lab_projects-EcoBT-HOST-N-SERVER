@@ -83,6 +83,8 @@ $(function () {
     	        	enabled: false,
     	        	//step: 2
     	        },
+    	        startOnTick: true,
+    	        endOnTick: true
             },
             yAxis: {
             	lineColor: 'rgb(245, 149, 154)',
