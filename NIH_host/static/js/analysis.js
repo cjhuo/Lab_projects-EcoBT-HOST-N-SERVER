@@ -30,6 +30,111 @@ $(function () {
     var submit; //store DOM object of submit button
     
     var selectedPoints = [];
+    
+    options = {
+            chart: {
+                renderTo: 'diagram',
+                zoomType: 'x',
+                animation: {
+                    duration: 1000
+                },
+                type: 'line'
+            },
+            credits: {
+            	href: "http://cps.eng.uci.edu",
+            	text: "CECS Lab UI"
+            },
+            loading: {
+                labelStyle: {
+                    color: 'white'
+                },
+                style: {
+                    backgroundColor: 'gray'
+                }
+            },
+            title: {
+                text: 'QRS Wave data analysis'
+            },
+            subtitle: {
+                text: document.ontouchstart === undefined ?
+                      'Click and drag in the plot area to zoom in' :
+                      'Drag your finger over the plot to zoom in'
+            },
+            xAxis: {
+            	lineColor: 'red',
+            	gridLineColor: 'red',
+            	gridLineWidth: 1,
+            	
+            	minorTickInterval: 'auto',
+    	        minorTickWidth: 1,
+    	        minorTickLength: 0,
+    	        minorTickPosition: 'inside',
+    	        minorTickColor: 'red',
+    	
+    	        tickPixelInterval: 30,
+    	        tickWidth: 2,
+    	        tickPosition: 'inside',
+    	        tickLength: 0,
+    	        tickColor: 'red',
+    	        
+    	        labels: {
+    	        	enabled: false,
+    	        	//step: 2
+    	        },
+            },
+            yAxis: {
+            	lineColor: 'red',
+            	gridLineColor: 'red',                    	
+            	
+            	minorTickInterval: 'auto',
+    	        minorTickWidth: 1,
+    	        minorTickLength: 0,
+    	        minorTickPosition: 'inside',
+    	        minorTickColor: 'red',
+    	
+    	        tickPixelInterval: 30,
+    	        tickWidth: 2,
+    	        tickPosition: 'inside',
+    	        tickLength: 0,
+    	        tickColor: 'red',
+            	title: {
+            		text: ""
+            	},
+            	labels: {
+            		enabled: false
+            	}
+
+            },
+            tooltip: {
+                enabled: true,
+                crosshairs: true,
+                formatter: function() {
+                    return '<b>'+ this.series.name +'</b><br/>'+
+                        this.x +': '+ this.y;
+                }
+            },
+            plotOptions: {
+                line: {
+                	color: 'black',	
+                	lineWidth: 0.7,
+                	marker: {
+                		enabled: false
+                	},
+                    dataLabels: {
+                        enabled: false
+                    },
+                    states: {
+                    	hover: {
+                    		lineWidth: 0.7 //gotta be same value as line.lineWidth 
+                    					//so that when hovered plot won't look weird
+                    	}
+                    },
+                    shadow: false,
+                    enableMouseTracking: true
+                }
+            },
+            series: []
+    };
 
 	function getAndProcessData() { //issue ajax call and further process the data on sucess
 		$.ajax({
@@ -139,103 +244,6 @@ $(function () {
                 data = datasets[key].data;
             
         });
-
-        options = {
-                    chart: {
-                        renderTo: 'diagram',
-                        zoomType: 'x',
-                        animation: {
-                            duration: 1000
-                        },
-                        type: 'line'
-                    },
-                    credits: {
-                    	href: "http://cps.eng.uci.edu",
-                    	text: "CECS Lab UI"
-                    },
-                    loading: {
-                        labelStyle: {
-                            color: 'white'
-                        },
-                        style: {
-                            backgroundColor: 'gray'
-                        }
-                    },
-                    title: {
-                        text: 'QRS Wave data analysis'
-                    },
-                    subtitle: {
-                        text: document.ontouchstart === undefined ?
-                              'Click and drag in the plot area to zoom in' :
-                              'Drag your finger over the plot to zoom in'
-                    },
-                    xAxis: {
-                    	lineColor: 'red',
-                    	gridLineColor: 'red',
-                    	gridLineWidth: 1,
-                    	
-                    	minorTickInterval: 'auto',
-            	        minorTickWidth: 1,
-            	        minorTickLength: 0,
-            	        minorTickPosition: 'inside',
-            	        minorTickColor: 'red',
-            	
-            	        tickPixelInterval: 30,
-            	        tickWidth: 2,
-            	        tickPosition: 'inside',
-            	        tickLength: 0,
-            	        tickColor: 'red',
-            	        
-            	        labels: {
-            	        	enabled: false,
-            	        	//step: 2
-            	        },
-                    },
-                    yAxis: {
-                    	lineColor: 'red',
-                    	gridLineColor: 'red',                    	
-                    	
-                    	minorTickInterval: 'auto',
-            	        minorTickWidth: 1,
-            	        minorTickLength: 0,
-            	        minorTickPosition: 'inside',
-            	        minorTickColor: 'red',
-            	
-            	        tickPixelInterval: 30,
-            	        tickWidth: 2,
-            	        tickPosition: 'inside',
-            	        tickLength: 0,
-            	        tickColor: 'red',
-                    	title: {
-                    		text: ""
-                    	},
-                    	labels: {
-                    		enabled: false
-                    	}
-
-                    },
-                    tooltip: {
-                        enabled: true,
-                        crosshairs: true,
-                        formatter: function() {
-                            return '<b>'+ this.series.name +'</b><br/>'+
-                                this.x +': '+ this.y;
-                        }
-                    },
-                    plotOptions: {
-                        line: {
-                        	color: 'black',	
-                        	marker: {
-                        		enabled: false
-                        	},
-                            dataLabels: {
-                                enabled: false
-                            },
-                            enableMouseTracking: true
-                        }
-                    },
-                    series: []
-        };
     
         if (data.length > 0)
 	        if(diagram) {//just in case the plot div is not yet generated when user starts to click radio buttons
