@@ -9,6 +9,10 @@ from sqlalchemy.sql import desc
 
 import ecg.ECG_reader
 
+#fake the labels for each channels for demo purpose, 
+#eventually label information should be passed from ecg module
+ECG_CHANNELLABELS = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6']
+
 
 class SensorPlot(tornado.web.UIModule):
     def render(self):
@@ -70,16 +74,18 @@ class DSPHandler(tornado.web.RequestHandler):
         wavech, peaks = ecg.ECG_reader.getTestData()
         
         #create dataset dict to be sent to web server and fill in data
-        datasets = dict()
+        datasets = []
         for i in range(len(wavech)):
-            data = [[j, wavech[i][j]] for j in range(len(wavech[i]))]            
-            label = "channel " + str(i)
-            datasets[label] = dict()
-            datasets[label]['data'] = data 
-            datasets[label]['label'] = label
+            data = [[j, wavech[i][j]] for j in range(len(wavech[i]))]
+            label = ECG_CHANNELLABELS[i]            
+            #label = "channel " + str(i)
+            datasets.append(dict())
+            datasets[i]['data'] = data 
+            datasets[i]['label'] = label
             
         #add peak information to structure to be sent to frontend
-        
+        # format of peaks: "peaks": [index of 1st peak, index of 2nd peak, ...]
+
         val = {'dspData': datasets, 'peaks': peaks}
         #print val
         return val
@@ -88,23 +94,24 @@ class DSPHandler(tornado.web.RequestHandler):
     ''' 
     generate data for n channels with 100 data each, ranged from (-100, 100)
     The datasets dict should have the structure as below:
-    datasets = {
-                    "channel1": {
+    datasets = [
+                    {
                         label: "channel",
                         data: [array of [x, y]]
                     },
-                    "channel2": {
+                    {
                         label: "channel2",
                         data: [array of [x, y]]
                     },
-                    "peaks": [index of 1st peak, index of 2nd peak, ...]
-                }
+                ]
     '''
     def fakeData(self, n=2):
         datasets = dict()
         for i in range(n):
             data = [[j, random.randint(-100, 100)] for j in range(100)]            
-            label = "channel " + str(i)
+            #label = "channel " + str(i)
+            label = ECG_CHANNELLABELS[i]
+            print label
             datasets[label] = dict()
             datasets[label]['data'] = data 
             datasets[label]['label'] = label

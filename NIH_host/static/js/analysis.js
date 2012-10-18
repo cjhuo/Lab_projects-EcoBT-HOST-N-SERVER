@@ -43,16 +43,16 @@ $(function () {
 	
     /* 
 	    Data received should have the structure as below:
-	    data.dspData = {
-	                    "channel1": {
+	    data.dspData = [
+	                    {
 	                        'label': "channel1",
 	                        'data': [array of [x, y]]
 	                    },
-	                    "channel2": {
+	                    {
 	                        'label': "channel2",
 	                        'data': [array of [x, y]]
 	                    }
-	                }
+	                ]
 	    data.peaks = [index of 1st peak, index of 2nd peak, ...]
 	    
 	    for fakePlot only:
@@ -71,6 +71,7 @@ $(function () {
 	function extractDatasets(data) {
 		datasets = data.dspData;
 		
+
 		peaks = data.peaks;
 	}
     
@@ -111,9 +112,9 @@ $(function () {
         $.each(datasets, function(key, val){
 			
         	//generate radiobox for each channel 
-        	var domStr = '<br><input type="radio" name="channel" id="id' + key 
+        	var domStr = '<br><input type="radio" name="channel" id="' + val.label 
         	+ '" value="' + key + '"' + (checked==0?' checked':'') + '>' 
-        	+'<label for="id' + key + '">'+ val.label + '</label>';
+        	+'<label for="' + val.label + '">'+ val.label + '</label>';
         	
         	choice.append(domStr);
         	
@@ -128,9 +129,11 @@ $(function () {
         var data = [];
         var peakSeries = {};
         var key;
+        var label;
 
         choice.find("input:checked").each(function () {
         	key = $(this).attr("value");
+        	label = $(this).attr("id");
 
             if (key && datasets[key])
                 data = datasets[key].data;
@@ -245,7 +248,7 @@ $(function () {
 	        	//loading data
 	        	plot.showLoading('Loading data from server...');
 	        	plot.addSeries({
-                        name: key,
+                        name: label,
                         data: data
 	        	});
 	        	//plot.series[0].setData(data);
