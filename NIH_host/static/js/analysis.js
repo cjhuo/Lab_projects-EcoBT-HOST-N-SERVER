@@ -61,9 +61,11 @@ $(function () {
                       'Drag your finger over the plot to zoom in'
             },
             xAxis: {
-            	lineColor: 'red',
-            	gridLineColor: 'red',
+            	lineColor: 'rgb(245, 149, 154)',
+            	gridLineColor: 'rgb(245, 149, 154)',
             	gridLineWidth: 1,
+            	minorGridLineColor: 'rgb(245, 149, 154)',
+            	minorGridLineWidth: 0.5,
             	
             	minorTickInterval: 'auto',
     	        minorTickWidth: 1,
@@ -83,11 +85,14 @@ $(function () {
     	        },
             },
             yAxis: {
-            	lineColor: 'red',
-            	gridLineColor: 'red',                    	
+            	lineColor: 'rgb(245, 149, 154)',
+            	gridLineColor: 'rgb(245, 149, 154)', 
+            	gridLineWidth: 1,
+            	minorGridLineColor: 'rgb(245, 149, 154)',
+            	minorGridLineWidth: 0.5,
             	
             	minorTickInterval: 'auto',
-    	        minorTickWidth: 1,
+    	        minorTickWidth: 2,
     	        minorTickLength: 0,
     	        minorTickPosition: 'inside',
     	        minorTickColor: 'red',
