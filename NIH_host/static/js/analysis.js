@@ -34,15 +34,15 @@ $(function () {
     options = {
             chart: {
                 renderTo: 'diagram',
-                zoomType: 'x',
+                //zoomType: 'x',
                 animation: {
                     duration: 1000
                 },
                 type: 'line'
             },
             credits: {
-            	href: "http://cps.eng.uci.edu",
-            	text: "CECS Lab UI"
+            	href: "http://cps.eng.uci.edu:8000/analysis",
+            	text: "UCI Embedded Lab"
             },
             loading: {
                 labelStyle: {
@@ -56,9 +56,11 @@ $(function () {
                 text: 'QRS Wave data analysis'
             },
             subtitle: {
+            	/*
                 text: document.ontouchstart === undefined ?
                       'Click and drag in the plot area to zoom in' :
                       'Drag your finger over the plot to zoom in'
+                */
             },
             xAxis: {
             	lineColor: 'rgb(245, 149, 154)',
@@ -122,6 +124,7 @@ $(function () {
             },
             plotOptions: {
                 line: {
+                	animation: false,
                 	color: 'black',	
                 	lineWidth: 0.7,
                 	marker: {
