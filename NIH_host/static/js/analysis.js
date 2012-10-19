@@ -262,9 +262,10 @@ $(function () {
         if (data.length > 0)
 	        if(diagram) {//just in case the plot div is not yet generated when user starts to click radio buttons
 	        	/* re-initialize every parameter */
-	        	diagram.unbind();
+	        	//diagram.unbind();
 
 				/* re-plot everything */
+	        	options.series = [];
 	        	options.series.push({
 	        		name: label,
                     data: data
