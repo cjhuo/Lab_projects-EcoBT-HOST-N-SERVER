@@ -34,10 +34,10 @@ $(function () {
     options = {
             chart: {
                 renderTo: 'diagram',
-                //zoomType: 'x',
+                /*zoomType: 'x',
                 animation: {
                     duration: 1000
-                },
+                },*/
                 type: 'line'
             },
             credits: {
@@ -204,7 +204,7 @@ $(function () {
     	//plot all channels on one plot
     	diagram = $('<div id="diagram" ></div>').css( {
             position: 'right',
-            width: '70%',
+            width: '50%',
             height: '400px',
             margin: 'auto',
             padding: '2px'
