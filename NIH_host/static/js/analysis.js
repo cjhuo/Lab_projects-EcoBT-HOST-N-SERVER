@@ -29,6 +29,9 @@ $(function () {
     var peakText;// store DOM object of peak point
     var submit; //store DOM object of submit button
     
+    var spinTarget; //store DOM object used to show loading spinner
+    var spinner; //spinner
+    
     var selectedPoints = [];
     
     options = {
@@ -147,6 +150,7 @@ $(function () {
     };
 
 	function getAndProcessData() { //issue ajax call and further process the data on sucess
+		showSpinner();
 		$.ajax({
 			url: dataurl,
 			cache: false,
@@ -261,16 +265,14 @@ $(function () {
 	        	diagram.unbind();
 
 				/* re-plot everything */
-	        	plot = new Highcharts.Chart(options);
-	        	
-	        	//loading data
-	        	plot.showLoading('Loading data from server...');
-	        	plot.addSeries({
-                        name: label,
-                        data: data
+	        	options.series.push({
+	        		name: label,
+                    data: data
 	        	});
-	        	//plot.series[0].setData(data);
-	        	plot.hideLoading();
+	        	plot = new Highcharts.Chart(options, function() {
+	        		spinner.stop();
+	        		spinTarget.hide();
+	        	});
 	        	
 	        	//end loading data
 	            //plot = $.plot(diagram, data, options);
@@ -282,6 +284,35 @@ $(function () {
 	        else {
 	        	alert('plot div has not been generated!');
 	        }        
+    }
+    
+    //show loading spinner, stopped when chart is fully loaded
+    function showSpinner(){
+    	var opts = {
+    			  lines: 13, // The number of lines to draw
+    			  length: 7, // The length of each line
+    			  width: 4, // The line thickness
+    			  radius: 10, // The radius of the inner circle
+    			  corners: 1, // Corner roundness (0..1)
+    			  rotate: 0, // The rotation offset
+    			  color: '#000', // #rgb or #rrggbb
+    			  speed: 1, // Rounds per second
+    			  trail: 60, // Afterglow percentage
+    			  shadow: false, // Whether to render a shadow
+    			  hwaccel: false, // Whether to use hardware acceleration
+    			  className: 'spinner', // The CSS class to assign to the spinner
+    			  zIndex: 2e9, // The z-index (defaults to 2000000000)
+    			  top: 'auto', // Top position relative to parent in px
+    			  left: 'auto' // Left position relative to parent in px
+    			};
+    			spinTarget = $('<div id="spinner" ></div>').css( {
+    	            position: 'relative',
+    	            width: '50px',
+    	            height: '50px',
+    	            margin: 'auto'
+    	        });
+    			spinTarget.appendTo("body");
+    			spinner = new Spinner(opts).spin(spinTarget[0]);
     }
     
     getAndProcessData();
