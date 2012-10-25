@@ -76,7 +76,7 @@ class DSPHandler(tornado.web.RequestHandler):
         #create dataset dict to be sent to web server and fill in data
         datasets = []
         for i in range(len(wavech)):
-            data = [[j, wavech[i][j]] for j in range(len(wavech[i]))]
+            data = [wavech[i][j] for j in range(len(wavech[i]))]
             label = ECG_CHANNELLABELS[i]            
             #label = "channel " + str(i)
             datasets.append(dict())
@@ -97,18 +97,21 @@ class DSPHandler(tornado.web.RequestHandler):
     datasets = [
                     {
                         label: "channel",
-                        data: [array of [x, y]]
+                        #data: [array of [x, y]]
+                        data: [array of y]
                     },
                     {
                         label: "channel2",
-                        data: [array of [x, y]]
+                        #data: [array of [x, y]]
+                        data: [array of y]
                     },
                 ]
     '''
     def fakeData(self, n=2):
         datasets = dict()
         for i in range(n):
-            data = [[j, random.randint(-100, 100)] for j in range(100)]            
+            #data = [[j, random.randint(-100, 100)] for j in range(100)]  
+            data = [random.randint(-100, 100) for j in range(100)]           
             #label = "channel " + str(i)
             label = ECG_CHANNELLABELS[i]
             print label

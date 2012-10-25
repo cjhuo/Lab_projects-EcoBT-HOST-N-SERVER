@@ -33,6 +33,8 @@ $(function () {
     var spinner; //spinner
     
     var selectedPoints = [];
+    var xGridInterval = 200; //0.2 second
+    var yGridInterval = 500; //0.5 mV
     
     options = {
             chart: {
@@ -70,15 +72,16 @@ $(function () {
             rangeSelector:{
             	enabled: true,
             	inputEnabled: false,
+            	
             	buttons: [{
             		type: 'millisecond',
-            		count: 50,
-            		text: '50m'
+            		count: 2500,
+            		text: '2.5s'
             	}, {
             		type: 'all',
             		text: 'All'
             	}],
-            	selected: 1
+            	selected: 0
             },
             subtitle: {
             	/*
@@ -94,24 +97,25 @@ $(function () {
             	minorGridLineColor: 'rgb(245, 149, 154)',
             	minorGridLineWidth: 0.5,
             	
-            	minorTickInterval: 'auto',
+            	minorTickInterval: 'auto', //5 minor tick by default, exactlly what we want
     	        minorTickWidth: 1,
     	        minorTickLength: 0,
     	        minorTickPosition: 'inside',
     	        minorTickColor: 'red',
     	
-    	        tickPixelInterval: 30,
-    	        tickWidth: 2,
-    	        tickPosition: 'inside',
+    	        //tickPixelInterval: 30,
+    	        tickInterval: xGridInterval, //0.2 second
+    	        //tickWidth: 2,
+    	        //tickPosition: 'inside',
     	        tickLength: 0,
-    	        tickColor: 'red',
+    	        //tickColor: 'red',
     	        
     	        labels: {
     	        	enabled: false,
     	        	//step: 2
     	        },
-    	        startOnTick: true,
-    	        endOnTick: true
+    	        //startOnTick: true,
+    	        //endOnTick: true
             },
             yAxis: {
             	lineColor: 'rgb(245, 149, 154)',
@@ -126,7 +130,8 @@ $(function () {
     	        minorTickPosition: 'inside',
     	        minorTickColor: 'red',
     	
-    	        tickPixelInterval: 30,
+    	        //tickPixelInterval: 30,
+    	        tickInterval: yGridInterval,
     	        tickWidth: 2,
     	        tickPosition: 'inside',
     	        tickLength: 0,
@@ -144,7 +149,7 @@ $(function () {
                 crosshairs: true,
                 formatter: function() {
                     return '<b>'+ this.series.name +'</b><br/>'+
-                        this.x +': '+ this.y;
+                        /*this.x +', '+ */this.y;
                 }
             },
             plotOptions: {
@@ -187,11 +192,11 @@ $(function () {
 	    data.dspData = [
 	                    {
 	                        'label': "channel1",
-	                        'data': [array of [x, y]]
+	                        'data': [array of y]
 	                    },
 	                    {
 	                        'label': "channel2",
-	                        'data': [array of [x, y]]
+	                        'data': [array of y]
 	                    }
 	                ]
 	    data.peaks = [index of 1st peak, index of 2nd peak, ...]
@@ -290,9 +295,11 @@ $(function () {
 	        	options.series = [];
 	        	options.series.push({
 	        		name: label,
-                    data: data
+                    data: data,
+                    pointStart: Date.UTC(0, 0, 0),
+                    pointInterval: 5 // 5 millisecond
 	        	});
-	        	plot = new Highcharts.Chart(options, function() {
+	        	plot = new Highcharts.StockChart(options, function() {
 	        		spinner.stop();
 	        		spinTarget.hide();
 	        	});

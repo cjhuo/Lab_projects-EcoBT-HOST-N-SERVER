@@ -2,7 +2,7 @@
 
 {% block header %}
 	<!--<h1>{{ header_text }}</h1>-->
-	<style type="text/css">
+<style type="text/css">
 html, body {
   font-family: sans-serif;
   font-size: 16px;
@@ -13,7 +13,7 @@ html, body {
 #map_canvas {
   height: 100%;
 }
-	</style>
+</style>
 {% end %}
 
 {% block body %}
@@ -129,6 +129,18 @@ html, body {
       }    
       
 	var data = [], totalPoints = 300;
+	function initializeData() {
+		data = [];
+		
+		while (data.length < totalPoints){
+			data.push(0);
+		}
+		var res = [];
+		for (var i = 0; i < data.length; ++i)
+			res.push([i, data[i]]);
+		return res;
+	}
+	/*
 	function getRandomData() {
 		//if (data.length > 0)
 		//	data = data.slice(1);
@@ -149,7 +161,7 @@ html, body {
 			res.push([i, data[i]]);
 		return res;
 	}
-
+	*/
 	function onDataReceived(series) {
 		if (data.length > 0){
 			data = data.slice(0, -1);
@@ -207,8 +219,8 @@ html, body {
 	        	xaxis: { show: true }
 		};					
 			  
-		plot = $.plot(chart, [ getRandomData() ], options);
-		
+		//plot = $.plot(chart, [ getRandomData() ], options);
+		plot = $.plot(chart, [ initializeData() ], options);
 		chart.appendTo(div);
 		//div.appendChild(chart);
 		
@@ -229,12 +241,11 @@ html, body {
 		});
 
 		plot.setData([ dataToRes() ]);
-//		plot.setupGrid();
+		plot.setupGrid();
 		plot.draw();
 
 		timeVar = setTimeout(update, updateInterval);
 	}
-
 
 google.maps.event.addDomListener(window, 'load', initialize);
 

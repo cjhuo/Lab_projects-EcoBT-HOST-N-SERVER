@@ -24,6 +24,7 @@ class Application(tornado.web.Application):
             (r'/', MainHandler),
             (r'/cardReader', CardReaderHandler),
             (r'/tempAnalysis', TempAnalysisHandler),
+            (r'/analysis_old', AnalysisOldHandler),            
             (r'/orientation', OrientationHandler),
             (r'/temperature', TemperatureHandler),
             (r'/plot', PlotHandler),
@@ -69,6 +70,15 @@ class AnalysisHandler(tornado.web.RequestHandler):
     def get(self):
         self.render(
             "analysis.html",
+            page_title="DSP Analysis Viewer",
+            header_text="DSP Analysis Viewer",
+            footer_text="",
+        )
+    
+class AnalysisOldHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render(
+            "analysis_old.html",
             page_title="DSP Analysis Viewer",
             header_text="DSP Analysis Viewer",
             footer_text="",
