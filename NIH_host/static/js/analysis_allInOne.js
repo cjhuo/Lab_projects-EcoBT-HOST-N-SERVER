@@ -99,11 +99,11 @@ $(function () {
                 backgroundColor: '#FCFFC5',
                 borderColor: 'black',
                 borderWidth: 2,
-                //layout: 'vertical',
+                layout: 'vertical',
                 verticalAlign: 'top',
-                x: -10,
-                y: 25,
-                floating: true,
+                //x: -10,
+                y: 55,
+                //floating: true,
                 shadow: true
             },
             navigator: {
