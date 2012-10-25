@@ -145,11 +145,11 @@ $(function () {
 
             },
             tooltip: {
-                enabled: true,
-                crosshairs: true,
-                formatter: function() {
-                    return '<b>'+ this.series.name +'</b><br/>'+
-                        /*this.x +', '+ */this.y;
+                //enabled: true,
+                //crosshairs: true,
+                formatter: function() {                	
+                    return '<b>'+ this.points[0].series.name +'</b><br/>'+
+                        /*this.x +', '+ */this.points[0].y;
                 }
             },
             plotOptions: {
