@@ -61,12 +61,6 @@ $(function () {
             legend: {
             	enabled: false
             },
-            navigator: {
-            	enabled: true
-            },
-            scrollbar: {
-            	enabled: true
-            },
             rangeSelector:{
             	enabled: true,
             	inputEnabled: false,
@@ -152,9 +146,6 @@ $(function () {
                 	animation: false,
                 	color: 'black',	
                 	lineWidth: 0.7,
-                	marker: {
-                		enabled: false
-                	},
                     dataLabels: {
                         enabled: false
                     },
@@ -166,7 +157,21 @@ $(function () {
                     },
                     shadow: false,
                     enableMouseTracking: true
-                }
+                },
+                series: {
+                	allowPointSelect: true,                    
+                    marker: {
+                    	radius: 0.1,
+                        states: {
+                			hover: {
+                				radius: 4
+                			},
+                            select: {
+                                radius: 10
+                            }
+                        }
+                    }
+                }	
             },
             series: []
     };

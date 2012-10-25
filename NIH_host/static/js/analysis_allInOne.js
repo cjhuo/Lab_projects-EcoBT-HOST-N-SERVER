@@ -136,6 +136,7 @@ $(function () {
             },
             plotOptions: {
                 line: {
+                	allowPointSelect: true,
                 	animation: false,
                 	color: 'black',	
                 	lineWidth: 0.7,
@@ -143,22 +144,29 @@ $(function () {
                 		enabled: false,
                 		states: {
                 			hover: {
-                				//enabled: false,
-                				radius: -2
+                				radius: 4
+                			},
+                			select: {
+                				radius: 10 //!!! not working!!!!!
                 			}
+                		}
+                	},
+                	point: {
+                		events: {
+                			//TBD click and select function
                 		}
                 	},
                     dataLabels: {
                         enabled: false
                     },
-                    states: {
+                    states: {                 
                     	hover: {
                     		lineWidth: 0.7 //gotta be same value as line.lineWidth 
                     					//so that when hovered plot won't look weird
                     	}
                     },
                     shadow: false,
-                    enableMouseTracking: true
+                    //enableMouseTracking: true
                 }
             },
             xAxis: {
@@ -291,10 +299,10 @@ $(function () {
         var yTop = 65;
         
         //loop to fill in yAxis and data series
-        $.each(datasets, function(key, val) {
+        for(var i=0; i<datasets.length;i++) {
         	var yAxisOptions = $.extend(true, {}, yAxisOptionsTemplate); //!!!deep copy JSON object
         	yAxisOptions.title = {
-        			text: val.label,
+        			text: datasets[i].label,
         			rotation: 0
         	};   	
         	yAxisOptions.top = yTop;
@@ -302,13 +310,13 @@ $(function () {
         	
         	options.yAxis.push(yAxisOptions);        	
         	options.series.push({
-        		name: val.label,
-                data: val.data,
+        		name: datasets[i].label,
+                data: datasets[i].data,
                 pointStart: Date.UTC(0, 0, 0, 0, 0, 0, 0),
-                yAxis: key, //use the index of dataset as the index of yAxis
+                yAxis: i, //use the index of dataset as the index of yAxis
                 pointInterval: 5 // 5 millisecond
         	});
-        });
+        }
     	
         //format tooltip
         options.tooltip.formatter = function() {
