@@ -39,9 +39,9 @@ $(function () {
     var yAxisOptionsTemplate = {
         	lineColor: 'rgb(245, 149, 154)',
         	gridLineColor: 'rgb(245, 149, 154)', 
-        	gridLineWidth: 1,
+        	gridLineWidth: 0.5,
         	minorGridLineColor: 'rgb(245, 149, 154)',
-        	minorGridLineWidth: 0.5,
+        	minorGridLineWidth: 0.2,
         	
         	minorTickInterval: 'auto',
 	        //minorTickWidth: 2,
@@ -157,9 +157,9 @@ $(function () {
             xAxis: {
             	lineColor: 'rgb(245, 149, 154)',
             	gridLineColor: 'rgb(245, 149, 154)',
-            	gridLineWidth: 1,
+            	gridLineWidth: 0.5,
             	minorGridLineColor: 'rgb(245, 149, 154)',
-            	minorGridLineWidth: 0.5,
+            	minorGridLineWidth: 0.2,
             	
             	minorTickInterval: 'auto', //5 minor tick by default, exactlly what we want
     	        minorTickWidth: 1,
