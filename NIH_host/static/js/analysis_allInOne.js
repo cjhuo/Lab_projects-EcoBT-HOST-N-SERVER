@@ -35,6 +35,7 @@ $(function () {
     var selectedPoints = [];
     var xGridInterval = 200; //0.2 second
     var yGridInterval = 500; //0.5 mV
+    var yAxisHeight = 100;
     
     var yAxisOptionsTemplate = {
         	lineColor: 'rgb(245, 149, 154)',
@@ -64,8 +65,8 @@ $(function () {
         		enabled: false
         	},
         	offset: 0,
-        	height: 100,
-        	min: -2000,
+        	height: yAxisHeight,
+        	min: -500,
         	max: 2000
         };
     
@@ -76,7 +77,7 @@ $(function () {
                 animation: {
                     duration: 1000
                 },*/
-                type: 'line'
+                type: 'line',
             },
             credits: {
             	href: "http://cps.eng.uci.edu:8000/analysis",
@@ -139,7 +140,13 @@ $(function () {
                 	color: 'black',	
                 	lineWidth: 0.7,
                 	marker: {
-                		enabled: false
+                		enabled: false,
+                		states: {
+                			hover: {
+                				//enabled: false,
+                				radius: -2
+                			}
+                		}
                 	},
                     dataLabels: {
                         enabled: false
@@ -169,10 +176,10 @@ $(function () {
     	
     	        //tickPixelInterval: 30,
     	        tickInterval: xGridInterval, //0.2 second
-    	        //tickWidth: 2,
-    	        //tickPosition: 'inside',
+    	        tickWidth: 2,
+    	        tickPosition: 'inside',
     	        tickLength: 0,
-    	        //tickColor: 'red',
+    	        tickColor: 'red',
     	        
     	        labels: {
     	        	enabled: false,
@@ -236,7 +243,7 @@ $(function () {
         });
     	*/
     	var resizer = $('<div id="resizer" />').css( {
-            width: '1000px',
+            width: '1300px',
             minHeight: '400px',
             //border: '1px solid silver'
 
@@ -250,7 +257,7 @@ $(function () {
 		
 		//calculate the diagram height
 		
-		var diagramHeight = 65 + 100*datasets.length + 93; //!!!!!65 is the top padding of chart,
+		var diagramHeight = 65 + yAxisHeight*datasets.length + 93; //!!!!!65 is the top padding of chart,
 															//93 is bottom padding
 		
     	//plot all channels on one plot
@@ -291,7 +298,7 @@ $(function () {
         			rotation: 0
         	};   	
         	yAxisOptions.top = yTop;
-        	yTop += 100; //!!!!adjust the distance to the top
+        	yTop += yAxisHeight; //!!!!adjust the distance to the top
         	
         	options.yAxis.push(yAxisOptions);        	
         	options.series.push({
