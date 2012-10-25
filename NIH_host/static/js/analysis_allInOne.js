@@ -36,6 +36,39 @@ $(function () {
     var xGridInterval = 200; //0.2 second
     var yGridInterval = 500; //0.5 mV
     
+    var yAxisOptionsTemplate = {
+        	lineColor: 'rgb(245, 149, 154)',
+        	gridLineColor: 'rgb(245, 149, 154)', 
+        	gridLineWidth: 1,
+        	minorGridLineColor: 'rgb(245, 149, 154)',
+        	minorGridLineWidth: 0.5,
+        	
+        	minorTickInterval: 'auto',
+	        //minorTickWidth: 2,
+	        minorTickLength: 0,
+	        //minorTickPosition: 'inside',
+	        //minorTickColor: 'red',
+	
+	        //tickPixelInterval: 30,
+	        tickInterval: yGridInterval,
+	        //tickWidth: 2,
+	        //tickPosition: 'inside',
+	        tickLength: 0,
+	        //tickColor: 'red',
+        	/*
+        	 * title: {
+        		text: "AAA"
+        	},
+        	*/
+        	labels: {
+        		enabled: false
+        	},
+        	offset: 0,
+        	height: 100,
+        	min: -2000,
+        	max: 2000
+        };
+    
     options = {
             chart: {
                 renderTo: 'diagram',
@@ -61,7 +94,17 @@ $(function () {
                 text: 'QRS Wave data analysis'
             },
             legend: {
-            	enabled: false
+                enabled: true,
+                align: 'right',
+                backgroundColor: '#FCFFC5',
+                borderColor: 'black',
+                borderWidth: 2,
+                //layout: 'vertical',
+                verticalAlign: 'top',
+                x: -10,
+                y: 25,
+                floating: true,
+                shadow: true
             },
             navigator: {
             	enabled: true
@@ -81,7 +124,7 @@ $(function () {
             		type: 'all',
             		text: 'All'
             	}],
-            	selected: 0
+            	selected: 1
             },
             subtitle: {
             	/*
@@ -89,6 +132,27 @@ $(function () {
                       'Click and drag in the plot area to zoom in' :
                       'Drag your finger over the plot to zoom in'
                 */
+            },
+            plotOptions: {
+                line: {
+                	animation: false,
+                	color: 'black',	
+                	lineWidth: 0.7,
+                	marker: {
+                		enabled: false
+                	},
+                    dataLabels: {
+                        enabled: false
+                    },
+                    states: {
+                    	hover: {
+                    		lineWidth: 0.7 //gotta be same value as line.lineWidth 
+                    					//so that when hovered plot won't look weird
+                    	}
+                    },
+                    shadow: false,
+                    enableMouseTracking: true
+                }
             },
             xAxis: {
             	lineColor: 'rgb(245, 149, 154)',
@@ -114,65 +178,11 @@ $(function () {
     	        	enabled: false,
     	        	//step: 2
     	        },
-    	        //startOnTick: true,
-    	        //endOnTick: true
+    	        startOnTick: true,
+    	        endOnTick: true
             },
-            yAxis: {
-            	lineColor: 'rgb(245, 149, 154)',
-            	gridLineColor: 'rgb(245, 149, 154)', 
-            	gridLineWidth: 1,
-            	minorGridLineColor: 'rgb(245, 149, 154)',
-            	minorGridLineWidth: 0.5,
-            	
-            	minorTickInterval: 'auto',
-    	        minorTickWidth: 2,
-    	        minorTickLength: 0,
-    	        minorTickPosition: 'inside',
-    	        minorTickColor: 'red',
-    	
-    	        //tickPixelInterval: 30,
-    	        tickInterval: yGridInterval,
-    	        tickWidth: 2,
-    	        tickPosition: 'inside',
-    	        tickLength: 0,
-    	        tickColor: 'red',
-            	title: {
-            		text: ""
-            	},
-            	labels: {
-            		enabled: false
-            	}
-
-            },
-            tooltip: {
-                //enabled: true,
-                //crosshairs: true,
-                formatter: function() {                	
-                    return '<b>'+ this.points[0].series.name +'</b><br/>'+
-                        /*this.x +', '+ */this.points[0].y;
-                }
-            },
-            plotOptions: {
-                line: {
-                	animation: false,
-                	color: 'black',	
-                	lineWidth: 0.7,
-                	marker: {
-                		enabled: false
-                	},
-                    dataLabels: {
-                        enabled: false
-                    },
-                    states: {
-                    	hover: {
-                    		lineWidth: 0.7 //gotta be same value as line.lineWidth 
-                    					//so that when hovered plot won't look weird
-                    	}
-                    },
-                    shadow: false,
-                    enableMouseTracking: true
-                }
-            },
+            tooltip: {},
+            yAxis: [],
             series: []
     };
 
@@ -207,17 +217,11 @@ $(function () {
     */
     function onDataReceived(data) { //setup plot after retrieving data
         extractDatasets(data); //JSON {'dspData': datasets, 'peaks': indice of peak points}         
-		addChoices(); //add channel radio buttons
 		addPlot();  //generate main plot div
-		//addOverview(); // generate overview plot div
-		plotAccordingToChoices(); //plot diagram on generated div and generate overview
-
     }
 	    
 	function extractDatasets(data) {
 		datasets = data.dspData;
-		
-
 		peaks = data.peaks;
 	}
     
@@ -231,89 +235,88 @@ $(function () {
             padding: '2px'
         });
     	*/
-    		
+    	var resizer = $('<div id="resizer" />').css( {
+            width: '1000px',
+            minHeight: '400px',
+            //border: '1px solid silver'
+
+        });	
+		resizer.appendTo("body");
+    	
+		var innerResizer = $('<div id="innerResizer" />').css( {
+			padding: '10px'
+        });	
+		innerResizer.appendTo(resizer);
+		
+		//calculate the diagram height
+		
+		var diagramHeight = 65 + 100*datasets.length + 93; //!!!!!65 is the top padding of chart,
+															//93 is bottom padding
+		
     	//plot all channels on one plot
     	diagram = $('<div id="diagram" ></div>').css( {
-            position: 'right',
-            width: '50%',
-            height: '400px',
-            margin: 'auto',
-            padding: '2px'
+            height: diagramHeight.toString() + 'px',
         });
-    	diagram.appendTo("body");
-    }
-
-    
-    function addChoices() {
-        var i = 1;
-        choice = $('<div id="choices">Show:</div>').css( {
-            position: 'relative',
-            width: '10%',
-            cssFloat: 'left',
-			fontWeight: 'bold',
-			margin: '10px 0px 0px 10px'
-            //textAlign: 'center'
-        });
-        var checked = 0;
-        $.each(datasets, function(key, val){
-			
-        	//generate radiobox for each channel 
-        	var domStr = '<br><input type="radio" name="channel" id="' + val.label 
-        	+ '" value="' + key + '"' + (checked==0?' checked':'') + '>' 
-        	+'<label for="' + val.label + '">'+ val.label + '</label>';
-        	
-        	choice.append(domStr);
-        	
-        	++i;
-        });
-        choice.appendTo("body");
 		
-		choice.find("input").click(plotAccordingToChoices);
+
+    	diagram.appendTo(innerResizer);
+    	
+    	//resizable
+    	/*
+		resizer.resizable({
+		    // On resize, set the chart size to that of the 
+		    // resizer minus padding. If your chart has a lot of data or other
+		    // content, the redrawing might be slow. In that case, we recommend 
+		    // that you use the 'stop' event instead of 'resize'.
+		    resize: function() {
+		    	plot.setSize(
+		            this.offsetWidth - 20, 
+		            this.offsetHeight - 20,
+		            false
+			       );
+			   }
+		});
+		*/
+		plotEverything(); //plot diagram on generated div and generate overview
     }
     
-    function plotAccordingToChoices() {
-        var data = [];
-        var peakSeries = {};
-        var key;
-        var label;
-
-        choice.find("input:checked").each(function () {
-        	key = $(this).attr("value");
-        	label = $(this).attr("id");
-
-            if (key && datasets[key])
-                data = datasets[key].data;
-            
+    function plotEverything() {
+        var yTop = 65;
+        
+        //loop to fill in yAxis and data series
+        $.each(datasets, function(key, val) {
+        	var yAxisOptions = $.extend(true, {}, yAxisOptionsTemplate); //!!!deep copy JSON object
+        	yAxisOptions.title = {
+        			text: val.label,
+        			rotation: 0
+        	};   	
+        	yAxisOptions.top = yTop;
+        	yTop += 100; //!!!!adjust the distance to the top
+        	
+        	options.yAxis.push(yAxisOptions);        	
+        	options.series.push({
+        		name: val.label,
+                data: val.data,
+                pointStart: Date.UTC(0, 0, 0, 0, 0, 0, 0),
+                yAxis: key, //use the index of dataset as the index of yAxis
+                pointInterval: 5 // 5 millisecond
+        	});
         });
-    
-        if (data.length > 0)
-	        if(diagram) {//just in case the plot div is not yet generated when user starts to click radio buttons
-	        	/* re-initialize every parameter */
-	        	//diagram.unbind();
+    	
+        //format tooltip
+        options.tooltip.formatter = function() {
+        	var s = '';
+        	$.each(this.points, function(key, val) {
+        		s += '<b>'+ val.series.name +'</b>'+
+                val.y + '<br/>';
+        	});
+            return s;
+        };
 
-				/* re-plot everything */
-	        	options.series = [];
-	        	options.series.push({
-	        		name: label,
-                    data: data,
-                    pointStart: Date.UTC(0, 0, 0, 0, 0, 0, 0),
-                    pointInterval: 5 // 5 millisecond
-	        	});
-	        	plot = new Highcharts.StockChart(options, function() {
-	        		spinner.stop();
-	        		spinTarget.hide();
-	        	});
-	        	
-	        	//end loading data
-	            //plot = $.plot(diagram, data, options);
-	            //addHoverEvent();
-	           	//plotOverview(data);
-	           	//addSelectionEvent(data);
-	            //addClickEvent();
-	        }
-	        else {
-	        	alert('plot div has not been generated!');
-	        }        
+    	plot = new Highcharts.StockChart(options, function() {
+    		spinner.stop();
+    		spinTarget.hide();
+    	});      
     }
     
     //show loading spinner, stopped when chart is fully loaded
