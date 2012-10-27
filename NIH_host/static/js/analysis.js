@@ -97,7 +97,8 @@ $(function () {
                 /*animation: {
                     duration: 1000
                 },*/
-                type: 'line'
+                type: 'line',
+                marginTop: 90
             },
             credits: {
             	href: "http://cps.eng.uci.edu:8000/analysis",
@@ -134,11 +135,12 @@ $(function () {
             	selected: 1
             },
             subtitle: {
-            	/*
-                text: document.ontouchstart === undefined ?
-                      'Click and drag in the plot area to zoom in' :
-                      'Drag your finger over the plot to zoom in'
-                */
+            	align: 'left',
+            	text: 'Please pick a Q point and a T point and submit to server for QTC historgram generation<br>'
+            			+ 'The ECG plot is zoomable with: <br>'
+            			+ (document.ontouchstart === undefined ?
+                        'Click and drag in the plot area to zoom in' :
+                        'Drag your finger over the plot to zoom in')
             },
             xAxis: {
             	lineColor: 'rgb(245, 149, 154)',
@@ -330,7 +332,7 @@ $(function () {
     	diagram = $('<div id="diagram" ></div>').css( {
             //position: 'right',
             width: '100%',
-            height: '170px',
+            height: '200px',
             //margin: 'auto',
             padding: '2px'
         });
