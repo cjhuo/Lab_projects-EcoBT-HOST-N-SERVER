@@ -13,6 +13,7 @@
  */
 
 $(function () {
+	
 	//ajax call urls
 	var dataurl = 'dsp'; 
 	var submitUrl = 'submit'; 
@@ -23,7 +24,7 @@ $(function () {
 	var diagram; //store DOM object of plot div
 	var overview; //store DOM object of overview plot
 	var choice;  //store DOM objects of checkbox of channels
-    var plot;  //store main plot object will be returned by flot
+    var plot;  //store main plot object will be returned by highchart
     var overviewPlot; ///store overview plot object will be returned by flot
     var peakText;// store DOM object of peak point
     var submit; //store DOM object of submit button
@@ -33,6 +34,61 @@ $(function () {
     
     var qPoint;
     var tPoint;
+    
+    var histogram; //store DOM object of histogram div
+    var hPlot; // store histogram plot object will be returned by highchart
+    
+    var hOptions = { // //options settings for histogram plot
+        chart: {
+            renderTo: 'histogram',
+            type: 'column'
+        },
+        title: {
+            text: 'Histogram based on chosen Q/T point'
+        },
+        subtitle: {
+            text: ''
+        },
+        credits: {
+        	href: "http://cps.eng.uci.edu:8000/analysis",
+        	text: "UCI Embedded Lab"
+        },
+        xAxis: {
+            tickInterval: 1,
+            pointInterval: 1
+        },
+        yAxis: {
+            min: 0
+        },
+        /*
+        legend: {
+            layout: 'vertical',
+            backgroundColor: '#FFFFFF',
+            align: 'left',
+            verticalAlign: 'top',
+            x: 100,
+            y: 70,
+            floating: true,
+            shadow: true
+        },
+        */
+        
+        tooltip: {
+            formatter: function() {
+                return '<b>Result:<b><br>bin '+
+                    this.x +': '+ this.y;
+            }
+        },
+        
+        plotOptions: {
+            column: {
+                pointPadding: 0,
+                groupPadding: 0,
+                borderWidth: 0
+            }
+        },
+        series: []
+    }
     
     var options = { //options settings for main plot
             chart: {
@@ -57,6 +113,9 @@ $(function () {
             },
             title: {
                 text: 'QRS Wave data analysis'
+            },
+            subtitle: {
+                text: '' //TBD
             },
             legend: {
             	enabled: false
@@ -202,14 +261,18 @@ $(function () {
 			  top: 'auto', // Top position relative to parent in px
 			  left: 'auto' // Left position relative to parent in px
 			};
-			spinTarget = $('<div id="spinner" ></div>').css( {
+	spinTarget = $('<div id="spinner" ></div>').css( {
 	            position: 'relative',
 	            width: '50px',
 	            height: '50px',
 	            margin: 'auto'
-	        });
+	});
+	spinTarget.appendTo("body");
+	
+	spinner = new Spinner(spinnerOpts);
 
-	function getAndProcessData() { //issue ajax call and further process the data on sucess
+	/* issue ajax call and further process the data on sucess */
+	function getAndProcessData() { 
 		showSpinner();
 		$.ajax({
 			url: dataurl,
@@ -335,8 +398,7 @@ $(function () {
                     data: data,
 	        	});
 	        	plot = new Highcharts.Chart(options, function() {
-	        		spinner.stop();
-	        		spinTarget.hide();
+	        		hideSpinner();
 	        	});
 	        	
 	        	//end loading data
@@ -351,10 +413,15 @@ $(function () {
 	        }        
     }
     
-    //show loading spinner, stopped when chart is fully loaded
+    /* show loading spinner, stopped when chart is fully loaded */
     function showSpinner(){
-		spinTarget.appendTo("body");
-		spinner = new Spinner(spinnerOpts).spin(spinTarget[0]);
+    	spinTarget.show();
+		spinner.spin(spinTarget[0]);
+    }
+    
+    function hideSpinner(){
+		spinTarget.hide();
+		spinner.stop();
     }
     
     function pointClick(event) { //click event function
@@ -373,6 +440,7 @@ $(function () {
 		return false;
     }
     
+    /* toggle point and set Q/T point after user make the selection from pop-up dialog */
     function makeSelection(point, pSelection) {
 		//alert(pSelection);
 		//add clicked point to qPoint/tPoint
@@ -394,7 +462,8 @@ $(function () {
 		makeQTText();
     }
     
-    function pointPopup(point) { //Q/T point selection pop-up window
+    /* Q/T point selection pop-up window */
+    function pointPopup(point) { 
     	var pSelection = null;
     	var popUpDiv = $('<div id="popUpBox"><div>');
     	popUpDiv.html('<p>Please choose the type for the point: </p>');
@@ -418,7 +487,8 @@ $(function () {
     	return pSelection;
     }
 
-	function makeQTText() {	//show peak selection in peakText div
+    /* show peak selection in peakText div */
+	function makeQTText() {	
 		/* remove peakText button if any */
 		if(peakText)
 			peakText.remove();
@@ -476,11 +546,42 @@ $(function () {
 			url: submitUrl,
 			dataType: 'json',
 			cache: false,
-			data: {"data":JSON.stringify(pdata)}
-		}).success(function(){
-				alert('Peak Points sent to server!' /*+ JSON.stringify(msg)*/);
-				plotAccordingToChoices();				
- 		});
+			data: {"data":JSON.stringify(pdata)},
+			beforeSend: showSpinner,
+			complete: hideSpinner,
+			success: onBinDataReceived
+		});
+    }
+    
+    /* 
+     * draw histogram with bins
+     * format of bins json: {'data': [1-d array of value of each bins]}
+     */
+    function onBinDataReceived(data) {
+		plotAccordingToChoices();
+		drawHistogram(data);
+    }
+    
+    function drawHistogram(data) {
+    	showSpinner();
+    	histogram = $('<div id="histogram" ></div>').css( {
+            //position: 'right',
+            width: '100%',
+            height: '400px',
+            //margin: 'auto',
+            padding: '2px'
+        });
+    	histogram.appendTo("body");
+    	
+    	hOptions.series = [];
+    	hOptions.series.push({
+    		//name: label,
+            data: data.data,
+    	});
+    	hPlot = new Highcharts.Chart(hOptions, function() {
+    		hideSpinner();
+    	});
+
     }
     
     getAndProcessData();

@@ -8,17 +8,20 @@ import Qtc
 import Histogram
 
 #from pylab import *
-wavech = None #declare a global wavech variable
-peakdata = None #declare a global wavech variable
 
 
 def getBinInfo(qPoint, tPoint):
-    aa = CAPS.caps(wavech[0], 120, peakdata)
+    wavech = parseDicomFile()
+    info = dict()
+    ecg = ECG.Ecg(wavech,info)
+    peakdata = ecg.qrsDetect(0)
+
+    aa = CAPS.caps(wavech[0], qPoint, peakdata)
     # result1 is the list of similar points of manually selected Q point
     result1 = aa.SearchingSimilarPoint()
 
     # Searching similar point from manually selected T point
-    aa = CAPS.caps(wavech[0], 160, peakdata)
+    aa = CAPS.caps(wavech[0], tPoint, peakdata)
     # result2 is the list of similar points of manually selected T point
     result2 = aa.SearchingSimilarPoint()
 
@@ -36,8 +39,9 @@ def getTestData():
     wavech = parseDicomFile()
     info = dict()
     ecg = ECG.Ecg(wavech,info)
+    peakdata = ecg.qrsDetect(0)
 
-    peaks = ecg.qrsDetect().tolist()
+    peaks = peakdata.tolist()
     
     return (wavech, peaks)
 

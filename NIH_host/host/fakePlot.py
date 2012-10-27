@@ -1,5 +1,6 @@
 import tornado.web
 import random
+import json
 
 from db.Models import DataSource, Device, DataLog
 
@@ -60,9 +61,13 @@ class PointHandler(tornado.web.RequestHandler):
         
 class SubmitHandler(tornado.web.RequestHandler):
     def post(self): 
-        data = self.get_argument("data")
+        data = json.loads(self.get_argument("data"))
         print data
-        #self.write({'test': 'test'})
+        
+        bins = ecg.ECG_reader.getBinInfo(data['qPoint'][0], data['tPoint'][0]);
+        
+        print bins
+        self.write({'data': bins}) #format of bins json: {'data': 1-d array of value of each bins}
         
 class DSPHandler(tornado.web.RequestHandler):
     def get(self):        
