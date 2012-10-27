@@ -2,7 +2,7 @@ __author__ = 'leetop'
 import scipy
 import scipy.signal
 import numpy
-#import pylab
+import pylab
 
 class QrsDetectionError(Exception):
     def __init__(self, value):
@@ -175,7 +175,7 @@ class Ecg() :
     def acceptasNoise(self, peak, amplitude):
         self.noise_peak_buffer.pop(0)
         self.noise_peak_buffer.append(amplitude)
-'''
+
     def visualize_qrs_detection(self, savefilename = False):
         ecglength = len(self.raw_ecg)
         ten_seconds = 10 * self.samplingrate
@@ -208,7 +208,9 @@ class Ecg() :
         pylab.subplot(616)
         pylab.hold(True)
         pylab.plot(self.raw_ecg[:segmentend])
-        pylab.stem(segmentQRSpeaks, self.raw_ecg[segmentQRSpeaks], markerfmt='ro', basefmt='', linefmt='')
+#        pylab.stem(segmentQRSpeaks, self.raw_ecg[segmentQRSpeaks], markerfmt='ro', basefmt='', linefmt='')
+        testtest = [120, 326, 532, 738, 944, 1150, 1357, 1563, 1769, 1975]
+        pylab.stem(testtest, self.raw_ecg[testtest], markerfmt='ro', basefmt='', linefmt='')
         pylab.hold(False)
         pylab.ylabel('QRS peaks', rotation='horizontal')
 
@@ -216,4 +218,4 @@ class Ecg() :
             pylab.savefig(savefilename)
         else:
             pylab.show()
-'''
+

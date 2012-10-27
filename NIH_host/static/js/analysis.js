@@ -24,7 +24,6 @@ $(function () {
 	var overview; //store DOM object of overview plot
 	var choice;  //store DOM objects of checkbox of channels
     var plot;  //store main plot object will be returned by flot
-    var options; //options settings for main plot
     var overviewPlot; ///store overview plot object will be returned by flot
     var peakText;// store DOM object of peak point
     var submit; //store DOM object of submit button
@@ -32,13 +31,14 @@ $(function () {
     var spinTarget; //store DOM object used to show loading spinner
     var spinner; //spinner
     
-    var selectedPoints = [];
+    var qPoint;
+    var tPoint;
     
-    options = {
+    var options = { //options settings for main plot
             chart: {
                 renderTo: 'diagram',
-                /*zoomType: 'x',
-                animation: {
+                zoomType: 'x',
+                /*animation: {
                     duration: 1000
                 },*/
                 type: 'line'
@@ -84,9 +84,9 @@ $(function () {
             xAxis: {
             	lineColor: 'rgb(245, 149, 154)',
             	gridLineColor: 'rgb(245, 149, 154)',
-            	gridLineWidth: 1,
+            	gridLineWidth: 0.5,
             	minorGridLineColor: 'rgb(245, 149, 154)',
-            	minorGridLineWidth: 0.5,
+            	minorGridLineWidth: 0.2,
             	
             	minorTickInterval: 'auto',
     	        minorTickWidth: 1,
@@ -94,7 +94,8 @@ $(function () {
     	        minorTickPosition: 'inside',
     	        minorTickColor: 'red',
     	
-    	        tickPixelInterval: 30,
+    	        //tickPixelInterval: 30,
+    	        tickInterval: 40,
     	        tickWidth: 2,
     	        tickPosition: 'inside',
     	        tickLength: 0,
@@ -110,9 +111,9 @@ $(function () {
             yAxis: {
             	lineColor: 'rgb(245, 149, 154)',
             	gridLineColor: 'rgb(245, 149, 154)', 
-            	gridLineWidth: 1,
+            	gridLineWidth: 0.5,
             	minorGridLineColor: 'rgb(245, 149, 154)',
-            	minorGridLineWidth: 0.5,
+            	minorGridLineWidth: 0.2,
             	
             	minorTickInterval: 'auto',
     	        minorTickWidth: 2,
@@ -120,11 +121,14 @@ $(function () {
     	        minorTickPosition: 'inside',
     	        minorTickColor: 'red',
     	
-    	        tickPixelInterval: 30,
+    	        //tickPixelInterval: 30,
+    	        tickInterval: 500,
     	        tickWidth: 2,
     	        tickPosition: 'inside',
     	        tickLength: 0,
     	        tickColor: 'red',
+    	        
+    	        //height: 100,
             	title: {
             		text: ""
             	},
@@ -159,7 +163,7 @@ $(function () {
                     enableMouseTracking: true
                 },
                 series: {
-                	allowPointSelect: true,                    
+                	allowPointSelect: true,  
                     marker: {
                     	radius: 0.1,
                         states: {
@@ -167,14 +171,43 @@ $(function () {
                 				radius: 4
                 			},
                             select: {
-                                radius: 10
+                                radius: 4
                             }
                         }
+                    },
+                    point: {
+                    	events: {
+                    		click: pointClick
+                    	}
                     }
                 }	
             },
             series: []
     };
+    
+	var spinnerOpts = { //options settings for spinner
+			  lines: 13, // The number of lines to draw
+			  length: 7, // The length of each line
+			  width: 4, // The line thickness
+			  radius: 10, // The radius of the inner circle
+			  corners: 1, // Corner roundness (0..1)
+			  rotate: 0, // The rotation offset
+			  color: '#000', // #rgb or #rrggbb
+			  speed: 1, // Rounds per second
+			  trail: 60, // Afterglow percentage
+			  shadow: false, // Whether to render a shadow
+			  hwaccel: false, // Whether to use hardware acceleration
+			  className: 'spinner', // The CSS class to assign to the spinner
+			  zIndex: 2e9, // The z-index (defaults to 2000000000)
+			  top: 'auto', // Top position relative to parent in px
+			  left: 'auto' // Left position relative to parent in px
+			};
+			spinTarget = $('<div id="spinner" ></div>').css( {
+	            position: 'relative',
+	            width: '50px',
+	            height: '50px',
+	            margin: 'auto'
+	        });
 
 	function getAndProcessData() { //issue ajax call and further process the data on sucess
 		showSpinner();
@@ -215,9 +248,7 @@ $(function () {
     }
 	    
 	function extractDatasets(data) {
-		datasets = data.dspData;
-		
-
+		datasets = data.dspData;		
 		peaks = data.peaks;
 	}
     
@@ -234,10 +265,10 @@ $(function () {
     		
     	//plot all channels on one plot
     	diagram = $('<div id="diagram" ></div>').css( {
-            position: 'right',
-            width: '50%',
-            height: '400px',
-            margin: 'auto',
+            //position: 'right',
+            width: '100%',
+            height: '170px',
+            //margin: 'auto',
             padding: '2px'
         });
     	diagram.appendTo("body");
@@ -248,8 +279,8 @@ $(function () {
         var i = 1;
         choice = $('<div id="choices">Show:</div>').css( {
             position: 'relative',
-            width: '10%',
-            cssFloat: 'left',
+            //width: '10%',
+            cssFloat: 'center',
 			fontWeight: 'bold',
 			margin: '10px 0px 0px 10px'
             //textAlign: 'center'
@@ -258,9 +289,9 @@ $(function () {
         $.each(datasets, function(key, val){
 			
         	//generate radiobox for each channel 
-        	var domStr = '<br><input type="radio" name="channel" id="' + val.label 
+        	var domStr = ' <input type="radio" name="channel" id="' + val.label 
         	+ '" value="' + key + '"' + (checked==0?' checked':'') + '>' 
-        	+'<label for="' + val.label + '">'+ val.label + '</label>';
+        	+' <label for="' + val.label + '">'+ val.label + '</label>';
         	
         	choice.append(domStr);
         	
@@ -273,7 +304,6 @@ $(function () {
     
     function plotAccordingToChoices() {
         var data = [];
-        var peakSeries = {};
         var key;
         var label;
 
@@ -290,12 +320,19 @@ $(function () {
 	        if(diagram) {//just in case the plot div is not yet generated when user starts to click radio buttons
 	        	/* re-initialize every parameter */
 	        	//diagram.unbind();
-
+	        	qPoint = null;
+	        	tPoint = null;
+	    		/* remove peakText button if any */
+	    		if(peakText)
+	    			peakText.remove();
+	    		/* remove submit button if any */
+	    		if(submit)
+	    			submit.remove();
 				/* re-plot everything */
 	        	options.series = [];
 	        	options.series.push({
 	        		name: label,
-                    data: data
+                    data: data,
 	        	});
 	        	plot = new Highcharts.Chart(options, function() {
 	        		spinner.stop();
@@ -316,31 +353,134 @@ $(function () {
     
     //show loading spinner, stopped when chart is fully loaded
     function showSpinner(){
-    	var opts = {
-    			  lines: 13, // The number of lines to draw
-    			  length: 7, // The length of each line
-    			  width: 4, // The line thickness
-    			  radius: 10, // The radius of the inner circle
-    			  corners: 1, // Corner roundness (0..1)
-    			  rotate: 0, // The rotation offset
-    			  color: '#000', // #rgb or #rrggbb
-    			  speed: 1, // Rounds per second
-    			  trail: 60, // Afterglow percentage
-    			  shadow: false, // Whether to render a shadow
-    			  hwaccel: false, // Whether to use hardware acceleration
-    			  className: 'spinner', // The CSS class to assign to the spinner
-    			  zIndex: 2e9, // The z-index (defaults to 2000000000)
-    			  top: 'auto', // Top position relative to parent in px
-    			  left: 'auto' // Left position relative to parent in px
+		spinTarget.appendTo("body");
+		spinner = new Spinner(spinnerOpts).spin(spinTarget[0]);
+    }
+    
+    function pointClick(event) { //click event function
+		if(qPoint == this) {
+			this.select(false, true);
+			qPoint = null; 
+		}
+		else if(tPoint == this) {
+			this.select(false, true);
+			tPoint = null; 
+		}
+		else { //add Q/T point base on pop-up selection
+			pointPopup(this);
+		}
+		makeQTText();
+		return false;
+    }
+    
+    function makeSelection(point, pSelection) {
+		//alert(pSelection);
+		//add clicked point to qPoint/tPoint
+		if(pSelection != null){
+			if(pSelection == 1){
+				if(qPoint){
+					qPoint.select(false, true);
+				}
+				qPoint = point;
+			}
+			else if(pSelection == 0){
+				if(tPoint){
+					tPoint.select(false, true);
+				}
+				tPoint = point;
+			}
+			point.select(true, true);
+		} //else null without any selection, do nothing	
+		makeQTText();
+    }
+    
+    function pointPopup(point) { //Q/T point selection pop-up window
+    	var pSelection = null;
+    	var popUpDiv = $('<div id="popUpBox"><div>');
+    	popUpDiv.html('<p>Please choose the type for the point: </p>');
+    	popUpDiv.dialog({
+            height: 200,
+            modal: true,
+            resizable: false,
+            buttons: {
+                "Q Point": function() {
+                	pSelection = 1;
+                	makeSelection(point, pSelection);
+                    $( this ).dialog( "close" );
+                },
+                "T Point": function() {
+                	pSelection = 0;
+                	makeSelection(point, pSelection);
+                    $( this ).dialog( "close" );
+                }
+            }
+        });
+    	return pSelection;
+    }
+
+	function makeQTText() {	//show peak selection in peakText div
+		/* remove peakText button if any */
+		if(peakText)
+			peakText.remove();
+		/* remove submit button if any */
+		if(submit)
+			submit.remove();
+		if(qPoint || tPoint){
+			peakText = $('<p id="selectedPoints" ></p>').css( {
+	            position: 'relative',
+				fontWeight: 'bold'
+	        });
+	    	peakText.appendTo(choice);
+	    	/*$.each(selectedPoints, function(i, val) {
+				var domStr = 'You have selected peak point (x: ' + val.datapoint[0] + ', y: '
+				+ val.datapoint[1] + ') in ' + val.series.label + '.<br>'
+				peakText.append(domStr);*/
+	    	if(qPoint) {
+				var domStr = '<br>You have picked Q point at (x: ' 
+					+ qPoint.x + ', y: '
+					+ qPoint.y + ') .';
+				peakText.append(domStr);
+	    	}
+	    	if(tPoint) {
+				var domStr = '<br>You have picked T point at (x: ' 
+					+ tPoint.x + ', y: '
+					+ tPoint.y + ') .';
+				peakText.append(domStr);
+	    	}
+	    	if(qPoint && tPoint) {
+				var domStr = '<br>Click "submit" button to send your request to server';
+				peakText.append(domStr);	
+				submit = $('<input id="submit" type="button" value="submit" >');
+				submit.appendTo(choice);
+				submit.click(doSubmit);
+	    	}
+	    	//use setSelection to plot selection between 2 points, 
+			//TBD
+	    }
+	}
+    
+    /* submit the peak information to server */
+    function doSubmit() {
+    	/* data to be sent should follow fomat as:
+    		data = {'channel': channelNo,
+    				'selectedPoints': array of peak, e.g. [[1, 20], [5, 40]]
+    		}
+    	*/
+    	var pdata = {//'channel': selectedPoints[0].series.label.substring(8),
+    			'qPoint': [qPoint.x, qPoint.y],
+    			'tPoint': [tPoint.x, tPoint.y]
     			};
-    			spinTarget = $('<div id="spinner" ></div>').css( {
-    	            position: 'relative',
-    	            width: '50px',
-    	            height: '50px',
-    	            margin: 'auto'
-    	        });
-    			spinTarget.appendTo("body");
-    			spinner = new Spinner(opts).spin(spinTarget[0]);
+
+		$.ajax({
+			type: 'POST',
+			url: submitUrl,
+			dataType: 'json',
+			cache: false,
+			data: {"data":JSON.stringify(pdata)}
+		}).success(function(){
+				alert('Peak Points sent to server!' /*+ JSON.stringify(msg)*/);
+				plotAccordingToChoices();				
+ 		});
     }
     
     getAndProcessData();

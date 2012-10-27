@@ -15,24 +15,15 @@
 $(function () {
 	//ajax call urls
 	var dataurl = 'dsp'; 
-	var submitUrl = 'submit'; 
 	
 	var datasets; //store datasets
-	var peaks; //store indice of peak points for channels 
-			   //only need 1-d array since peak indice for every channel are the same
 	var diagram; //store DOM object of plot div
-	var overview; //store DOM object of overview plot
-	var choice;  //store DOM objects of checkbox of channels
     var plot;  //store main plot object will be returned by flot
     var options; //options settings for main plot
-    var overviewPlot; ///store overview plot object will be returned by flot
-    var peakText;// store DOM object of peak point
-    var submit; //store DOM object of submit button
     
     var spinTarget; //store DOM object used to show loading spinner
     var spinner; //spinner
     
-    var selectedPoints = [];
     var xGridInterval = 200; //0.2 second
     var yGridInterval = 500; //0.5 mV
     var yAxisHeight = 100;
@@ -151,11 +142,6 @@ $(function () {
                 			}
                 		}
                 	},
-                	point: {
-                		events: {
-                			//TBD click and select function
-                		}
-                	},
                     dataLabels: {
                         enabled: false
                     },
@@ -166,7 +152,30 @@ $(function () {
                     	}
                     },
                     shadow: false,
-                    //enableMouseTracking: true
+                    enableMouseTracking: true
+                },
+                series: {
+                	allowPointSelect: true,  
+                    marker: {
+                    	radius: 0.1,
+                        states: {
+                			hover: {
+                				radius: 4
+                			},
+                            select: {
+                                radius: 4
+                            }
+                        }
+                    },
+                    point: {
+                    	events: {
+                    		click: function(event){
+                    			this.select(true, true);
+                    			alert(this.series);
+                    			return false;
+                    		}
+                    	}
+                    }
                 }
             },
             xAxis: {
@@ -237,7 +246,6 @@ $(function () {
 	    
 	function extractDatasets(data) {
 		datasets = data.dspData;
-		peaks = data.peaks;
 	}
     
     function addPlot() { 
