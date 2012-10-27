@@ -540,7 +540,7 @@ $(function () {
     			'qPoint': [qPoint.x, qPoint.y],
     			'tPoint': [tPoint.x, tPoint.y]
     			};
-
+		plotAccordingToChoices();
 		$.ajax({
 			type: 'POST',
 			url: submitUrl,
@@ -549,7 +549,8 @@ $(function () {
 			data: {"data":JSON.stringify(pdata)},
 			beforeSend: showSpinner,
 			complete: hideSpinner,
-			success: onBinDataReceived
+			success: onBinDataReceived,
+			error: function() {alert("ECG module Error!!");}
 		});
     }
     
@@ -558,7 +559,6 @@ $(function () {
      * format of bins json: {'data': [1-d array of value of each bins]}
      */
     function onBinDataReceived(data) {
-		plotAccordingToChoices();
 		drawHistogram(data);
     }
     
@@ -568,7 +568,7 @@ $(function () {
             //position: 'right',
             width: '100%',
             height: '400px',
-            //margin: 'auto',
+            margin: 'auto',
             padding: '2px'
         });
     	histogram.appendTo("body");
