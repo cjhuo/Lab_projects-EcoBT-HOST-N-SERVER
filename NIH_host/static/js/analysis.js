@@ -53,6 +53,9 @@ $(function () {
         	href: "http://cps.eng.uci.edu:8000/analysis",
         	text: "UCI Embedded Lab"
         },
+        legend: {
+        	enabled: false
+        },
         xAxis: {
             tickInterval: 1,
             pointInterval: 1
