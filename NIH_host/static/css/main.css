@@ -15,6 +15,7 @@ body{
 .navbox {
 	position: relative;
 	float: left;
+	/*width:15%*/
 }
 
 ul.nav {
@@ -54,10 +55,10 @@ ul.nav li a:hover {
 
 iframe {
 	position: relative;
-	//float: right;
+	/*float: right;*/
 	width:70%; 
 	height:100%;
-	padding: 0px 0px 7px 20px;
+	margin: 20px 0px 7px 20px;
 	
 }
 

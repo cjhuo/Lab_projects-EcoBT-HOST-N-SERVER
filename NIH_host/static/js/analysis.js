@@ -381,7 +381,9 @@ $(function () {
     
     function addReferenceImg() {
     	
-    	refImgDiv = $('<div><img src=' + refImgUrl + ' alt="reference image borrowed from www.davita-shop.co.uk"></div>');  
+    	refImgDiv = $('<div><img src=' + refImgUrl 
+    			+ ' alt="reference image borrowed from www.davita-shop.co.uk" style="margin: 0 auto;display:block">'
+    			+ '</div>');  
         
         refImgDiv.dialog({
             autoOpen: false,
