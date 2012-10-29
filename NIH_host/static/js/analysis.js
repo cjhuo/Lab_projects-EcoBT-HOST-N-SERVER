@@ -573,7 +573,10 @@ $(function () {
 	    	if(qPoint && tPoint) {
 				var domStr = '<br>Click "submit" button to send your request to server';
 				peakText.append(domStr);	
-				submit = $('<input id="submit" type="button" value="submit" >');
+				submit = $('<input id="submit" type="button" value="submit" >').css({
+					fontSize: 'small'
+				});
+				submit.button();
 				submit.appendTo(choice);
 				submit.click(doSubmit);
 	    	}
