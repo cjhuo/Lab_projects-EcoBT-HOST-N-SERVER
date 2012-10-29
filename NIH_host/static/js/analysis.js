@@ -37,6 +37,12 @@ $(function () {
     
     var histogram; //store DOM object of histogram div
     var hPlot; // store histogram plot object will be returned by highchart
+        
+    var refImgDiv ////store DOM object of reference image div
+    
+    //store the url for a reference image of ECG chart
+    //borrowed from http://www.davita-shop.co.uk/ecg-instruments.html    
+    var refImgUrl = "static/css/images/ecg.png"; 
     
     var hOptions = { // //options settings for histogram plot
         chart: {
@@ -101,7 +107,7 @@ $(function () {
                     duration: 1000
                 },*/
                 type: 'line',
-                marginTop: 90
+                marginTop: 110
             },
             credits: {
             	href: "http://cps.eng.uci.edu:8000/analysis",
@@ -139,8 +145,10 @@ $(function () {
             },
             subtitle: {
             	align: 'left',
-            	text: 'Please pick a Q point and a T point and submit to server for QTC historgram generation<br>'
-            			+ 'The ECG plot is zoomable with: <br>'
+            	text: '*Please manually locate any Q point and any T point on the ECG plot<br> '
+            			+ 'and submit to server for QTC historgram generation<br>'
+            			+ '*Click top-right button for reference of namings of ECG deflections<br>'
+            			+ '*The ECG plot is zoomable. '
             			+ (document.ontouchstart === undefined ?
                         'Click and drag in the plot area to zoom in' :
                         'Drag your finger over the plot to zoom in')
@@ -309,6 +317,7 @@ $(function () {
     function onDataReceived(data) { //setup plot after retrieving data
         extractDatasets(data); //JSON {'dspData': datasets, 'peaks': indice of peak points}         
 		addChoices(); //add channel radio buttons
+		addReferenceImg();
 		addPlot();  //generate main plot div
 		//addOverview(); // generate overview plot div
 		plotAccordingToChoices(); //plot diagram on generated div and generate overview
@@ -333,9 +342,9 @@ $(function () {
     		
     	//plot all channels on one plot
     	diagram = $('<div id="diagram" ></div>').css( {
-            //position: 'right',
+            //position: 'relative',
             width: '100%',
-            height: '200px',
+            height: '220px',
             //margin: 'auto',
             padding: '2px'
         });
@@ -350,7 +359,7 @@ $(function () {
             //width: '10%',
             cssFloat: 'center',
 			fontWeight: 'bold',
-			margin: '10px 0px 0px 10px'
+			margin: '10px 10px 10px 10px'
             //textAlign: 'center'
         });
         var checked = 0;
@@ -368,6 +377,45 @@ $(function () {
         choice.appendTo("body");
 		
 		choice.find("input").click(plotAccordingToChoices);
+    }
+    
+    function addReferenceImg() {
+    	
+    	refImgDiv = $('<div><img src=' + refImgUrl + ' alt="reference image borrowed from www.davita-shop.co.uk"></div>');  
+        
+        refImgDiv.dialog({
+            autoOpen: false,
+            resizable: false,
+            position: { 
+            	my: "top", 
+            	at: "top", 
+            	of: "#ref", 
+            	},
+            show: "blind",
+            hide: "blind"
+        });
+
+    	//refImgDiv.appendTo(choice);
+
+    	var refButton = $('<button id="ref">click here for reference of Q/T point</button>').css({
+    		float: 'right',
+    		fontSize: 'small',
+    	});
+    	
+
+    	refButton.button();
+    	refButton.click(showRef);
+
+        refButton.appendTo(choice);
+    }
+    
+    function showRef(e) {
+    	if(refImgDiv.dialog("isOpen")){
+    		refImgDiv.dialog("close");
+    	}
+    	else{
+    		refImgDiv.dialog("open");
+    	}
     }
     
     function plotAccordingToChoices() {
@@ -569,8 +617,8 @@ $(function () {
     
     function drawHistogram(data) {
     	showSpinner();
-    	histogram = $('<div id="histogram" ></div>').css( {
-            //position: 'right',
+    	histogram = $('<div id="histogram" ></div>').css( {    		
+            position: 'relative',
             width: '100%',
             height: '400px',
             margin: 'auto',

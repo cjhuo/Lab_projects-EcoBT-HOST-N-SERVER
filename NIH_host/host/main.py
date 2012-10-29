@@ -71,8 +71,8 @@ class AnalysisHandler(tornado.web.RequestHandler):
     def get(self):
         self.render(
             "analysis.html",
-            page_title="DSP Analysis Viewer",
-            header_text="DSP Analysis Viewer",
+            page_title="ECG Analysis Viewer",
+            header_text="ECG Analysis Viewer",
             footer_text="",
         )
     
