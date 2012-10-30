@@ -171,7 +171,7 @@ $(function () {
                     	events: {
                     		click: function(event){
                     			this.select(true, true);
-                    			alert(this.series);
+                    			//alert(this.series);
                     			return false;
                     		}
                     	}
