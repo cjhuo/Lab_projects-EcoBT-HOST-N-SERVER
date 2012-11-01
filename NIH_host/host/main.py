@@ -69,6 +69,8 @@ class PlotHandler(tornado.web.RequestHandler):
         
 class AnalysisHandler(tornado.web.RequestHandler):
     def get(self):
+        if self.get_arguments("test"):
+            print self.get_argument("test")
         self.render(
             "analysis.html",
             page_title="ECG Analysis Viewer",

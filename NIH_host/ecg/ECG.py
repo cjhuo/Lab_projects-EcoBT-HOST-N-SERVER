@@ -209,7 +209,7 @@ class Ecg() :
         pylab.hold(True)
         pylab.plot(self.raw_ecg[:segmentend])
 #        pylab.stem(segmentQRSpeaks, self.raw_ecg[segmentQRSpeaks], markerfmt='ro', basefmt='', linefmt='')
-        testtest = [120, 326, 532, 738, 944, 1150, 1357, 1563, 1769, 1975]
+        testtest = []
         pylab.stem(testtest, self.raw_ecg[testtest], markerfmt='ro', basefmt='', linefmt='')
         pylab.hold(False)
         pylab.ylabel('QRS peaks', rotation='horizontal')

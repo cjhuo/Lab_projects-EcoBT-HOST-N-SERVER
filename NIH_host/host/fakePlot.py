@@ -64,10 +64,11 @@ class SubmitHandler(tornado.web.RequestHandler):
         data = json.loads(self.get_argument("data"))
         print data
         
+        #format of getBinInfo(): [[min, max, value],[min,max,value],...]
         bins = ecg.ECG_reader.getBinInfo(data['qPoint'][0], data['tPoint'][0]);
         
         print bins
-        self.write({'data': bins}) #format of bins json: {'data': 1-d array of value of each bins}
+        self.write({'data': bins}) #format of bins json: {'data': bins info}
         
 class DSPHandler(tornado.web.RequestHandler):
     def get(self):        

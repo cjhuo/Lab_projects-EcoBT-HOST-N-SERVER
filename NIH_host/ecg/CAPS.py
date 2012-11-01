@@ -16,10 +16,17 @@ class caps() :
         self.template = self.MakingTemplate()
         self.stepsize = self.FindingStepSize()
         self.peakdata = peakdata
+        self.offset = 0
 
     def MakingTemplate(self) :
         startpoint = self.searchingpoint-(self.tempsize/2)
         endpoint = self.searchingpoint+(self.tempsize/2)
+
+        if startpoint < 0 :
+            self.offset = startpoint
+            startpoint = 0
+            endpoint = endpoint - self.offset
+
         self.template = self.originaldata[startpoint:endpoint]
 
         return self.template
@@ -48,32 +55,47 @@ class caps() :
         return self.stepsize
 
     def MakingOriginal(self, peakpoint, RtoR):
-        startpoint = peakpoint-(RtoR/2)
-        endpoint = peakpoint+(RtoR/2)
+        startpoint = peakpoint-((RtoR+self.template.size)/2)
+        endpoint = peakpoint+((RtoR+self.template.size)/2)
+
         self.bufforiginal = self.originaldata[startpoint:endpoint]
 
         return self.bufforiginal
 
 # First coarse searching, and then specific searching
     def MatchingTemplate(self):
-        zerodata = numpy.zeros(self.template.size-1)
-        datapadded = numpy.hstack((zerodata,self.bufforiginal,zerodata))
+#        zerodata = numpy.zeros(self.template.size/2)
+#        datapadded = numpy.hstack((self.bufforiginal,zerodata))
         checkflag = False
         maxcorr = -1
-        for i in range(0,self.bufforiginal.size,self.stepsize) :
-            crosscorr, pvalue = scipy.stats.pearsonr(self.template, datapadded[i:i+self.template.size])
+
+        x1=[]
+        x2=[]
+
+        for i in range(0,self.bufforiginal.size-self.template.size, self.stepsize) :
+            crosscorr, pvalue = scipy.stats.pearsonr(self.template, self.bufforiginal[i:i+self.template.size])
 
             if checkflag==False :
                 if crosscorr>self.threshold :
                     checkflag=True
-                    x1=i
+                    x1.append(i)
             if checkflag==True :
                 if crosscorr<self.threshold :
                     checkflag = False
-                    x2=i
+                    x2.append(i)
 
-        for i in range(x1, x2) :
-            crosscorr, pvalue = scipy.stats.pearsonr(self.template, datapadded[i:i+self.template.size])
+        if len(x1)==0 :
+            startingpoint = 0
+        else :
+            startingpoint = min(x1)
+
+        if len(x2)==0 :
+            endpoint = self.bufforiginal.size - self.template.size
+        else :
+            endpoint = max(x2)
+
+        for i in range(startingpoint,endpoint) :
+            crosscorr, pvalue = scipy.stats.pearsonr(self.template, self.bufforiginal[i:i+self.template.size])
 
             if crosscorr>maxcorr :
                 maxcorr = crosscorr
@@ -82,13 +104,16 @@ class caps() :
         return maxindex
 
     def SearchingSimilarPoint(self):
-        self.MakingTemplate()
         self.FindingStepSize()
-        maxidx = list()
-        offset = (self.template.size/2) - 1;
-        for i in range(0,len(self.peakdata)-1) :
+
+        maxidx = []
+        offset = (self.template.size/2);
+
+        for i in range(1,len(self.peakdata)-2) :
+
             RtoR = self.peakdata[i+1]-self.peakdata[i]
             self.MakingOriginal(self.peakdata[i], RtoR)
-            maxidx.append(self.peakdata[i]-(RtoR/2)+self.MatchingTemplate()-offset)
+            maxidx.append(self.peakdata[i]-((RtoR+self.template.size)/2)+self.MatchingTemplate()+offset+self.offset)
+#            maxidx.append(self.peakdata[i]-((RtoR+self.tempsize)/2)+self.MatchingTemplate()-offset+self.offset)
 
         return maxidx

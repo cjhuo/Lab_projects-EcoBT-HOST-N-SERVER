@@ -62,11 +62,16 @@ $(function () {
         legend: {
         	enabled: false
         },
+        /*
         xAxis: {
             tickInterval: 1,
             pointInterval: 1
         },
+        */
         yAxis: {
+        	title: {
+        		text: ""
+        	},
             min: 0
         },
         /*
@@ -614,7 +619,7 @@ $(function () {
     
     /* 
      * draw histogram with bins
-     * format of bins json: {'data': [1-d array of value of each bins]}
+     * format of bins json: {'data': [[min, max, value],[min,max,value],...]}
      */
     function onBinDataReceived(data) {
 		drawHistogram(data);
@@ -630,11 +635,18 @@ $(function () {
             padding: '2px'
         });
     	histogram.appendTo("body");
-    	
+    	hOptions.xAxis = {};
+    	hOptions.xAxis.categories = [];
     	hOptions.series = [];
+    	var tmpData = [];
+    	$.each(data.data, function(key, val) {
+    		hOptions.xAxis.categories.push((val[0] + '~' + val[1]).toString());
+    		tmpData.push(val[2]);
+    	});
+
     	hOptions.series.push({
     		//name: label,
-            data: data.data,
+            data: tmpData,
     	});
     	hPlot = new Highcharts.Chart(hOptions, function() {
     		hideSpinner();

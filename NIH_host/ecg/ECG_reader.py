@@ -29,7 +29,8 @@ def getBinInfo(qPoint, tPoint):
     result3 = Qtc.CalculateQtc(peakdata, result1, result2, 200)
 
     # Make histogram, result4 is bin values array for histogram
-    result4 = Histogram.Histogram(result3, 3) 
+    histo = Histogram.histo(result3,3)
+    result4 = histo.Histogram(result3, 3)
     
     return result4
     #print(result4)
@@ -101,8 +102,8 @@ def main() :
     result3 = Qtc.CalculateQtc(peakdata, result1, result2, 200)
 
     # Make histogram
-    result4 = Histogram.Histogram(result3, 3)
-
+    histo = Histogram.histo(result3,3)
+    result4 = histo.Histogram(result3, 3)
     print(result4)
     '''
     figure()
