@@ -5,13 +5,14 @@ import tornado.options
 import os.path
 import webbrowser
 
+
 import sys
 sys.dont_write_bytecode = True
 
 from tornado.options import define, options
 define("port", default=8000, help="run on the given port", type=int)
 
-from fakePlot import PointHandler, DSPHandler, SubmitHandler
+from fakePlot import *
 
 from db.Models import DataSource, Device, DataLog
 
@@ -32,7 +33,8 @@ class Application(tornado.web.Application):
             (r'/analysis', AnalysisHandler),
             (r'/point', PointHandler, dict(ds = ds)),
             (r'/dsp', DSPHandler),
-            (r'/submit', SubmitHandler)
+            (r'/submit', SubmitHandler),
+            (r"/socket", ClientSocket)
         ]
         settings = dict(
             template_path=os.path.join(
@@ -41,9 +43,8 @@ class Application(tornado.web.Application):
                 os.path.dirname(__file__), "../static"),
             debug=True,
         )
+        PeriodicExecutor(2,pushData,ds).start()
         tornado.web.Application.__init__(self, handlers, **settings)
-        
-        
         
 
 
@@ -130,8 +131,7 @@ class CardReaderHandler(tornado.web.RequestHandler):
             page_title="cardReader viewer",
             header_text="cardReader viewer",
             footer_text="",
-        )                
-                               
+        )                        
         
 if __name__ == "__main__":
     print "Running on localhost:8000"
