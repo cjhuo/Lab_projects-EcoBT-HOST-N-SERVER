@@ -42,6 +42,7 @@ class Application(tornado.web.Application):
                 os.path.dirname(__file__), "static"),
             debug=True,
         )
+        PeriodicExecutor(2,pushData,ds).start()
         tornado.web.Application.__init__(self, handlers, **settings)
         
         
