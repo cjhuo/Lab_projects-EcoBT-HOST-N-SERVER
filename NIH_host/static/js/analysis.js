@@ -640,7 +640,7 @@ $(function () {
     	hOptions.series = [];
     	var tmpData = [];
     	$.each(data.data, function(key, val) {
-    		hOptions.xAxis.categories.push((val[0] + '~' + val[1]).toString());
+    		hOptions.xAxis.categories.push((val[0].toFixed(3) + '~' + val[1].toFixed(3)).toString());
     		tmpData.push(val[2]);
     	});
 
