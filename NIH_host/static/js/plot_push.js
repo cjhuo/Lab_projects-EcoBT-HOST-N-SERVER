@@ -7,7 +7,7 @@
 $(function () {
 	var data = [], total_points = 300;
 	
-	var url = "ws://cps.eng.uci.edu:8000/socket"; //push url
+	var url = "ws://localhost:8000/socket"; //push url
 
 	function initData(){
 		for (var i = 0; i < total_points; i++){

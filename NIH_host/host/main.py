@@ -34,7 +34,7 @@ class Application(tornado.web.Application):
             (r'/point', PointHandler, dict(ds = ds)),
             (r'/dsp', DSPHandler),
             (r'/submit', SubmitHandler),
-            (r"/socket", ClientSocket)
+            (r"/socket", ClientSocket, dict(ds = ds))
         ]
         settings = dict(
             template_path=os.path.join(
@@ -43,7 +43,6 @@ class Application(tornado.web.Application):
                 os.path.dirname(__file__), "../static"),
             debug=True,
         )
-        PeriodicExecutor(2,pushData,ds).start()
         tornado.web.Application.__init__(self, handlers, **settings)
         
 

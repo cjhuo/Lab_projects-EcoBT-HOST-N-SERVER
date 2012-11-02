@@ -1,25 +1,14 @@
 import tornado.web
 from tornado import websocket
 
-import threading
-import time
 import random
 import json
 
-from db.Models import DataSource, Device, DataLog
-
-from datetime import datetime
-
-from sqlalchemy.sql import desc
+from fakeDataGenerator import FakeDataGenerator
+from fakePush import FakePush
 
 import ecg.ECG_reader
 
-#fake the labels for each channels for demo purpose, 
-#eventually label information should be passed from ecg module
-ECG_CHANNELLABELS = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6']
-GLOBALS = {
-    'sockets': []
-}     
 
 class SensorPlot(tornado.web.UIModule):
     def render(self):
@@ -31,7 +20,7 @@ class PointHandler(tornado.web.RequestHandler):
         
     def get(self):
         #self.db_test()
-        val = db_insert(self.ds)
+        val = FakeDataGenerator(self.ds).db_insert()
         self.write(val)
 
 class SubmitHandler(tornado.web.RequestHandler):
@@ -45,6 +34,11 @@ class SubmitHandler(tornado.web.RequestHandler):
         print bins
         self.write({'data': bins}) #format of bins json: {'data': bins info}
         
+        
+#fake the labels for each channels for demo purpose, 
+#eventually label information should be passed from ecg module
+ECG_CHANNELLABELS = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6']
+
 class DSPHandler(tornado.web.RequestHandler):
     def get(self):        
         #val = self.fakeData()  #should be replaced by ecg dsp data generation module
@@ -103,60 +97,16 @@ class DSPHandler(tornado.web.RequestHandler):
         
         
 class ClientSocket(websocket.WebSocketHandler):
+    def initialize(self, ds):
+        self.ds = ds
+        
     def open(self):
-        GLOBALS['sockets'].append(self)
+        FakePush(self.ds).getGlobalSockets().append(self)
         print "WebSocket opened"
 
     def on_close(self):
-        GLOBALS['sockets'].remove(self)
+        FakePush(self.ds).getGlobalSockets().remove(self)
         print "WebSocket closed"
-        
-class PeriodicExecutor(threading.Thread):
-    def __init__(self,sleep,func,params):
-        """ execute func(params) every 'sleep' seconds """
-        self.func = func
-        self.params = params
-        self.sleep = sleep
-        threading.Thread.__init__(self,name = "PeriodicExecutor")
-        self.setDaemon(1)
-    def run(self):
-        while 1:
-            time.sleep(self.sleep)
-            self.func(self.params)
-     
-def db_insert(ds):
-    session = ds.getSession()
-    
-    val = {'point': random.randint(-100, 130)}
-    dataLog = DataLog('1', datetime.now(), val)
-    session.add(dataLog)
-    session.commit()
-    dl = session.query(DataLog).filter(DataLog.dId == '1').order_by(desc(DataLog.timestamp)).first()
-    val = dl.data
-    session.close()
-    print val
-    return val      
-        
-def db_test(ds):
-    if ds.hasEngine():
-        print 'DB engine is on, data file for storage is %s' % ds.getDBPATH().split('sqlite:')[1].strip('/')
-    session = ds.getSession()
-    device = Device('test', 'testDecrip')
-    session.add(device)
-    session.commit()
-    
-    dataLog = DataLog(device.id, datetime.now(), 'testData')
-    session.add(dataLog)
-    session.commit()
-    dl = session.query(DataLog).filter(DataLog.dId == device.id).order_by(desc(DataLog.timestamp)).one()
-    print dl.timestamp, dl.data
-    session.close()
-        
-def pushData(ds):
-    if len(GLOBALS['sockets']) != 0:
-        val = db_insert(ds)
-        for socket in GLOBALS['sockets']:
-            socket.write_message(val)
 
 if __name__ == "__main__":
     DSPHandler().getDataFromDicomFile()

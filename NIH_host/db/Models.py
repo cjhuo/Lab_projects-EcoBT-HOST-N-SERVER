@@ -7,18 +7,12 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 
 import hashlib
 from DataSource import *
+from misc.Singleton import Singleton
 
 Base = declarative_base()
 
 
-class DataSource():
-    #to acchieve singleton of datasource
-    _instance = None
-    def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            cls._instance = super(DataSource, cls).__new__(
-                                cls, *args, **kwargs)
-        return cls._instance
+class DataSource(Singleton):    #to acchieve singleton of datasource
     
     def __init__(self, engine=None):
         if engine is None:

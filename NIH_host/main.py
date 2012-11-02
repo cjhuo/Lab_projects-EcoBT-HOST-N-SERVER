@@ -33,7 +33,7 @@ class Application(tornado.web.Application):
             (r'/point', PointHandler, dict(ds = ds)),
             (r'/dsp', DSPHandler),
             (r'/submit', SubmitHandler),
-            (r"/socket", ClientSocket)
+            (r"/socket", ClientSocket, dict(ds = ds))
         ]
         settings = dict(
             template_path=os.path.join(
@@ -42,11 +42,8 @@ class Application(tornado.web.Application):
                 os.path.dirname(__file__), "static"),
             debug=True,
         )
-        PeriodicExecutor(2,pushData,ds).start()
+
         tornado.web.Application.__init__(self, handlers, **settings)
-        
-        
-        
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -134,11 +131,13 @@ class CardReaderHandler(tornado.web.RequestHandler):
                                
         
 if __name__ == "__main__":
+    
     logFile = open('log.txt','w+', 0)
     stdOut = sys.stdout
     stdErr = sys.stderr
     sys.stdout = logFile
     sys.stderr = logFile
+    
     print "Running on localhost:8000"
     tornado.options.parse_command_line()
     http_server = tornado.httpserver.HTTPServer(Application())
@@ -150,5 +149,7 @@ if __name__ == "__main__":
     #start web server
     tornado.ioloop.IOLoop.instance().start()
     
+    
     sys.stdout = stdOut
     sys.stderr = stdErr
+    
