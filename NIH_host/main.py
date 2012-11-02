@@ -132,7 +132,7 @@ class CardReaderHandler(tornado.web.RequestHandler):
         
 if __name__ == "__main__":
     
-    logFile = open('log.txt','w+', 0)
+    logFile = open('log.txt','a+', 0)
     stdOut = sys.stdout
     stdErr = sys.stderr
     sys.stdout = logFile
