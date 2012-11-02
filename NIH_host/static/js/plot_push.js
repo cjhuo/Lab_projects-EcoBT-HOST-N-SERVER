@@ -7,8 +7,12 @@
 $(function () {
 	var data = [], total_points = 300;
 	
-	var url = "ws://cps.eng.uci.edu:8000/socket"; //push url
-
+	var url = "ws://localhost:8000/socket"; //push url, need to change this to server's url, 
+											//such as cps.eng.uci.edu:8000/socket
+	var socket = null; //websocket object
+	
+	var reconMsg = null; //reconnect div object
+	
 	function initData(){
 		for (var i = 0; i < total_points; i++){
 			data.push(0);
@@ -74,15 +78,49 @@ $(function () {
 		}
 		return [ymin, ymax];
 	}
-
-	function update(){
-	    var ws = new WebSocket(url);
-	    ws.onmessage = function(event) {
+	
+	function establishConnection() {
+	    socket = new WebSocket(url);
+	    socket.onmessage = function(event) {
 	    	onDataReceived($.parseJSON(event.data));
 	    	plot.setData([ dataToRes() ]);
 			plot.setupGrid();
 			plot.draw();
 	    };
+	}
+
+	function showReconMsg() {
+		if(reconMsg == null) {
+			reconMsg = $('<div id="reconnect" >websocket connection is lost, reconnecting...</div>').css( {
+		        position: 'relative',
+		        width: '100%',
+		        //height: '50px',
+		        margin: 'auto'
+			});
+			reconMsg.appendTo("body");
+		}
+	}
+	
+	function hideReconMsg() {
+		if(reconMsg != null){
+			reconMsg.remove();
+			reconMsg = null;
+		}
+	}
+	function update(){
+		establishConnection();
+		alert(socket.readyState);		
+		
+	    setInterval(function() {//check if connection is lost
+			if(socket.readyState == 2 || socket.readyState == 3){ //connection is closed or closing
+				showReconMsg();
+				establishConnection(socket);
+			}
+			else{
+				hideReconMsg();
+			}			
+	    }, 2000);
+	    
 	    /*
 		$.ajax({
 			url: dataurl,
@@ -94,12 +132,14 @@ $(function () {
 
 		plot.setData([ dataToRes() ]);
 		*/
-		/*range = yaxisRange();
+		/*
+		range = yaxisRange();
 		var opts = plot.getOptions();
 		for (var i = 0; i< opts.yaxes.length; i++){
 			opts.yaxes[i].min = range[0];
 			opts.yaxes[i].max = range[1];
-		}*/
+		}
+		*/
 	    /*
 		plot.setupGrid();
 		plot.draw();
