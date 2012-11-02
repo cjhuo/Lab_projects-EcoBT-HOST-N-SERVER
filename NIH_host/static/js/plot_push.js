@@ -108,8 +108,7 @@ $(function () {
 		}
 	}
 	function update(){
-		establishConnection();
-		alert(socket.readyState);		
+		establishConnection();	
 		
 	    setInterval(function() {//check if connection is lost
 			if(socket.readyState == 2 || socket.readyState == 3){ //connection is closed or closing
