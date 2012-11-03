@@ -80,6 +80,10 @@ $(function () {
 	}
 	
 	function establishConnection() {
+		if(socket != null){
+			socket.close();
+			socket = null;
+		}
 	    socket = new WebSocket(url);
 	    socket.onmessage = function(event) {
 	    	onDataReceived($.parseJSON(event.data));
