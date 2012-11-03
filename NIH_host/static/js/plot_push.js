@@ -89,9 +89,9 @@ $(function () {
 	    };
 	}
 
-	function showReconMsg() {
+	function showReconMsg(msg) {
 		if(reconMsg == null) {
-			reconMsg = $('<div id="reconnect" >websocket connection is lost, reconnecting...</div>').css( {
+			reconMsg = $('<div id="reconnect" >' + msg + '</div>').css( {
 		        position: 'relative',
 		        width: '100%',
 		        //height: '50px',
@@ -108,17 +108,23 @@ $(function () {
 		}
 	}
 	function update(){
-		establishConnection();	
-		
-	    setInterval(function() {//check if connection is lost
-			if(socket.readyState == 2 || socket.readyState == 3){ //connection is closed or closing
-				showReconMsg();
-				establishConnection(socket);
-			}
-			else{
-				hideReconMsg();
-			}			
-	    }, 2000);
+		if (navigator.onLine) { //navigator.onLine supports limited browser, see https://developer.mozilla.org/en-US/docs/DOM/window.navigator.onLine
+			establishConnection();	
+			/*
+		    setInterval(function() {//check if connection is lost
+				if(socket.readyState == 2 || socket.readyState == 3){ //connection is closed or closing
+					showReconMsg();
+					establishConnection(socket);
+				}
+				else{
+					hideReconMsg();
+				}			
+		    }, 2000);
+		    */
+		}
+		else {
+			showReconMsg('brower is offline, check wifi...');
+		}
 	    
 	    /*
 		$.ajax({
@@ -146,7 +152,22 @@ $(function () {
 		timeVar = setTimeout(update, updateInterval);
 		*/
 	}
-
-	generatePlot();
-	update();
+	
+	$(window).bind('load', function(e) {
+		generatePlot();
+		update();
+	});
+	
+	$(window).bind('online', function(e) {
+		hideReconMsg();
+		showReconMsg('connection is back, connecting server...');
+		establishConnection();
+		hideReconMsg();
+		
+	});
+	
+	$(window).bind('offline', function(e) {
+		hideReconMsg();
+		showReconMsg('connection lost...')
+	});
 });
