@@ -107,17 +107,18 @@ $(function () {
 	    };
 	    
 	    socket.onclose = function(event) {
-	    	alert(socket.readyState);
+	    	//alert(socket.readyState);
 		    //var t = setInterval(function() {//check if connection is lost, for the case when server is down
 				//if(socket.readyState == 2 || socket.readyState == 3){ //connection is closed or closing
 			
 	    	/**
-			 * try to reconnect when connection is closed and if reconnection has been 
+			 * try to reconnect when connection is closed or closing. If reconnection has been 
 			 * issued by other functions such as 'online' event handler then skip to prevent
-			 * duplication of socket
+			 * duplication of socket. 'closing' connection will eventually be timed out and garbage collected,
+			 * so no worry of duplicated connection
 			 * 
 			 * */
-	    	if(socket.readyState == 3){ //
+	    	if(socket.readyState == 2 || socket.readyState == 3){
 				hideReconMsg();
 				showReconMsg('connection reset by server, reconnecting in 5 secs...');
 				if(reconn == null){
@@ -128,6 +129,11 @@ $(function () {
 						//alert('Network is back, readyState is: ' + socket.readyState);
 					}, 5000);
 				}
+				/*
+				else {
+					alert('reconnect issued!');
+				}
+				*/
 			}
 			/*
 			else if(socket.readyState == 1) {
@@ -172,9 +178,11 @@ $(function () {
 		update();
 	});
 	
-	$(window).bind('online', function(e) {		
+	$(window).bind('online', function(e) {
+		/*
 		if(socket != null)
 			alert('Network is back, readyState is: ' + socket.readyState);
+		*/
 		/*
 		if(socket != null){
 			socket.close();
@@ -185,12 +193,10 @@ $(function () {
 		showReconMsg('connection is back, connecting server in 5 secs...');
 		if(reconn == null) {
 			reconn = setTimeout(function() {
-				if(socket.readyState == 3){
-					establishConnection();
-					//alert('Network is back, readyState is: ' + socket.readyState);
-					hideReconMsg();
-					reconn = null;
-				}
+				establishConnection();
+				//alert('Network is back, readyState is: ' + socket.readyState);
+				hideReconMsg();
+				reconn = null;
 			}, 5000);
 		}
 	});
