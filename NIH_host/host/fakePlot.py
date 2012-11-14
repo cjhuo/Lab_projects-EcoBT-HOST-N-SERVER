@@ -123,7 +123,7 @@ class ClientSocket(websocket.WebSocketHandler):
         print "WebSocket closed"
 
 if __name__ == "__main__":
-    DSPHandler().getDataFromDicomFile()
+    print DSPHandler().getDataFromDicomFile()
        
         
         
