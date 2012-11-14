@@ -11,7 +11,7 @@ import Histogram
 
 class ECG_reader():
     def __init__(self):
-        self.file = "Uploads/test.dcm"
+        self.file = "Uploads/39DA47B7.dcm"
         self.samplingrate = None
         self.name = None
         self.NumofsamplesPerChannel = None
@@ -37,7 +37,7 @@ class ECG_reader():
         return wavech
     
     def getTestData(self):
-        wavech = parseDicomFile()
+        wavech = self.parseDicomFile()
         info = {'samplingrate':self.samplingrate,'name':self.name}
         ecg = ECG.Ecg(wavech,info)
         peakdata = ecg.qrsDetect(0)
@@ -47,7 +47,7 @@ class ECG_reader():
         return (wavech, peaks)  
 
     def getBinInfo(self,qPoint, tPoint):
-        wavech = parseDicomFile()
+        wavech = self.parseDicomFile()
         info = {'samplingrate':self.samplingrate,'name':self.name}
         ecg = ECG.Ecg(wavech,info)
         peakdata = ecg.qrsDetect(0)
@@ -65,8 +65,8 @@ class ECG_reader():
         result3 = Qtc.CalculateQtc(peakdata, result1, result2, 200)
     
         # Make histogram, result4 is bin values array for histogram
-        histo = Histogram.histo(result3,10)
-        result4 = histo.Histogram(result3, 10)
+        histo = Histogram.histo(result3,3)
+        result4 = histo.Histogram(result3, 3)
         
         return result4
 
