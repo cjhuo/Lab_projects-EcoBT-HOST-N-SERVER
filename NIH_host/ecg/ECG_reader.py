@@ -11,11 +11,13 @@ import Histogram
 
 class ECG_reader():
     def __init__(self):
-        self.file = "Uploads/39DA47B7.dcm"
+        self.file = "Uploads/test.dcm"
         self.samplingrate = None
         self.name = None
         self.NumofsamplesPerChannel = None
         self.NumofChannels = None
+        self.parseDicomFile()
+        
         
     def parseDicomFile(self):
         ds = dicom.read_file(self.file)
@@ -28,45 +30,49 @@ class ECG_reader():
         fmt="<"+str(self.NumofsamplesPerChannel*self.NumofChannels)+"h"
         wavedata = list(struct.unpack(fmt,ds.WaveformSequence[0].WaveformData))
     
-        wavech = [
+        self.wavech = [
                     [
                         elem for index, elem in enumerate( wavedata ) if index % self.NumofChannels == channel_number
                     ] for channel_number in range( self.NumofChannels )
                 ]    
-        print 'there is ', len(wavech), ' channels in the test dicom'
-        return wavech
+        print 'there is ', len(self.wavech), ' channels in the test dicom'
+        print 'samples of each channel: ', self.NumofsamplesPerChannel
+        print 'sampling rate is: ', self.samplingrate
+        
+        info = {'samplingrate':self.samplingrate,'name':self.name}
+        ecg = ECG.Ecg(self.wavech,info)
+        self.peakdata = ecg.qrsDetect(0)
+    
+        
     
     def getTestData(self):
-        wavech = self.parseDicomFile()
-        info = {'samplingrate':self.samplingrate,'name':self.name}
-        ecg = ECG.Ecg(wavech,info)
-        peakdata = ecg.qrsDetect(0)
-    
-        peaks = peakdata.tolist()
-        
-        return (wavech, peaks)  
+        #get only first 2400 samples for each channels
+        if self.NumofsamplesPerChannel > 2400:
+            wavedata = [
+                        [
+                            self.wavech[channel_number][i] for i in range(2400)
+                        ] for channel_number in range( self.NumofChannels )
+                    ]    
+        peaks = self.peakdata.tolist()
+        return (wavedata, peaks)
 
     def getBinInfo(self,qPoint, tPoint):
-        wavech = self.parseDicomFile()
-        info = {'samplingrate':self.samplingrate,'name':self.name}
-        ecg = ECG.Ecg(wavech,info)
-        peakdata = ecg.qrsDetect(0)
     
-        aa = CAPS.caps(wavech[0], qPoint, peakdata)
+        aa = CAPS.caps(self.wavech[0], qPoint, self.peakdata)
         # result1 is the list of similar points of manually selected Q point
         result1 = aa.SearchingSimilarPoint()
     
         # Searching similar point from manually selected T point
-        aa = CAPS.caps(wavech[0], tPoint, peakdata)
+        aa = CAPS.caps(self.wavech[0], tPoint, self.peakdata)
         # result2 is the list of similar points of manually selected T point
         result2 = aa.SearchingSimilarPoint()
     
         # Calculate the Qtc value, 200 is sampling rate
-        result3 = Qtc.CalculateQtc(peakdata, result1, result2, 200)
+        result3 = Qtc.CalculateQtc(self.peakdata, result1, result2, 200)
     
         # Make histogram, result4 is bin values array for histogram
-        histo = Histogram.histo(result3,3)
-        result4 = histo.Histogram(result3, 3)
+        histo = Histogram.histo(result3, 10)
+        result4 = histo.Histogram(result3, 10)
         
         return result4
 
