@@ -40,13 +40,27 @@ class SubmitHandler(tornado.web.RequestHandler):
 ECG_CHANNELLABELS = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6']
 
 class DSPHandler(tornado.web.RequestHandler):
+    def initialize(self):
+        self.ecg = ecg.ECG_reader.ECG_reader()
+        
     def get(self):        
         #val = self.fakeData()  #should be replaced by ecg dsp data generation module
         val = self.getDataFromDicomFile()
         self.write(val)
         
+    def post(self): 
+        data = json.loads(self.get_argument("data"))
+        print data
+        
+        #format of getBinInfo(): [[min, max, value],[min,max,value],...]
+        bins = self.ecg.getBinInfo(data['qPoint'][0], data['tPoint'][0]);
+        
+        print bins
+        self.write({'data': bins}) #format of bins json: {'data': bins info}
+        
     def getDataFromDicomFile(self):
-        wavech, peaks = ecg.ECG_reader.getTestData()
+        #wavech, peaks = ecg.ECG_reader.getTestData()
+        wavech, peaks = self.ecg.getTestData()
         
         #create dataset dict to be sent to web server and fill in data
         datasets = []

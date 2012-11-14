@@ -16,7 +16,7 @@ $(function () {
 	
 	//ajax call urls
 	var dataurl = 'dsp'; 
-	var submitUrl = 'submit'; 
+	var submitUrl = 'dsp'; 
 	
 	var datasets; //store datasets
 	var peaks; //store indice of peak points for channels 
