@@ -12,17 +12,19 @@ import tornado.options
 import os.path
 import threading
 
-from EcoBTAgent import EcoBTAgent
+from EcoBTWorker import EcoBTWorker
+from EcoBTApp import EcoBTApp
 
 from tornado.options import define, options
 define("port", default=8001, help="run on the given port", type=int)
-agent = None
+worker = None
 
 class Application(tornado.web.Application):
     def __init__(self):
-
+        worker = EcoBTWorker()
+        worker.start()
         handlers = [
-            (r"/socket", EcoBTWebSocket, dict(agent = agent))
+            (r"/socket", EcoBTWebSocket, dict(worker = worker))
         ]
         settings = dict(
             debug=True
@@ -32,15 +34,15 @@ class Application(tornado.web.Application):
         print 'test'
         
 class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
-    def initialize(self, agent):
-        self.agent = agent                   
+    def initialize(self, worker):
+        self.worker = worker                   
         
     def open(self):
-        self.agent.getWorker().getGlobalSockets().append(self)
+        self.worker.getGlobalSockets().append(self)
         print "WebSocket opened"
 
     def on_close(self):
-        self.agent.getWorker().getGlobalSockets().remove(self)
+        self.worker.getGlobalSockets().remove(self)
         print "WebSocket closed"
         
 if __name__ == "__main__":
@@ -56,4 +58,4 @@ if __name__ == "__main__":
     t = threading.Thread(target = tornado.ioloop.IOLoop.instance().start)
     #t.daemon = True
     t.start()
-    agent = EcoBTAgent()
+    app = EcoBTApp(worker)

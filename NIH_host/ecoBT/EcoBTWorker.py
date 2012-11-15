@@ -5,20 +5,6 @@ Created on Nov 14, 2012
 '''
 import threading
 from Queue import Queue
-
-from EcoBTApp import EcoBTApp
-
-class EcoBTAgent():
-    def __init__(self):
-        #initialize worker
-        self.worker = EcoBTWorker()        
-        self.worker.start()
-        #initialize the BT receiver OSX app  
-        self.app = EcoBTApp(self.worker)
-        #self.app.start()
-             
-    def getWorker(self):
-        self.worker
         
 class EcoBTWorker(threading.Thread):
     def __init__(self):
