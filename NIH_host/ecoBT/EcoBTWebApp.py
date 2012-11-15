@@ -15,6 +15,8 @@ import threading
 from EcoBTWorker import EcoBTWorker
 from EcoBTApp import EcoBTApp
 
+import sys
+sys.dont_write_bytecode = True
 from tornado.options import define, options
 define("port", default=8001, help="run on the given port", type=int)
 
