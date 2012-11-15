@@ -1,0 +1,52 @@
+'''
+Created on Nov 14, 2012
+
+@author: cjhuo
+'''
+
+import tornado.web
+import tornado.websocket
+import tornado.httpserver
+import tornado.ioloop
+import tornado.options
+import os.path
+
+from EcoBTAgent import EcoBTAgent
+
+from tornado.options import define, options
+define("port", default=8001, help="run on the given port", type=int)
+
+class Application(tornado.web.Application):
+    def __init__(self):
+        agent = EcoBTAgent()
+        handlers = [
+            (r"/socket", EcoBTWebSocket, dict(agent = agent))
+        ]
+        settings = dict(
+            debug=True
+        )
+        tornado.web.Application.__init__(self, handlers, **settings)
+        
+class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
+    def initialize(self, agent):
+        self.agent = agent                   
+        
+    def open(self):
+        self.agent.getWorker().getGlobalSockets().append(self)
+        print "WebSocket opened"
+
+    def on_close(self):
+        self.agent.getWorker().getGlobalSockets().remove(self)
+        print "WebSocket closed"
+        
+if __name__ == "__main__":
+    print "Running on localhost:8001"
+    tornado.options.parse_command_line()
+    http_server = tornado.httpserver.HTTPServer(Application())
+    http_server.listen(options.port)
+    
+    #open a browser for the web interface
+    #webbrowser.open_new('http://localhost:8000/')
+    
+    #start web server
+    tornado.ioloop.IOLoop.instance().start()

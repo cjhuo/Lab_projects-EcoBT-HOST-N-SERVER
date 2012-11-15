@@ -64,7 +64,22 @@ class DataLog(Base):
         self.dId = dId
         self.timestamp = timestamp
         self.data = data
-       
+
+class AccLog(Base):
+    __tablename__ = 'ecobtlog'
+    id = Column(Integer, primary_key=True)
+    dId = Column(Integer, nullable=True)
+    timestamp = Column(DateTime, nullable=False)
+    x = Column(Integer, nullable=True)
+    y = Column(Integer, nullable=True)
+    z = Column(Integer, nullable=True)
+    
+    def __init__(self, dId, timestamp, x, y, z):
+        self.dId = dId
+        self.timestamp = timestamp
+        self.x = x
+        self.y = y
+        self.z = z            
             
             
 from datetime import datetime            

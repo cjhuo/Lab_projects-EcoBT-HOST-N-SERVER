@@ -11,25 +11,15 @@ import array
 import binascii
 import struct
 
-workspace = None
-thisAppName = ""
 
-
-class AppDelegate(NSObject):
-    global thisAppName, workspace
-    ble_manager = None
-
-    def applicationDidFinishLaunching_(self, notification):
-        NSEvent.addGlobalMonitorForEventsMatchingMask_handler_(NSKeyDownMask,
-                                                               handler)
-#        thisAppName = workspace.activeApplication()['NSApplicationName']
-        NSLog("Application Load Complete!!")
-        NSLog("Load IOBluetooth Delegate")
-        self.ble_manager = EcoBTDelegate.alloc().init()
-
-    def applicationWillTerminate_(self, notification):
-        NSLog("Application is terminating")
-
+class EcoBTApp():
+    def __init__(self, worker):
+        self.pool = NSAutoreleasePool.alloc().init()
+        self.delegate = EcoBTDelegate.alloc().init()
+        self.delegate.setWorker(worker)
+        self.runLoop = NSRunLoop.currentRunLoop()
+        self.runLoop.run()
+        self.pool.release()
 
 class EcoBTDelegate(NSObject):
     def init(self):
@@ -159,14 +149,28 @@ class EcoBTDelegate(NSObject):
             peripheral.writeValue_forCharacteristic_type_(
                 val_data, characteristic,
                 CBCharacteristicWriteWithResponse)
+        # FFA3: x, FFA4: y, FFA5: z
         if characteristic._.UUID == CBUUID.UUIDWithString_("FFA3") or\
            characteristic._.UUID == CBUUID.UUIDWithString_("FFA4") or\
-           characteristic._.UUID == CBUUID.UUIDWithString_("FFA5"):
+           characteristic._.UUID == CBUUID.UUIDWithString_("FFA5"):     
             hex_str = binascii.hexlify(characteristic._.value)
-            print characteristic._.UUID, hex_str, int(hex_str, base=16)
-            # call sentData here
+            print characteristic._.UUID, hex_str, int(hex_str, base=16)            
+            
+            # put data into queue
+            if characteristic._.UUID == CBUUID.UUIDWithString_("FFA3"):
+                data = ('x', int(hex_str, base=16))                
+                self.worker.getQueue().put(data)
+            elif characteristic._.UUID == CBUUID.UUIDWithString_("FFA4"):
+                data = ('y', int(hex_str, base=16))                
+                self.worker.getQueue().put(data)
+            elif characteristic._.UUID == CBUUID.UUIDWithString_("FFA5"):    
+                data = ('z', int(hex_str, base=16))                
+                self.worker.getQueue().put(data)
 
-
+    def setWorker(self, worker):
+        self.worker = worker
+        self.worker.getQueue().put('This is a test')
+    
     def peripheral_didWriteValueForCharacteristic_error_(self,
                                                          peripheral,
                                                          characteristic,
@@ -180,31 +184,9 @@ class EcoBTDelegate(NSObject):
         print "char(" + str(characteristic._.UUID) + ") is auto-notify? " + str(characteristic.isNotifying())
 
 
-def handler(event):
-    try:
-        processEvent = False
-        activeApps = workspace.runningApplications()
-        currentAppName = workspace.activeApplication()['NSApplicationName']
-        print currentAppName
-
-        if event.type() in (NSKeyDown, NSKeyUp):
-            flags = event.modifierFlags()
-            ctrl_pressed = False
-            if (flags & NSControlKeyMask):
-                ctrl_pressed = True
-            if ctrl_pressed and (event.keyCode() == 8):
-                print "Application Aborting ..."
-                AppHelper.stopEventLoop()
-            print event.characters(), type(event.characters())
-    except:
-        AppHelper.stopEventLoop()
-
-def test():
-    print '???'
-
 def main():
     # app = NSApplication.sharedApplication()
-    global pool, delegate, s
+    #global pool, delegate, s
 
     pool = NSAutoreleasePool.alloc().init()
     delegate = EcoBTDelegate.alloc().init()
@@ -220,7 +202,11 @@ def main():
     # NSApp().setDelegate_(delegate)
     # globals()['workspace'] = NSWorkspace.sharedWorkspace()
     # AppHelper.runEventLoop()
-
     pool.release()
+    
 if __name__ == '__main__':
-    main()
+    #main()
+    worker = 'test'
+    EcoBTApp(worker)
+
+    
