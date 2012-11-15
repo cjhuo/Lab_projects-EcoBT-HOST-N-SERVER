@@ -10,15 +10,17 @@ import tornado.httpserver
 import tornado.ioloop
 import tornado.options
 import os.path
+import threading
 
 from EcoBTAgent import EcoBTAgent
 
 from tornado.options import define, options
 define("port", default=8001, help="run on the given port", type=int)
+agent = None
 
 class Application(tornado.web.Application):
     def __init__(self):
-        agent = EcoBTAgent()
+
         handlers = [
             (r"/socket", EcoBTWebSocket, dict(agent = agent))
         ]
@@ -26,6 +28,8 @@ class Application(tornado.web.Application):
             debug=True
         )
         tornado.web.Application.__init__(self, handlers, **settings)
+        
+        print 'test'
         
 class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
     def initialize(self, agent):
@@ -49,4 +53,7 @@ if __name__ == "__main__":
     #webbrowser.open_new('http://localhost:8000/')
     
     #start web server
-    tornado.ioloop.IOLoop.instance().start()
+    t = threading.Thread(target = tornado.ioloop.IOLoop.instance().start)
+    #t.daemon = True
+    t.start()
+    agent = EcoBTAgent()

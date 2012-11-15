@@ -13,18 +13,18 @@ import struct
 import threading
 
 
-class EcoBTApp(threading.Thread):
+class EcoBTApp():
+
     def __init__(self, worker):
-        threading.Thread.__init__(self)
         self.worker = worker
-        
-    def run(self):
         self.pool = NSAutoreleasePool.alloc().init()
         self.delegate = EcoBTDelegate.alloc().init()
         self.delegate.setWorker(self.worker)
         self.runLoop = NSRunLoop.currentRunLoop()
         self.runLoop.run()
         self.pool.release()
+        
+        
 
 class EcoBTDelegate(NSObject):
     def init(self):
