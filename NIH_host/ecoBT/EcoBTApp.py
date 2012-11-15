@@ -171,9 +171,11 @@ class EcoBTDelegate(NSObject):
             elif characteristic._.UUID == CBUUID.UUIDWithString_("FFA5"):    
                 data = ('z', int(hex_str, base=16))                
                 self.worker.getQueue().put(data)
-
+    #def setData(self, data):
+    
     def setWorker(self, worker):
         self.worker = worker
+        print worker
         #self.worker.getQueue().put('This is a test')
     
     def peripheral_didWriteValueForCharacteristic_error_(self,

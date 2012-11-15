@@ -17,10 +17,11 @@ from EcoBTApp import EcoBTApp
 
 from tornado.options import define, options
 define("port", default=8001, help="run on the given port", type=int)
-global worker
+
 
 class Application(tornado.web.Application):
     def __init__(self):
+        global worker
         worker = EcoBTWorker()
         worker.start()
         handlers = [
@@ -31,7 +32,6 @@ class Application(tornado.web.Application):
         )
         tornado.web.Application.__init__(self, handlers, **settings)
         
-        print 'test'
         
 class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
     def initialize(self, worker):
