@@ -169,7 +169,7 @@ class EcoBTDelegate(NSObject):
 
     def setWorker(self, worker):
         self.worker = worker
-        self.worker.getQueue().put('This is a test')
+        #self.worker.getQueue().put('This is a test')
     
     def peripheral_didWriteValueForCharacteristic_error_(self,
                                                          peripheral,
