@@ -14,9 +14,9 @@ import threading
 
 
 class EcoBTApp(threading.Thread):
-
+    '''
     #def __init__(self, worker):
-        '''
+        
         self.worker = worker
         self.pool = NSAutoreleasePool.alloc().init()
         self.delegate = EcoBTDelegate.alloc().init()
@@ -24,8 +24,7 @@ class EcoBTApp(threading.Thread):
         self.runLoop = NSRunLoop.currentRunLoop()
         self.runLoop.run()
         self.pool.release()
-        '''
-
+    '''
     def run(self):
         threading.Thread.__init__(self)
         self.worke = worker
