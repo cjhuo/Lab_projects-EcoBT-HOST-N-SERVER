@@ -48,13 +48,13 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
         print "WebSocket closed"
         
 if __name__ == "__main__":
-    '''
+    
     logFile = open('EcoBTlog.txt','a+', 0)
     stdOut = sys.stdout
     stdErr = sys.stderr
     sys.stdout = logFile
     sys.stderr = logFile
-    '''
+    
     print "Running on localhost:8001"
     tornado.options.parse_command_line()
     http_server = tornado.httpserver.HTTPServer(Application())
@@ -62,14 +62,13 @@ if __name__ == "__main__":
     
     #open a browser for the web interface
     #webbrowser.open_new('http://localhost:8000/')
-    app = EcoBTApp(worker)
-    app.start()
     
     #start web server
-    tornado.ioloop.IOLoop.instance().start()
-
-
-    '''    
+    t = threading.Thread(target = tornado.ioloop.IOLoop.instance().start)
+    #t.daemon = True
+    t.start()
+    app = EcoBTApp(worker)
+    
+        
     sys.stdout = stdOut
     sys.stderr = stdErr
-    '''
