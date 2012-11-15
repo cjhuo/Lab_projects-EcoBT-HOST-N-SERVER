@@ -46,7 +46,7 @@ $(function () {
 		container.appendChild( info );
 
 		camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 1000 );
-		camera.position.y = 150;
+		camera.position.y = 0;
 		camera.position.z = 500;
 
 		scene = new THREE.Scene();
@@ -62,8 +62,8 @@ $(function () {
 		}
 
 		cube = new THREE.Mesh( new THREE.CubeGeometry( 200, 50, 100, 1, 1, 1, materials ), new THREE.MeshFaceMaterial() );
-		cube.position.y = 150;
-		cube.rotation.y = 0.1;
+		cube.position.y = 0;//150;
+		cube.rotation.y = 0;//0.1;
 		//scene.add( cube );
 		
 		// Get text from hash
@@ -94,7 +94,7 @@ $(function () {
 		text = new THREE.Mesh( text3d, textMaterial );
 
 		text.position.x = centerOffset;
-		text.position.y = 200;
+		text.position.y = 50;
 		text.position.z = 0;
 
 		text.rotation.x = 0.1;
