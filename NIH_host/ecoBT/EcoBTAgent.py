@@ -15,6 +15,7 @@ class EcoBTAgent():
         self.worker.start()
         #initialize the BT receiver OSX app  
         self.app = EcoBTApp(self.worker)
+        self.app.start()
              
     def getWorker(self):
         self.worker

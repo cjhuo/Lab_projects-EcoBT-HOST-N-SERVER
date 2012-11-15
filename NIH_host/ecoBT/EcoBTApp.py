@@ -10,13 +10,18 @@ from objc import *
 import array
 import binascii
 import struct
+import threading
 
 
-class EcoBTApp():
+class EcoBTApp(threading.Thread):
     def __init__(self, worker):
+        threading.Thread.__init__(self)
+        self.worker = worker
+        
+    def run(self):
         self.pool = NSAutoreleasePool.alloc().init()
         self.delegate = EcoBTDelegate.alloc().init()
-        self.delegate.setWorker(worker)
+        self.delegate.setWorker(self.worker)
         self.runLoop = NSRunLoop.currentRunLoop()
         self.runLoop.run()
         self.pool.release()
