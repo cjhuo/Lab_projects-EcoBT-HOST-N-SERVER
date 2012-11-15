@@ -23,7 +23,7 @@ class EcoBTWorker(threading.Thread):
             for socket in self._global_sockets:
                 socket.write_message(data) 
         
-    def getGlobalSockets(self, socket):
+    def getGlobalSockets(self):
         return self._global_sockets
     
     def getQueue(self):
