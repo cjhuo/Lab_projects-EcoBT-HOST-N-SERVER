@@ -17,7 +17,7 @@ from EcoBTApp import EcoBTApp
 
 from tornado.options import define, options
 define("port", default=8001, help="run on the given port", type=int)
-worker = None
+global worker
 
 class Application(tornado.web.Application):
     def __init__(self):
