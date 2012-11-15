@@ -192,6 +192,11 @@ $(function () {
 		}
 		*/
 	    socket = new WebSocket(url);
+	    hideReconMsg();
+		showReconMsg('connecting to server...');
+	    socket.onopen = function(event) {
+			hideReconMsg();
+	    };
 	    socket.onmessage = function(event) {
 	    	onDataReceived($.parseJSON(event.data));
 	    };

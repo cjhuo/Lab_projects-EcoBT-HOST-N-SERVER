@@ -17,11 +17,12 @@ class EcoBTWorker(threading.Thread):
             data = self._queue.get()
             self._queue.task_done()               
             #process data
-            print data
-            axis, val = data
-            data = {'axis': axis, 'value': val}
-            for socket in self._global_sockets:
-                socket.write_message(data) 
+            if(len(self._global_sockets) != 0):
+                #print data
+                axis, val = data
+                data = {'axis': axis, 'value': val}
+                for socket in self._global_sockets:
+                    socket.write_message(data) 
         
     def getGlobalSockets(self):
         return self._global_sockets
