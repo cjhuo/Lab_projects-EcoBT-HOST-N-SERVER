@@ -13,7 +13,7 @@ import struct
 import threading
 
 
-class EcoBTApp():
+class EcoBTApp(threading.Thread):
 
     def __init__(self, worker):
         self.worker = worker
@@ -23,8 +23,18 @@ class EcoBTApp():
         self.runLoop = NSRunLoop.currentRunLoop()
         self.runLoop.run()
         self.pool.release()
-        
-        
+
+    def run(self):
+        self.worke = worker
+        self.pool = NSAutoreleasePool.alloc().init()
+        self.delegate = EcoBTDelegate.alloc().init()
+        self.delegate.setWorker(self.worker)
+        self.runLoop = NSRunLoop.currentRunLoop()
+        self.runLoop.run()
+        self.pool.release()
+        while True:
+            pass
+
 
 class EcoBTDelegate(NSObject):
     def init(self):
@@ -157,27 +167,27 @@ class EcoBTDelegate(NSObject):
         # FFA3: x, FFA4: y, FFA5: z
         if characteristic._.UUID == CBUUID.UUIDWithString_("FFA3") or\
            characteristic._.UUID == CBUUID.UUIDWithString_("FFA4") or\
-           characteristic._.UUID == CBUUID.UUIDWithString_("FFA5"):     
+           characteristic._.UUID == CBUUID.UUIDWithString_("FFA5"):
             hex_str = binascii.hexlify(characteristic._.value)
-            print characteristic._.UUID, hex_str, int(hex_str, base=16)            
-            
+            print characteristic._.UUID, hex_str, int(hex_str, base=16)
+
             # put data into queue
             if characteristic._.UUID == CBUUID.UUIDWithString_("FFA3"):
-                data = ('x', int(hex_str, base=16))                
+                data = ('x', int(hex_str, base=16))
                 self.worker.getQueue().put(data)
             elif characteristic._.UUID == CBUUID.UUIDWithString_("FFA4"):
-                data = ('y', int(hex_str, base=16))                
+                data = ('y', int(hex_str, base=16))
                 self.worker.getQueue().put(data)
-            elif characteristic._.UUID == CBUUID.UUIDWithString_("FFA5"):    
-                data = ('z', int(hex_str, base=16))                
+            elif characteristic._.UUID == CBUUID.UUIDWithString_("FFA5"):
+                data = ('z', int(hex_str, base=16))
                 self.worker.getQueue().put(data)
     #def setData(self, data):
-    
+
     def setWorker(self, worker):
         self.worker = worker
         print worker
         #self.worker.getQueue().put('This is a test')
-    
+
     def peripheral_didWriteValueForCharacteristic_error_(self,
                                                          peripheral,
                                                          characteristic,
@@ -210,10 +220,10 @@ def main():
     # globals()['workspace'] = NSWorkspace.sharedWorkspace()
     # AppHelper.runEventLoop()
     pool.release()
-    
+
 if __name__ == '__main__':
     #main()
     worker = 'test'
-    EcoBTApp(worker)
+    EcoBTApp(worker).start()
 
-    
+
