@@ -62,13 +62,14 @@ if __name__ == "__main__":
     
     #open a browser for the web interface
     #webbrowser.open_new('http://localhost:8000/')
+    app = EcoBTApp(worker)
+    app.start()
     
     #start web server
-    t = threading.Thread(target = tornado.ioloop.IOLoop.instance().start)
-    #t.daemon = True
-    t.start()
-    app = EcoBTApp(worker)
-    
+    tornado.ioloop.IOLoop.instance().start()
+
+
         
     sys.stdout = stdOut
     sys.stderr = stdErr
+    
