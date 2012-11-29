@@ -12,6 +12,7 @@ from tornado.options import define, options
 define("port", default=8000, help="run on the given port", type=int)
 
 from host.fakePlot import *
+from ecg.ECG_reader import ECG_reader
 
 from db.Models import DataSource, Device, DataLog
 
@@ -19,6 +20,7 @@ from db.Models import DataSource, Device, DataLog
 class Application(tornado.web.Application):
     def __init__(self):
         ds = DataSource()
+        ecg = ECG_reader()
         
         handlers = [
             (r'/', MainHandler),
@@ -31,19 +33,19 @@ class Application(tornado.web.Application):
             (r'/plot', PlotHandler),
             (r'/analysis', AnalysisHandler),
             (r'/point', PointHandler, dict(ds = ds)),
-            (r'/dsp', DSPHandler),
-            (r'/submit', SubmitHandler),
+            (r'/dsp', DSPHandler, dict(ecg = ecg)),
+            #(r'/submit', SubmitHandler, dict(ecg = ecg)),
             (r"/socket", ClientSocket, dict(ds = ds))
         ]
         settings = dict(
             template_path=os.path.join(
-               os.path.dirname(__file__), "templates"),
+                os.path.dirname(__file__), "../templates"),
             static_path=os.path.join(
-                os.path.dirname(__file__), "static"),
+                os.path.dirname(__file__), "../static"),
             debug=True,
         )
-
         tornado.web.Application.__init__(self, handlers, **settings)
+        
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -68,6 +70,8 @@ class PlotHandler(tornado.web.RequestHandler):
         
 class AnalysisHandler(tornado.web.RequestHandler):
     def get(self):
+        if self.get_arguments("test"):
+            print self.get_argument("test")
         self.render(
             "analysis.html",
             page_title="ECG Analysis Viewer",
@@ -79,8 +83,8 @@ class AnalysisAllInOnceHandler(tornado.web.RequestHandler):
     def get(self):
         self.render(
             "analysis_allInOne.html",
-            page_title="ECG Analysis Viewer",
-            header_text="ECG Analysis Viewer",
+            page_title="DSP Analysis Viewer",
+            header_text="DSP Analysis Viewer",
             footer_text="",
         )
         
@@ -127,7 +131,7 @@ class CardReaderHandler(tornado.web.RequestHandler):
             page_title="cardReader viewer",
             header_text="cardReader viewer",
             footer_text="",
-        )                
+        )               
                                
         
 if __name__ == "__main__":
