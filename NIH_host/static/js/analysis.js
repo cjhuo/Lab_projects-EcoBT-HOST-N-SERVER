@@ -34,6 +34,7 @@ $(function () {
     
     var qPoint;
     var tPoint;
+    var bin; //store DOM used to choose bin number
     
     var histogram; //store DOM object of histogram div
     var hPlot; // store histogram plot object will be returned by highchart
@@ -291,14 +292,55 @@ $(function () {
 
 	/* issue ajax call and further process the data on sucess */
 	function getAndProcessData() { 
+		//chooseFileSource();
 		showSpinner();
 		$.ajax({
 			url: dataurl,
 			cache: false,
+			data: {"file":'Uploads/test.dcm'},
 			type: 'GET',
 			dataType: 'json',
 			success: onDataReceived
 		});
+	}
+	
+	function chooseFileSource(){
+    	var popUpDiv = $('<div id="popUpBox"><div>');
+    	$('<p>Please choose the type for the point: </p>').appendTo(popUpDiv); 
+    	
+    	popUpDiv.dialog({
+            height: 200,
+            modal: true,
+            resizable: false,
+            buttons: {
+                "Q Point": function() {
+            		showSpinner();
+            		$.ajax({
+            			url: dataurl,
+            			cache: false,
+            			data: {"file":'Uploads/test.dcm'},
+            			type: 'GET',
+            			dataType: 'json',
+            			success: onDataReceived
+            		});
+                    $( this ).dialog( "close" );
+                },
+                "T Point": function() {
+            		$.ajax({
+            			type: 'POST',
+            			url: dataurl,
+            			dataType: 'json',
+            			cache: false,
+            			data: {"data":JSON.stringify(pdata)},
+            			beforeSend: showSpinner,
+            			complete: hideSpinner,
+            			success: onBinDataReceived,
+            			error: function() {alert("ECG module Error!!");}
+            		});
+                    $( this ).dialog( "close" );
+                }
+            }
+        });
 	}
 	
     /* 
@@ -546,6 +588,21 @@ $(function () {
         });
     	return pSelection;
     }
+    
+    function makeBinChooser(){
+    	bin = $('<select id="selector"/>');
+    	for (var i = 1; i<=10; i++) { //generate bin number range from 1 - 10
+    		bin.append($('<option/>').html(i));
+    	}
+    	bin.val(3); //by default generate 3 bins
+    	
+    	var binChooser = $('<div id="binChooser"/>');
+    	binChooser.html('<label for="spinner">Select a bin number:</label>');
+    	
+    	binChooser.append(bin);
+    	binChooser.appendTo(choice);
+    	return binChooser;
+    }
 
     /* show peak selection in peakText div */
 	function makeQTText() {	
@@ -576,8 +633,9 @@ $(function () {
 					+ tPoint.x + ', y: '
 					+ tPoint.y + ') .';
 				peakText.append(domStr);
-	    	}
-	    	if(qPoint && tPoint) {
+	    	}	    	
+	    	if(qPoint && tPoint) {	    		
+	    		peakText.append(makeBinChooser());
 				var domStr = '<br>Click "submit" button to send your request to server';
 				peakText.append(domStr);	
 				submit = $('<input id="submit" type="button" value="submit" >').css({
@@ -587,9 +645,8 @@ $(function () {
 				submit.appendTo(choice);
 				submit.click(doSubmit);
 	    	}
-	    	//use setSelection to plot selection between 2 points, 
-			//TBD
-	    }
+
+		}
 	}
     
     /* submit the peak information to server */
@@ -601,7 +658,8 @@ $(function () {
     	*/
     	var pdata = {//'channel': selectedPoints[0].series.label.substring(8),
     			'qPoint': [qPoint.x, qPoint.y],
-    			'tPoint': [tPoint.x, tPoint.y]
+    			'tPoint': [tPoint.x, tPoint.y],
+    			'bin': parseInt(bin.val()),
     			};
 		plotAccordingToChoices();
 		$.ajax({

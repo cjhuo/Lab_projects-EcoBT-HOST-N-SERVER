@@ -13,6 +13,7 @@ from tornado.options import define, options
 define("port", default=8000, help="run on the given port", type=int)
 
 from fakePlot import *
+from ecg.ECG_reader import ECG_reader
 
 from db.Models import DataSource, Device, DataLog
 
@@ -20,6 +21,7 @@ from db.Models import DataSource, Device, DataLog
 class Application(tornado.web.Application):
     def __init__(self):
         ds = DataSource()
+        ecg = ECG_reader()
         
         handlers = [
             (r'/', MainHandler),
@@ -32,8 +34,8 @@ class Application(tornado.web.Application):
             (r'/plot', PlotHandler),
             (r'/analysis', AnalysisHandler),
             (r'/point', PointHandler, dict(ds = ds)),
-            (r'/dsp', DSPHandler),
-            (r'/submit', SubmitHandler),
+            (r'/dsp', DSPHandler, dict(ecg = ecg)),
+            (r'/submit', SubmitHandler, dict(ecg = ecg)),
             (r"/socket", ClientSocket, dict(ds = ds))
         ]
         settings = dict(

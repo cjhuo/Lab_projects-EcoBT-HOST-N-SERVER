@@ -7,7 +7,7 @@ import json
 from fakeDataGenerator import FakeDataGenerator
 from fakePush import FakePush
 
-import ecg.ECG_reader
+#import ecg.ECG_reader
 
 
 class SensorPlot(tornado.web.UIModule):
@@ -24,12 +24,15 @@ class PointHandler(tornado.web.RequestHandler):
         self.write(val)
 
 class SubmitHandler(tornado.web.RequestHandler):
+    def initialize(self, ecg):
+        self.ecg = ecg
+        
     def post(self): 
         data = json.loads(self.get_argument("data"))
         print data
         
         #format of getBinInfo(): [[min, max, value],[min,max,value],...]
-        bins = ecg.ECG_reader.getBinInfo(data['qPoint'][0], data['tPoint'][0]);
+        bins = self.ecg.getBinInfo(data['qPoint'][0], data['tPoint'][0]);
         
         print bins
         self.write({'data': bins}) #format of bins json: {'data': bins info}
@@ -40,11 +43,14 @@ class SubmitHandler(tornado.web.RequestHandler):
 ECG_CHANNELLABELS = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6']
 
 class DSPHandler(tornado.web.RequestHandler):
-    def initialize(self):
-        self.ecg = ecg.ECG_reader.ECG_reader()
-        
+    def initialize(self, ecg):
+        self.ecg = ecg
+    
     def get(self):        
         #val = self.fakeData()  #should be replaced by ecg dsp data generation module
+        f = self.get_argument("file")      
+        print f
+        self.ecg.setFile(f)
         val = self.getDataFromDicomFile()
         self.write(val)
         
@@ -53,7 +59,7 @@ class DSPHandler(tornado.web.RequestHandler):
         print data
         
         #format of getBinInfo(): [[min, max, value],[min,max,value],...]
-        bins = self.ecg.getBinInfo(data['qPoint'][0], data['tPoint'][0]);
+        bins = self.ecg.getBinInfo(data['qPoint'][0], data['tPoint'][0], data['bin']);
         
         print bins
         self.write({'data': bins}) #format of bins json: {'data': bins info}

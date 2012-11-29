@@ -11,15 +11,20 @@ import Histogram
 
 class ECG_reader():
     def __init__(self):
-        self.file = "Uploads/test.dcm"
+        pass
+        '''
+        self.file = None
         self.samplingrate = None
         self.name = None
         self.NumofsamplesPerChannel = None
         self.NumofChannels = None
-        self.parseDicomFile()
+        '''
         
+    def setFile(self, file = "Uploads/test.dcm"):
+        self.file = file
+        self._parseDicomFile()
         
-    def parseDicomFile(self):
+    def _parseDicomFile(self):
         ds = dicom.read_file(self.file)
     
         self.samplingrate = ds[0x5400,0x100][0][0x3a,0x1a].value
@@ -56,7 +61,7 @@ class ECG_reader():
         peaks = self.peakdata.tolist()
         return (wavedata, peaks)
 
-    def getBinInfo(self,qPoint, tPoint):
+    def getBinInfo(self,qPoint, tPoint, bin = 10):
     
         aa = CAPS.caps(self.wavech[0], qPoint, self.peakdata)
         # result1 is the list of similar points of manually selected Q point
@@ -71,12 +76,12 @@ class ECG_reader():
         result3 = Qtc.CalculateQtc(self.peakdata, result1, result2, 200)
     
         # Make histogram, result4 is bin values array for histogram
-        histo = Histogram.histo(result3, 10)
-        result4 = histo.Histogram(result3, 10)
+        histo = Histogram.histo(result3, bin)
+        result4 = histo.Histogram(result3, bin)
         
         return result4
 
-
+'''
 def getBinInfo(qPoint, tPoint):
     wavech = parseDicomFile()
     info = dict()
@@ -173,7 +178,8 @@ def main() :
     histo = Histogram.histo(result3,3)
     result4 = histo.Histogram(result3, 3)
     print(result4)
-    '''
+'''
+'''
     figure()
     subplot(611)
     plot(ecg.data[:,0])
@@ -192,7 +198,8 @@ def main() :
     subplot(616)
     plot(wavech[5])
     show()
-    '''
+
 
 if __name__ == "__main__":
     main()
+'''
