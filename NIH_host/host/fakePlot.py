@@ -23,21 +23,6 @@ class PointHandler(tornado.web.RequestHandler):
         val = FakeDataGenerator(self.ds).db_insert()
         self.write(val)
 
-class SubmitHandler(tornado.web.RequestHandler):
-    def initialize(self, ecg):
-        self.ecg = ecg
-        
-    def post(self): 
-        data = json.loads(self.get_argument("data"))
-        print data
-        
-        #format of getBinInfo(): [[min, max, value],[min,max,value],...]
-        bins = self.ecg.getBinInfo(data['qPoint'][0], data['tPoint'][0]);
-        
-        print bins
-        self.write({'data': bins}) #format of bins json: {'data': bins info}
-        
-        
 #fake the labels for each channels for demo purpose, 
 #eventually label information should be passed from ecg module
 ECG_CHANNELLABELS = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6']
@@ -45,15 +30,7 @@ ECG_CHANNELLABELS = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V
 class DSPHandler(tornado.web.RequestHandler):
     def initialize(self, ecg):
         self.ecg = ecg
-    
-    def get(self):        
-        #val = self.fakeData()  #should be replaced by ecg dsp data generation module
-        f = self.get_argument("file")      
-        print f
-        self.ecg.setFile(f)
-        val = self.getDataFromDicomFile()
-        self.write(val)
-        
+             
     def post(self): 
         data = json.loads(self.get_argument("data"))
         print data
@@ -63,29 +40,16 @@ class DSPHandler(tornado.web.RequestHandler):
         
         print bins
         self.write({'data': bins}) #format of bins json: {'data': bins info}
-        
-    def getDataFromDicomFile(self):
-        #wavech, peaks = ecg.ECG_reader.getTestData()
-        wavech, peaks = self.ecg.getTestData()
-        
-        #create dataset dict to be sent to web server and fill in data
-        datasets = []
-        for i in range(len(wavech)):
-            data = [wavech[i][j] for j in range(len(wavech[i]))]
-            label = ECG_CHANNELLABELS[i]            
-            #label = "channel " + str(i)
-            datasets.append(dict())
-            datasets[i]['data'] = data 
-            datasets[i]['label'] = label
-            
-        #add peak information to structure to be sent to frontend
-        # format of peaks: "peaks": [index of 1st peak, index of 2nd peak, ...]
-
-        val = {'dspData': datasets, 'peaks': peaks}
-        #print val
-        return val
-   
-           
+          
+    '''
+    def get(self):        
+        #val = self.fakeData()  #should be replaced by ecg dsp data generation module
+        f = self.get_argument("file")      
+#        print f
+        self.ecg.setFile(f)
+        val = self.getDataFromDicomFile()
+        self.write(val)
+    '''        
     ''' 
     generate data for n channels with 100 data each, ranged from (-100, 100)
     The datasets dict should have the structure as below:
@@ -115,6 +79,53 @@ class DSPHandler(tornado.web.RequestHandler):
             datasets[label]['label'] = label
         return (datasets,[])
         
+class FileHandler(tornado.web.RequestHandler):
+    def initialize(self, ecg):
+        self.ecg = ecg
+    '''    
+    def get(self):        
+        #val = self.fakeData()  #should be replaced by ecg dsp data generation module
+        f = self.get_argument("file")      
+#        print f
+        self.ecg.setFile(f)
+        val = self.getDataFromDicomFile()
+        self.write(val)
+    '''        
+    def post(self):
+        if len(self.request.files) != 0: #user uploaded file from UI  
+            f = self.request.files['uploaded_files'][0]
+            orig_fname = f['filename']
+            ofd = open("Uploads/" + orig_fname, 'w')
+            ofd.write(f['body'])
+            ofd.close()
+            self.ecg.setFile("Uploads/" + orig_fname)
+        else: #user user the default test file
+            self.ecg.setFile()
+            
+        val = self.getDataFromDicomFile()
+        self.write(val)
+               
+    def getDataFromDicomFile(self):
+        #wavech, peaks = ecg.ECG_reader.getTestData()
+        wavech, peaks = self.ecg.getTestData()
+        
+        #create dataset dict to be sent to web server and fill in data
+        datasets = []
+        for i in range(len(wavech)):
+            data = [wavech[i][j] for j in range(len(wavech[i]))]
+            label = ECG_CHANNELLABELS[i]            
+            #label = "channel " + str(i)
+            datasets.append(dict())
+            datasets[i]['data'] = data 
+            datasets[i]['label'] = label
+            
+        #add peak information to structure to be sent to frontend
+        # format of peaks: "peaks": [index of 1st peak, index of 2nd peak, ...]
+
+        val = {'dspData': datasets, 'peaks': peaks}
+        #print val
+        return val
+
         
 class ClientSocket(websocket.WebSocketHandler):
     def initialize(self, ds):

@@ -20,8 +20,8 @@ class ECG_reader():
         self.NumofChannels = None
         '''
         
-    def setFile(self, file = "Uploads/test.dcm"):
-        self.file = file
+    def setFile(self, Dfile = "Uploads/MIICWwIBAAKBgQCMs1QxLEFE.dcm"):
+        self.file = Dfile
         self._parseDicomFile()
         
     def _parseDicomFile(self):
@@ -57,7 +57,9 @@ class ECG_reader():
                         [
                             self.wavech[channel_number][i] for i in range(2400)
                         ] for channel_number in range( self.NumofChannels )
-                    ]    
+                    ] 
+        else: 
+            wavedata = self.wavech   
         peaks = self.peakdata.tolist()
         return (wavedata, peaks)
 

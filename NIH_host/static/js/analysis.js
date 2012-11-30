@@ -17,6 +17,7 @@ $(function () {
 	//ajax call urls
 	var dataurl = 'dsp'; 
 	var submitUrl = 'dsp'; 
+	var fileHandlerUrl = 'fileHandler'
 	
 	var datasets; //store datasets
 	var peaks; //store indice of peak points for channels 
@@ -292,58 +293,74 @@ $(function () {
 
 	/* issue ajax call and further process the data on sucess */
 	function getAndProcessData() { 
-		//chooseFileSource();
+		chooseFileSource();
+	}
+	
+	function chooseTestFile() {
 		showSpinner();
 		$.ajax({
-			url: dataurl,
+			url: fileHandlerUrl,
 			cache: false,
-			data: {"file":'Uploads/test.dcm'},
-			type: 'GET',
+			type: 'POST',
 			dataType: 'json',
 			success: onDataReceived
 		});
+		$('#fileChooser').dialog( "destroy" );
 	}
 	
 	function chooseFileSource(){
-    	var popUpDiv = $('<div id="popUpBox"><div>');
-    	$('<p>Please choose the type for the point: </p>').appendTo(popUpDiv); 
+    	var popUpDiv = $('<div id="fileChooser"/>');
+    	$('<p>Please choose the type for the point: </p>').appendTo(popUpDiv);
+    	var defButton = $('<button>Use test dicom file</button>').css({
+    		float: 'left',
+    		fontSize: 'small',
+    	});   	
+
+    	defButton.button();
+    	defButton.click(chooseTestFile);
+    	popUpDiv.append(defButton);
+    	
+    	var fileInput = $('<span class="file-wrapper">\
+    			<span>Submit your own Dicom file</span>\
+                <input type="file" name="uploaded_files" >\
+            </span>').css({
+    		float: 'right',
+    		fontSize: 'small',
+    	});
+    	fileInput.button();
+    	fileInput.fileupload({
+    		url: fileHandlerUrl,
+            dataType: 'json',
+            send: function (e, data) {
+            	showSpinner();
+            	$('#fileChooser').dialog( "destroy" );
+            	//console.log(data);
+            },
+            done: function (e, data) {
+            	//console.log(data.result);           	
+            	onDataReceived(data.result);
+            },
+        });
+    	
+    	popUpDiv.append(fileInput);
+    	
+    	
+    	//add two button, one for file input handler directed to jquery upload
+    	//, one for default file handler
+    	//TBD
     	
     	popUpDiv.dialog({
-            height: 200,
+            //height: 200,
+    		width: 500,
             modal: true,
             resizable: false,
-            buttons: {
-                "Q Point": function() {
-            		showSpinner();
-            		$.ajax({
-            			url: dataurl,
-            			cache: false,
-            			data: {"file":'Uploads/test.dcm'},
-            			type: 'GET',
-            			dataType: 'json',
-            			success: onDataReceived
-            		});
-                    $( this ).dialog( "close" );
-                },
-                "T Point": function() {
-            		$.ajax({
-            			type: 'POST',
-            			url: dataurl,
-            			dataType: 'json',
-            			cache: false,
-            			data: {"data":JSON.stringify(pdata)},
-            			beforeSend: showSpinner,
-            			complete: hideSpinner,
-            			success: onBinDataReceived,
-            			error: function() {alert("ECG module Error!!");}
-            		});
-                    $( this ).dialog( "close" );
-                }
-            }
+            dialogClass: 'alert',
+            closeOnEscape: false,
         });
+    	$(".ui-dialog-titlebar").hide(); //remove dialog title bar
 	}
 	
-    /* 
+    /** 
 	    Data received should have the structure as below:
 	    data.dspData = [
 	                    {
@@ -437,16 +454,17 @@ $(function () {
             resizable: false,
             position: { 
             	my: "top", 
-            	at: "top", 
+            	at: "bottom", 
             	of: "#ref", 
             	},
             show: "blind",
             hide: "blind"
         });
+        $(".ui-dialog-titlebar").hide(); //remove dialog title bar
 
     	//refImgDiv.appendTo(choice);
 
-    	var refButton = $('<button id="ref">click here for reference of Q/T point</button>').css({
+    	var refButton = $('<button id="ref">show/hide reference of Q/T point</button>').css({
     		float: 'right',
     		fontSize: 'small',
     	});

@@ -24,6 +24,7 @@ class Application(tornado.web.Application):
         
         handlers = [
             (r'/', MainHandler),
+            (r'/fileHandler', FileHandler, dict(ecg = ecg)),
             (r'/cardReader', CardReaderHandler),
             (r'/tempAnalysis', TempAnalysisHandler),
             (r'/analysis_old', AnalysisOldHandler),
@@ -34,7 +35,6 @@ class Application(tornado.web.Application):
             (r'/analysis', AnalysisHandler),
             (r'/point', PointHandler, dict(ds = ds)),
             (r'/dsp', DSPHandler, dict(ecg = ecg)),
-            #(r'/submit', SubmitHandler, dict(ecg = ecg)),
             (r"/socket", ClientSocket, dict(ds = ds))
         ]
         settings = dict(
