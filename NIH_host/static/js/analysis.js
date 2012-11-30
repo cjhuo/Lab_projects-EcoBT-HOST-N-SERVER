@@ -337,8 +337,9 @@ $(function () {
             	//console.log(data);
             },
             done: function (e, data) {
-            	//console.log(data.result);           	
+            	//console.log(data.result);
             	onDataReceived(data.result);
+            	$(this).fileupload('destroy');
             },
         });
     	
@@ -382,6 +383,7 @@ $(function () {
         extractDatasets(data); //JSON {'dspData': datasets, 'peaks': indice of peak points}         
 		addChoices(); //add channel radio buttons
 		addReferenceImg();
+		addFileUploadDiv();
 		addPlot();  //generate main plot div
 		//addOverview(); // generate overview plot div
 		plotAccordingToChoices(); //plot diagram on generated div and generate overview
@@ -441,6 +443,32 @@ $(function () {
         choice.appendTo("body");
 		
 		choice.find("input").click(plotAccordingToChoices);
+    }
+    
+    function addFileUploadDiv() {
+    	var fileInput = $('<span class="file-wrapper">\
+    			<span>Submit a different Dicom file</span>\
+                <input type="file" name="uploaded_files" >\
+            </span>').css({
+    		float: 'right',
+    		fontSize: 'small',
+    	});
+    	fileInput.button();
+    	fileInput.fileupload({
+    		url: fileHandlerUrl,
+            dataType: 'json',
+            send: function (e, data) {
+            	showSpinner();
+            	//console.log(data);
+            },
+            done: function (e, data) {
+            	//console.log(data.result);
+            	choice.remove();
+            	diagram.remove();
+            	onDataReceived(data.result);
+            },
+        });
+    	fileInput.appendTo(choice);
     }
     
     function addReferenceImg() {
