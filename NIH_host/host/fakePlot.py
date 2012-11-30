@@ -92,18 +92,20 @@ class FileHandler(tornado.web.RequestHandler):
         self.write(val)
     '''        
     def post(self):
-        if len(self.request.files) != 0: #user uploaded file from UI  
-            f = self.request.files['uploaded_files'][0]
-            orig_fname = f['filename']
-            ofd = open("Uploads/" + orig_fname, 'w')
-            ofd.write(f['body'])
-            ofd.close()
-            self.ecg.setFile("Uploads/" + orig_fname)
-        else: #user user the default test file
-            self.ecg.setFile()
-            
-        val = self.getDataFromDicomFile()
-        self.write(val)
+        try:
+            if len(self.request.files) != 0: #user uploaded file from UI  
+                f = self.request.files['uploaded_files'][0]
+                orig_fname = f['filename']
+                ofd = open("Uploads/" + orig_fname, 'w')
+                ofd.write(f['body'])
+                ofd.close()
+                self.ecg.setFile("Uploads/" + orig_fname)               
+            else: #user user the default test file
+                self.ecg.setFile()               
+            val = self.getDataFromDicomFile()
+            self.write(val)
+        except:
+            self.send_error()
                
     def getDataFromDicomFile(self):
         #wavech, peaks = ecg.ECG_reader.getTestData()

@@ -21,11 +21,10 @@ class ECG_reader():
         '''
         
     def setFile(self, Dfile = "Uploads/MIICWwIBAAKBgQCMs1QxLEFE.dcm"):
-        self.file = Dfile
-        self._parseDicomFile()
+        self._parseDicomFile(Dfile)
         
-    def _parseDicomFile(self):
-        ds = dicom.read_file(self.file)
+    def _parseDicomFile(self, Dfile):
+        ds = dicom.read_file(Dfile)
     
         self.samplingrate = ds[0x5400,0x100][0][0x3a,0x1a].value
         self.name = ds[0x10,0x10].value

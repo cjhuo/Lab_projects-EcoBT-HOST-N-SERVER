@@ -332,15 +332,20 @@ $(function () {
     		url: fileHandlerUrl,
             dataType: 'json',
             send: function (e, data) {
-            	showSpinner();
-            	$('#fileChooser').dialog( "destroy" );
+            	showSpinner();           	
             	//console.log(data);
             },
             done: function (e, data) {
             	//console.log(data.result);
+            	$('#fileChooser').dialog( "destroy" );
             	onDataReceived(data.result);
             	$(this).fileupload('destroy');
             },
+            fail: function (e, data) {
+            	alert('invalid file');
+            	hideSpinner();
+            	
+            }
         });
     	
     	popUpDiv.append(fileInput);
@@ -467,6 +472,10 @@ $(function () {
             	diagram.remove();
             	onDataReceived(data.result);
             },
+            fail: function (e, data) {
+            	alert('invalid file');
+            	hideSpinner();
+            }
         });
     	fileInput.appendTo(choice);
     }
