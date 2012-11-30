@@ -310,7 +310,7 @@ $(function () {
 	
 	function chooseFileSource(){
     	var popUpDiv = $('<div id="fileChooser"/>');
-    	$('<p>Please choose the type for the point: </p>').appendTo(popUpDiv);
+    	$('<p>Please choose choose a dicom file: </p>').appendTo(popUpDiv);
     	var defButton = $('<button>Use test dicom file</button>').css({
     		float: 'left',
     		fontSize: 'small',
