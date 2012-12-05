@@ -342,6 +342,7 @@ $(function () {
             	$(this).fileupload('destroy');
             },
             fail: function (e, data) {
+            	//console.log(data.textStatus);
             	alert('invalid file');
             	hideSpinner();
             	
@@ -470,6 +471,7 @@ $(function () {
             	//console.log(data.result);
             	choice.remove();
             	diagram.remove();
+            	histogram.remove();
             	onDataReceived(data.result);
             },
             fail: function (e, data) {

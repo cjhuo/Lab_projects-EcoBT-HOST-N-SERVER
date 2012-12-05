@@ -105,7 +105,7 @@ class FileHandler(tornado.web.RequestHandler):
             val = self.getDataFromDicomFile()
             self.write(val)
         except:
-            self.send_error()
+            self.send_error(302) # 302: invalid file
                
     def getDataFromDicomFile(self):
         #wavech, peaks = ecg.ECG_reader.getTestData()
