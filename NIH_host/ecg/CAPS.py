@@ -103,17 +103,17 @@ class caps() :
 
         return maxindex
 
-    def SearchingSimilarPoint(self):
+    def SearchingSimilarPoint(self, l):
         self.FindingStepSize()
 
-        maxidx = []
+        #maxidx = []
         offset = (self.template.size/2);
 
         for i in range(1,len(self.peakdata)-2) :
 
             RtoR = self.peakdata[i+1]-self.peakdata[i]
             self.MakingOriginal(self.peakdata[i], RtoR)
-            maxidx.append(self.peakdata[i]-((RtoR+self.template.size)/2)+self.MatchingTemplate()+offset+self.offset)
+            l.append(self.peakdata[i]-((RtoR+self.template.size)/2)+self.MatchingTemplate()+offset+self.offset)
 #            maxidx.append(self.peakdata[i]-((RtoR+self.tempsize)/2)+self.MatchingTemplate()-offset+self.offset)
-
-        return maxidx
+        #print self.searchingpoint
+        #return maxidx
