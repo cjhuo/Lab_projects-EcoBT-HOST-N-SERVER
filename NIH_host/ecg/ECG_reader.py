@@ -63,11 +63,8 @@ class ECG_reader():
         return (wavedata, peaks)
 
     def getBinInfo(self,qPoint, tPoint, bin = 10):
-    
-        from datetime import datetime
         from multiprocessing import Process, Manager
         manager = Manager()
-        s = datetime.now()
         aa = CAPS.caps(self.wavech[0], qPoint, self.peakdata)
         # result1 is the list of similar points of manually selected Q point
         
@@ -85,8 +82,6 @@ class ECG_reader():
         
         p1.join()
         p2.join()
-        e = datetime.now()
-        print (e - s).total_seconds()  ##161 seconds
         
         # Calculate the Qtc value, 200 is sampling rate
         result3 = Qtc.CalculateQtc(self.peakdata, result1, result2, int(self.samplingrate))
