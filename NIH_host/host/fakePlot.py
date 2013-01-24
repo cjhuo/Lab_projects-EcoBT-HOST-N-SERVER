@@ -43,13 +43,12 @@ class DSPHandler(tornado.web.RequestHandler):
           
     '''
     def get(self):        
-        #val = self.fakeData()  #should be replaced by ecg dsp data generation module
-        f = self.get_argument("file")      
-#        print f
-        self.ecg.setFile(f)
-        val = self.getDataFromDicomFile()
-        self.write(val)
-    '''        
+        val = self.fakeData()  #should be replaced by ecg dsp data generation module
+    
+        print val
+
+        self.write({'dspData': val})   
+    '''     
     ''' 
     generate data for n channels with 100 data each, ranged from (-100, 100)
     The datasets dict should have the structure as below:
@@ -66,6 +65,7 @@ class DSPHandler(tornado.web.RequestHandler):
                     },
                 ]
     '''
+    '''
     def fakeData(self, n=2):
         datasets = dict()
         for i in range(n):
@@ -73,12 +73,13 @@ class DSPHandler(tornado.web.RequestHandler):
             data = [random.randint(-100, 100) for j in range(100)]           
             #label = "channel " + str(i)
             label = ECG_CHANNELLABELS[i]
-            print label
-            datasets[label] = dict()
-            datasets[label]['data'] = data 
-            datasets[label]['label'] = label
-        return (datasets,[])
-        
+            #print label
+            datasets[i] = dict()
+            datasets[i]['data'] = data 
+            datasets[i]['label'] = label
+        return datasets
+    '''
+    
 class FileHandler(tornado.web.RequestHandler):
     def initialize(self, ecg):
         self.ecg = ecg

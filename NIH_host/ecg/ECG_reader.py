@@ -92,6 +92,10 @@ class ECG_reader():
         
         return result4
 
+if __name__ == "__main__":
+    e = ECG_reader()
+    e.setFile()
+    print e.getBinInfo(342, 625, 10)
 '''
 def getBinInfo(qPoint, tPoint):
     wavech = parseDicomFile()

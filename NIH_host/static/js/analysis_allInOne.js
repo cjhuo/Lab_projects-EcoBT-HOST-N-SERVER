@@ -14,7 +14,7 @@
 
 $(function () {
 	//ajax call urls
-	var dataurl = 'dsp'; 
+	var dataurl = 'fileHandler'; 
 	
 	var datasets; //store datasets
 	var diagram; //store DOM object of plot div
@@ -215,7 +215,7 @@ $(function () {
 		$.ajax({
 			url: dataurl,
 			cache: false,
-			type: 'GET',
+			type: 'POST',
 			dataType: 'json',
 			success: onDataReceived
 		});
