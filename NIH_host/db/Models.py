@@ -24,10 +24,10 @@ class DataSource(Singleton):    #to acchieve singleton of datasource
             print 'engine is null'
         #create table if needed
         Base.metadata.create_all(self.engine)
-        self.sessionMaker = scoped_session(sessionmaker(bind=self.engine, autoflush=False))
+        self.scopedSession = scoped_session(sessionmaker(bind=self.engine, autoflush=False))
 
     def getSession(self):
-        return self.sessionMaker()
+        return self.scopedSession
 
     def getEngine(self):
             return self.engine
@@ -66,7 +66,7 @@ class DataLog(Base):
         self.data = data
 
 class AccLog(Base):
-    __tablename__ = 'ecobtlog'
+    __tablename__ = 'acclog'
     id = Column(Integer, primary_key=True)
     dId = Column(Integer, nullable=True)
     timestamp = Column(DateTime, nullable=False)
@@ -81,6 +81,17 @@ class AccLog(Base):
         self.y = y
         self.z = z            
             
+class SoundLog(Base):
+    __tablename__ = 'soundlog'
+    id = Column(Integer, primary_key=True)
+    dId = Column(Integer, nullable=True)
+    timestamp = Column(DateTime, nullable=False)
+    data = Column(PickleType, nullable=True)
+    
+    def __init__(self, dId, timestamp, data):
+        self.dId = dId
+        self.timestamp = timestamp
+        self.data = data   
             
 from datetime import datetime            
 #testcase    

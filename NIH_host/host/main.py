@@ -25,6 +25,7 @@ class Application(tornado.web.Application):
         
         handlers = [
             (r'/', MainHandler),
+            (r'/soundMonitor', SoundMonitorHandler),
             (r'/fileHandler', FileHandler, dict(ecg = ecg)),
             (r'/cardReader', CardReaderHandler),
             (r'/tempAnalysis', TempAnalysisHandler),
@@ -132,7 +133,16 @@ class CardReaderHandler(tornado.web.RequestHandler):
             page_title="cardReader viewer",
             header_text="cardReader viewer",
             footer_text="",
-        )                        
+        )  
+        
+class SoundMonitorHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render(
+            "soundMonitor.html",
+            page_title="Sound Monitor",
+            header_text="Sound Monitor",
+            footer_text="",
+        )                          
         
 if __name__ == "__main__":
     print "Running on localhost:8000"

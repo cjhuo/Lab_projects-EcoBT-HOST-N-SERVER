@@ -42,6 +42,10 @@ function show(item){
 		$('#iframe1').removeAttr('srcdoc');
 		$('#iframe1').attr('src', "analysis_allInOne");
 	}
+	else if(item=='soundMonitor'){
+		$('#iframe1').removeAttr('srcdoc');
+		$('#iframe1').attr('src', "soundMonitor");
+	}
 	return false;
 }
 </script>
@@ -60,6 +64,7 @@ function show(item){
 <li><a href="#" onclick="return show('analysis');">ECG Wave Data Processor</a></li>
 <li><a href="#" onclick="return show('tempAnalysis');">Historical Temperature Viewer</a></li>
 <li><a href="#" onclick="return show('cardReader');">Node configuration (local)</a></li>
+<li><a href="#" onclick="return show('soundMonitor');">Sound Monitor</a></li>
 <li><a href="#" >Node configuration (remote TBD)</a></li>
 
 
