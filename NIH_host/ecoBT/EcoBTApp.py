@@ -285,14 +285,47 @@ class EcoBTDelegate(NSObject):
             hex_str = binascii.hexlify(characteristic._.value)
             print "ACC Z: %3d" % int(hex_str, base=16)
         """
+        import math
         if characteristic._.UUID == CBUUID.UUIDWithString_("FFA6"):
             value = characteristic._.value
             hex_str = binascii.hexlify(value)
-            x, y, z = struct.unpack("<hhh", value)
-            x = (0.0 + x) / 16 / 1000
-            y = (0.0 + y) / 16 / 1000
-            z = (0.0 + z) / 16 / 1000
-            print "X: % .3fg Y: % .3fg Z: % .3fg" % (x, y, z)
+            x, y, z = struct.unpack("<hhh", value) #only first 12bit is valid according to data sheet
+            x = (0.0 + (x >> 4))  / 1000
+            y = (0.0 + (y >> 4)) / 1000
+            z = (0.0 + (z >> 4)) / 1000
+            x = 1.0 if x>1.0 else x
+            x = -1.0 if x<-1.0 else x
+            y = 1.0 if y>1.0 else y
+            y = -1.0 if y<-1.0 else y
+            z = 1.0 if z>1.0 else z
+            z = -1.0 if z<-1.0 else z         
+            
+            print "X: % .3fg Y: % .3fg Z: % .3fg" % (x, y, z)  
+            '''
+            x = math.atan2(x, math.sqrt(y*y+z*z))
+            data = ('x', x)
+            self.worker.getQueue().put(data)
+            
+            z = math.atan2(y, math.sqrt(x*x+z*z))
+            data = ('z', z)
+            self.worker.getQueue().put(data)
+            '''
+            if x<0 and z<0:
+                x = -math.asin(x)-3.141592
+            elif x>0 and z<0:
+                x = 3.141592 - math.asin(x)
+            else:   
+                x = math.asin(x)
+            data = ('x', x)
+            self.worker.getQueue().put(data)
+            '''
+            y = math.asin(y)
+            data = ('y', y)
+            self.worker.getQueue().put(data)
+            z = math.acos(z)
+            data = ('z', z)
+            self.worker.getQueue().put(data)
+            '''
     '''
     def peripheral_didUpdateValueForCharacteristic_error_(self,
                                                           peripheral,

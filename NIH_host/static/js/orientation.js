@@ -24,6 +24,17 @@ $(function () {
 	//such as cps.eng.uci.edu:8000/socket
 	var socket = null; //websocket object
 	
+	
+	function onDataReceived(data){
+		if(data.axis == 'x')
+			parent.rotation.x = data.value;
+		else if(data.axis == 'y')
+			parent.rotation.y = data.value;
+		else if(data.axis == 'z')
+			parent.rotation.z = data.value;
+		renderer.render( scene, camera );
+	}
+	
 	var reconMsg = null; //reconnect div object
 	
 	/**
@@ -61,7 +72,7 @@ $(function () {
 
 		}
 
-		cube = new THREE.Mesh( new THREE.CubeGeometry( 200, 50, 100, 1, 1, 1, materials ), new THREE.MeshFaceMaterial() );
+		cube = new THREE.Mesh( new THREE.CubeGeometry( 200, 10, 100, 1, 1, 1, materials ), new THREE.MeshFaceMaterial() );
 		cube.position.y = 0;//150;
 		cube.rotation.y = 0;//0.1;
 		//scene.add( cube );
@@ -81,7 +92,7 @@ $(function () {
 		var text3d = new THREE.TextGeometry( theText, {
 
 			size: 20,
-			height: 0,
+			height: 3,
 			curveSegments: 2,
 			font: "helvetiker"
 
@@ -97,8 +108,8 @@ $(function () {
 		text.position.y = 50;
 		text.position.z = 0;
 
-		text.rotation.x = 0.1;
-		//text.rotation.y = 0;
+		//text.rotation.x = 0.1;
+		text.rotation.y = 0;
 
 		parent = new THREE.Object3D();
 		
@@ -172,16 +183,6 @@ $(function () {
 			reconMsg.remove();
 			reconMsg = null;
 		}
-	}
-	
-	function onDataReceived(data){
-		if(data.axis == 'x')
-			parent.rotation.x = data.value;
-		else if(data.axis == 'y')
-			parent.rotation.y = data.value;
-		else if(data.axis == 'z')
-			parent.rotation.z = data.value;
-		renderer.render( scene, camera );
 	}
 	
 	function establishConnection() {
