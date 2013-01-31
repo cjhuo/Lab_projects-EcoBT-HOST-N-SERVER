@@ -1,0 +1,31 @@
+{% extends "main.html" %}
+
+{% block header %}
+	<h1>{{ header_text }}</h1>
+{% end %}
+
+
+
+{% block script_include %}
+<link type="text/css" href="{{ static_url("css/main.css") }}" rel="stylesheet" />
+<script language="javascript" type="text/javascript" src="{{ static_url("js/audio.min.js") }}"></script>
+
+<body>
+<script>
+  audiojs.events.ready(function() {
+    var as = audiojs.createAll();
+  });
+</script>
+{% end %}
+
+{% block body %}
+<audio src="{{ static_url("test.wav") }}" preload="auto" />
+{% end %}
+
+{% block footer %}
+	{{ footer_text }}
+{% end %}
+</body>
+
+
+
