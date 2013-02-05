@@ -6,33 +6,18 @@
 html {height: 100%;}
 
 body{
+	min-width:1000px;
+	width: auto;
 	position: relative;
 	height: 100%;
-	background: -webkit-gradient(linear, left top, left bottom, from(#ccc), to(#fff));
+	<!--background: -webkit-gradient(linear, left top, left bottom, from(#ccc), to(#fff));-->
 
-}
-
-.file-wrapper {
-  cursor: pointer;
-  display: inline-block;
-  overflow: hidden;
-  position: relative;
-}
-.file-wrapper input {
-  cursor: pointer;
-  height: 100%;
-  filter: alpha(opacity=1);
-  -moz-opacity: 0.01;
-  opacity: 0.01;
-  position: absolute;
-  right: 0;
-  top: 0;
 }
 
 .navbox {
 	position: relative;
 	float: left;
-	/*width:15%*/
+	width:20%
 }
 
 ul.nav {
@@ -72,10 +57,10 @@ ul.nav li a:hover {
 
 iframe {
 	position: relative;
-	/*float: right;*/
-	width:70%; 
+	float: right;
+	width:80%; 
 	height:100%;
-	margin: 20px 0px 7px 20px;
+	margin: 0px 0px 0px 0px;
 	
 }
 
