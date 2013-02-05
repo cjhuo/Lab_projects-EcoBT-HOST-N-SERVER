@@ -7,26 +7,39 @@
 
 
 {% block script_include %}
-<script language="javascript" type="text/javascript" src="{{ static_url("js/mediaelementplayer.css") }}"></script>
-<link rel="stylesheet" href="{{ static_url("css/mediaelementplayer.css") }}" />
+<link rel="stylesheet" href="{{ static_url("mediaelementplayer/mediaelementplayer.css") }}" />
+<script language="javascript" type="text/javascript" src="{{ static_url("js/jquery-1.8.2.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("mediaelementplayer/mediaelement-and-player.js") }}"></script>
 
-<body>
-<script>
-$('audio,video').mediaelementplayer();
-</script>
+<link rel="stylesheet" href="{{ static_url("soundmanager/360player.css") }}" />
+<script language="javascript" type="text/javascript" src="{{ static_url("soundmanager/soundmanager2.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("soundmanager/index-rollup.js") }}"></script>
+</head>
 {% end %}
 
 {% block body %}
+<h3>Just to illustrate 2 different type of audio player, current only can play static wav files </h3>
 <div>
 Audio 1:<br>
 <audio src="{{ static_url("test.wav") }}" controls="controls" />
 </div>
-{% end %}
 
-{% block footer %}
-	{{ footer_text }}
+<br>
+
+<div style="position:relative;*zoom:1;min-width:275px">
+Audio 2:
+	<div id="special-demo-left" class="sm2-inline-list">
+		<div class="ui360">
+			<a href="{{ static_url("rain.mp3") }}" class="norewrite exclude button-exclude inline-exclude">Office lobby sound</a>
+		</div>
+	</div>
+</div>
+
+
+<script>
+$('audio,video').mediaelementplayer();
+</script>
 {% end %}
-</body>
 
 
 
