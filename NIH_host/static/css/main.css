@@ -10,6 +10,7 @@ body{
 	width: auto;
 	position: relative;
 	height: 100%;
+	background-color: #cbcbcb;
 	<!--background: -webkit-gradient(linear, left top, left bottom, from(#ccc), to(#fff));-->
 
 }
@@ -17,6 +18,7 @@ body{
 .navbox {
 	position: relative;
 	float: left;
+	min-width:200px;
 	width:20%
 }
 
