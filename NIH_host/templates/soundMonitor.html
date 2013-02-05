@@ -7,18 +7,20 @@
 
 
 {% block script_include %}
-<script language="javascript" type="text/javascript" src="{{ static_url("js/audio.min.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("js/mediaelementplayer.css") }}"></script>
+<link rel="stylesheet" href="{{ static_url("css/mediaelementplayer.css") }}" />
 
 <body>
 <script>
-  audiojs.events.ready(function() {
-    var as = audiojs.createAll();
-  });
+$('audio,video').mediaelementplayer();
 </script>
 {% end %}
 
 {% block body %}
-<audio src="{{ static_url("test.wav") }}" preload="auto" />
+<div>
+Audio 1:<br>
+<audio src="{{ static_url("test.wav") }}" controls="controls" />
+</div>
 {% end %}
 
 {% block footer %}
