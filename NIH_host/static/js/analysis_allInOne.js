@@ -25,7 +25,7 @@ $(function () {
     var spinner; //spinner
     
     var xGridInterval = 200; //0.2 second
-    var yGridInterval = 500; //0.5 mV
+    var yGridInterval = 500; //0.5 mV, assuming the unit of ECG output is microvolt
     var yAxisHeight = 100;
     
     var yAxisOptionsTemplate = {
@@ -259,7 +259,7 @@ $(function () {
         });
     	*/
     	var resizer = $('<div id="resizer" />').css( {
-            width: '1300px',
+            width: '100%',
             minHeight: '400px',
             //border: '1px solid silver'
 
@@ -322,7 +322,7 @@ $(function () {
                 data: datasets[i].data,
                 pointStart: Date.UTC(0, 0, 0, 0, 0, 0, 0),
                 yAxis: i, //use the index of dataset as the index of yAxis
-                pointInterval: 5 // 5 millisecond
+                pointInterval: 4.17 // 5 millisecond<--wrong! should be 1000/frequency. in this case 1000/240 = 4.17
         	});
         }
     	

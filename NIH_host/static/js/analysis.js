@@ -46,6 +46,9 @@ $(function () {
     //borrowed from http://www.davita-shop.co.uk/ecg-instruments.html    
     var refImgUrl = "static/css/images/ecg.png"; 
     
+    var xGridInterval = 1200; //0.2 second = 200ms, pointInterval was multiplied by 6, so GridInterval is also multiplied by 6
+    var yGridInterval = 500; //0.5 mV
+    
     var hOptions = { // //options settings for histogram plot
         chart: {
             renderTo: 'histogram',
@@ -167,14 +170,14 @@ $(function () {
             	minorGridLineColor: 'rgb(245, 149, 154)',
             	minorGridLineWidth: 0.2,
             	
-            	minorTickInterval: 'auto',
+            	minorTickInterval: 'auto', //a fifth of the tickInterval by default
     	        minorTickWidth: 1,
     	        minorTickLength: 0,
     	        minorTickPosition: 'inside',
     	        minorTickColor: 'red',
     	
     	        //tickPixelInterval: 30,
-    	        tickInterval: 40,
+    	        tickInterval: xGridInterval,
     	        tickWidth: 2,
     	        tickPosition: 'inside',
     	        tickLength: 0,
@@ -201,7 +204,7 @@ $(function () {
     	        minorTickColor: 'red',
     	
     	        //tickPixelInterval: 30,
-    	        tickInterval: 500,
+    	        tickInterval: yGridInterval, //assume the unit of output is microVolt, 0.5milliVolt = 500microVolt
     	        tickWidth: 2,
     	        tickPosition: 'inside',
     	        tickLength: 0,
@@ -221,7 +224,7 @@ $(function () {
                 crosshairs: true,
                 formatter: function() {
                     return '<b>'+ this.series.name +'</b><br/>'+
-                        this.x +': '+ this.y;
+                    this.x/25 +': '+ this.y; //pointInterval is 25
                 }
             },
             plotOptions: {
@@ -452,8 +455,8 @@ $(function () {
     }
     
     function addFileUploadDiv() {
-    	var fileInput = $('<span class="file-wrapper">\
-    			<span>Submit a different Dicom file</span>\
+    	var fileInput = $('<span class="file-wrapper" title="Submit a different Dicom file">\
+    			<span>File</span>\
                 <input type="file" name="uploaded_files" >\
             </span>').css({
     		float: 'right',
@@ -503,7 +506,7 @@ $(function () {
 
     	//refImgDiv.appendTo(choice);
 
-    	var refButton = $('<button id="ref">show/hide reference of Q/T point</button>').css({
+    	var refButton = $('<span id="ref" title="show/hide reference of Q/T point</span>">Reference</span>').css({
     		float: 'right',
     		fontSize: 'small',
     	});
@@ -555,6 +558,8 @@ $(function () {
 	        	options.series.push({
 	        		name: label,
                     data: data,
+                    pointInterval: 25 // 5 millisecond<--wrong! should be 1000/frequency. 
+                    					//in this case 1000/240, multiply 6 on pointInterval = 25
 	        	});
 	        	plot = new Highcharts.Chart(options, function() {
 	        		hideSpinner();

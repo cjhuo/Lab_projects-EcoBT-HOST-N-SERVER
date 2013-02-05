@@ -7,7 +7,6 @@
 
 $(function () {
 	var data = [], total_points = 300;
-	
 	var url = "ws://cps.eng.uci.edu:8000/socket"; //push url, need to change this to server's url, 
 											//such as cps.eng.uci.edu:8000/socket
 	var socket = null; //websocket object
