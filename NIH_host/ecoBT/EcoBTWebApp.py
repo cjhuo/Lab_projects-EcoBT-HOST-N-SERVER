@@ -23,11 +23,9 @@ define("port", default=8001, help="run on the given port", type=int)
 
 class Application(tornado.web.Application):
     def __init__(self):
-        global worker
-        worker = EcoBTWorker()
-        worker.start()
+        self.globalSockets = []
         handlers = [
-            (r"/socket", EcoBTWebSocket, dict(worker = worker))
+            (r"/socket", EcoBTWebSocket, dict(globalSockets = self.globalSockets))
         ]
         settings = dict(
             debug=True
@@ -36,15 +34,15 @@ class Application(tornado.web.Application):
         
         
 class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
-    def initialize(self, worker):
-        self.worker = worker                   
+    def initialize(self, globalSockets):
+        self.globalSockets = globalSockets                   
         
     def open(self):
-        self.worker.getGlobalSockets().append(self)
+        self.globalSockets.append(self)
         print "WebSocket opened"
 
     def on_close(self):
-        self.worker.getGlobalSockets().remove(self)
+        self.globalSockets.remove(self)
         print "WebSocket closed"
         
 if __name__ == "__main__":
@@ -57,7 +55,8 @@ if __name__ == "__main__":
     '''
     print "Running on localhost:8001"
     tornado.options.parse_command_line()
-    http_server = tornado.httpserver.HTTPServer(Application())
+    app = Application()
+    http_server = tornado.httpserver.HTTPServer(app)
     http_server.listen(options.port)
     
     #open a browser for the web interface
@@ -67,7 +66,7 @@ if __name__ == "__main__":
     t = threading.Thread(target = tornado.ioloop.IOLoop.instance().start)
     #t.daemon = True
     t.start()
-    app = EcoBTApp(worker)
+    app = EcoBTApp(app.globalSockets)
     
     '''    
     sys.stdout = stdOut
