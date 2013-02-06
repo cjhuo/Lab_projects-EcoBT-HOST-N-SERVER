@@ -6,11 +6,12 @@
 html {height: 100%;}
 
 body{
-	min-width:1000px;
-	width: auto;
 	position: relative;
+	width: auto;
+	min-width:1000px;
 	height: 100%;
-	background-color: #cbcbcb;
+	min-height: 768px;
+	background-color: #BCBCBC;
 	<!--background: -webkit-gradient(linear, left top, left bottom, from(#ccc), to(#fff));-->
 
 }
@@ -40,7 +41,7 @@ li {
 
 ul.nav li a {
 	-webkit-transition: all 0.3s ease-out;
-	background: <!--#cbcbcb url('images/border.png')--> no-repeat;
+	background: #cbcbcb url('images/border.png') no-repeat;
 	color: #174867;
 	padding: 7px 15px 7px 15px;
 	-webkit-border-top-right-radius: 10px;
@@ -58,10 +59,10 @@ ul.nav li a:hover {
 }
 
 iframe {
+	width: 85%; 
+	height: 700px;
 	position: relative;
 	float: right;
-	width:85%; 
-	height:100%;
 	margin: 0px 0px 0px 0px;
 	
 }
