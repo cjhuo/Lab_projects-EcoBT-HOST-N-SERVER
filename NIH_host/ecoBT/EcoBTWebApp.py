@@ -31,6 +31,9 @@ class Application(tornado.web.Application):
             debug=True
         )
         tornado.web.Application.__init__(self, handlers, **settings)
+    
+    def setEcoBTApp(self, app):
+        self.EcoBTApp = app 
         
         
 class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
@@ -61,13 +64,14 @@ if __name__ == "__main__":
     
     #open a browser for the web interface
     #webbrowser.open_new('http://localhost:8000/')
-    
+    ecoBTApp = EcoBTApp(app.globalSockets)
+    app.setEcoBTApp(ecoBTApp)
     #start web server
     t = threading.Thread(target = tornado.ioloop.IOLoop.instance().start)
     t.setDaemon(True)
     #t.daemon = True
     t.start()
-    ecoBTApp = EcoBTApp(app.globalSockets)
+    ecoBTApp.start()
     
     '''    
     sys.stdout = stdOut

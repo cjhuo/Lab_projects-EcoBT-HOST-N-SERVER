@@ -11,11 +11,15 @@ from Sockets import Sockets
 class EcoBTApp(object):
 
     def __init__(self, sockets):
-        # initialize NSAutoreleasePool
-        self.pool = NSAutoreleasePool.alloc().init()
         #initialize CMManagerWorker
         self.managerWorker = EcoBTCentralManagerWorker.alloc().init()   
         self.managerWorker.setSockets(sockets)
+
+        
+    def start(self):
+        # initialize NSAutoreleasePool
+        self.pool = NSAutoreleasePool.alloc().init()
+
         # handle keyboard interrupt. Hit "Enter" to exit the program
         stdIn = NSFileHandle.fileHandleWithStandardInput().retain()
         s = objc.selector(self.handler,signature='v@:')
@@ -44,6 +48,6 @@ class EcoBTApp(object):
 if __name__ == '__main__':
     #main()
 
-    EcoBTApp(Sockets())
+    EcoBTApp(Sockets()).start()
 
 
