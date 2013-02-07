@@ -22,7 +22,7 @@ class EcoBTPeripheralDelegateWorker(EcoBTDelegateWorker):
             #print 'sockets: ', self.getGlobalSockets()               
             #process data
             if(data != 'stop'):
-                if(len(self._global_sockets) != 0):
+                if len(self._global_sockets) != 0:
                     #print data
                     for socket in self._global_sockets.sockets:
                         socket.write_message(data) 

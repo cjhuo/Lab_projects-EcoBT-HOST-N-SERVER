@@ -53,9 +53,13 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
         
 
     def startScan(self):
+        options = NSDictionary.dictionaryWithObject_forKey_(
+            NSNumber.numberWithBool_(YES),
+            CBCentralManagerScanOptionAllowDuplicatesKey
+        )
         self.manager.scanForPeripheralsWithServices_options_(
             NSArray.arrayWithObject_(CBUUID.UUIDWithString_(u"180D")),
-            nil
+            options
         )
         
     def stopScan(self):
@@ -109,6 +113,7 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
             
             # for test
             self.connectPeripheral(peripheral)
+            self.startScan()
         
         #send peripherals list to UI !!!!!!!
         
@@ -125,7 +130,7 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
         print "Connected to peripheral ", peripheral._.name
             
         #delegate.sockets = self.sockets     
-        
+        print "number of peripherals: ", len(self.peripheralWorkers)
         w = self.findWorkerForPeripheral(peripheral)
         if w != False:
             # start peripheral's delegate worker only when it's connected

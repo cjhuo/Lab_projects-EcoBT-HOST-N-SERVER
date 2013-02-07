@@ -13,26 +13,13 @@ import os.path
 import threading
 
 from EcoBTApp import EcoBTApp
+from Sockets import Sockets
 
 import sys
 sys.dont_write_bytecode = True
 from tornado.options import define, options
 define("port", default=8001, help="run on the given port", type=int)
 
-
-class Sockets(object):
-    def __init__(self):
-        self.sockets = []
-        
-    def append(self, socket):
-        self.sockets.append(socket)
-        
-    def remove(self, socket):
-        self.sockets.remove(socket)
-    
-    def __len__(self):
-        return len(self.sockets)
-        
 
 class Application(tornado.web.Application):
     def __init__(self):

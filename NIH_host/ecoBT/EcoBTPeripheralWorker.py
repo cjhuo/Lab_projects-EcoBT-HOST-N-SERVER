@@ -34,7 +34,8 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
         self.delegateWorker.setGlobalSockets(sockets)
         
     def stop(self):
-        self.delegateWorker.running.value = 0
+        self.delegateWorker.getQueue().put('stop')
+        self.delegateWorker.join()
 
     def discoverServices(self):
         self.peripheral.discoverServices_(None)
@@ -46,6 +47,9 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
             print "Service found with UUID: ", service._.UUID
             if service._.UUID == CBUUID.UUIDWithString_("180D"):
                 print "UUID Matched!!"
+                peripheral.discoverCharacteristics_forService_(nil, service)
+            elif service._.UUID == CBUUID.UUIDWithString_("180A"):#LED lights
+                print "%s Found!!" % service._.UUID
                 peripheral.discoverCharacteristics_forService_(nil, service)
             elif service._.UUID == CBUUID.UUIDWithString_("FF10"):#LED lights
                 print "%s Found!!" % service._.UUID
@@ -65,6 +69,10 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
                                                                error):
         print "didDiscoverCharacteristicsForService"
         if service._.UUID == CBUUID.UUIDWithString_("180D"):
+            for char in service._.characteristics:
+                NSLog("%@", char._.UUID)
+                peripheral.readValueForCharacteristic_(char)
+        if service._.UUID == CBUUID.UUIDWithString_("180A"):
             for char in service._.characteristics:
                 NSLog("%@", char._.UUID)
                 peripheral.readValueForCharacteristic_(char)
@@ -107,6 +115,10 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
                                                           characteristic,
                                                           error):
 #        print "Read Characteristic(%s) value" % characteristic._.UUID
+        if characteristic._.UUID == CBUUID.UUIDWithString_("2a23"):
+            hex_str = binascii.hexlify(characteristic._.value)
+            print "180A Profile?(%s) %s" % (characteristic._.UUID, hex_str)
+
         # SIDS SHT25 PROFILE
         sht25_enable = False
         if characteristic._.UUID == CBUUID.UUIDWithString_("FE11"):
@@ -156,7 +168,7 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
             hex_str = binascii.hexlify(characteristic._.value)
             value = int(hex_str, base=16)
             print "CHAR(%s) %d" % (characteristic._.UUID, value)
-            byte_array = array.array('b', chr(0))
+            byte_array = array.array('b', chr(1))
             val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
             peripheral.writeValue_forCharacteristic_type_(
                 val_data, characteristic,
@@ -238,7 +250,7 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
             data = ('z', z)
             self.worker.getQueue().put(data)
             '''
-            
+            '''
             if x<0 and z<0:
                 x = -math.asin(x)-3.141592
             elif x>0 and z<0:
@@ -247,18 +259,18 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
                 x = math.asin(x)
             data = {'type': 'orientation', 'axis': 'x', 'value': x}
             self.delegateWorker.getQueue().put(data)
+            '''
             
-            '''
             x = math.asin(x)
-            data = ('x', x)
-            self.worker.getQueue().put(data)
+            data = {'type': 'orientation', 'axis': 'x', 'value': x}
+            self.delegateWorker.getQueue().put(data)
             y = math.asin(y)
-            data = ('y', y)
-            self.worker.getQueue().put(data)
+            data = {'type': 'orientation', 'axis': 'y', 'value': y}
+            self.delegateWorker.getQueue().put(data)
             z = math.acos(z)
-            data = ('z', z)
-            self.worker.getQueue().put(data)
-            '''
+            data = {'type': 'orientation', 'axis': 'z', 'value': z}
+            self.delegateWorker.getQueue().put(data)
+            
     '''
     def peripheral_didUpdateValueForCharacteristic_error_(self,
                                                           peripheral,

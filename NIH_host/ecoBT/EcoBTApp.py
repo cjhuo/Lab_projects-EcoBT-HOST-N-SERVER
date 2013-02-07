@@ -5,6 +5,7 @@ import threading
 
 from EcoBTCentralManagerWorker import EcoBTCentralManagerWorker
 from threading import Event
+from Sockets import Sockets
 
 
 class EcoBTApp(object):
@@ -43,6 +44,6 @@ class EcoBTApp(object):
 if __name__ == '__main__':
     #main()
 
-    EcoBTApp.alloc().init()
+    EcoBTApp(Sockets())
 
 
