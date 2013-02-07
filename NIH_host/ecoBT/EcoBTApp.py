@@ -19,10 +19,24 @@ class EcoBTApp(object):
     def start(self):
         # initialize NSAutoreleasePool
         self.pool = NSAutoreleasePool.alloc().init()
+        
+        self.handleKeyboardInterrupt()
 
+        # run NSRunLoop infinitely
+        while (not self.running.isSet()) and self.runLoop.runMode_beforeDate_(NSDefaultRunLoopMode, NSDate.distantFuture()):
+            pass # do nothing 
+        
+        # clean up       
+        self.managerWorker.stop()
+        NSLog("Program Terminated")
+        del self.pool
+        
+    def handleKeyboardInterrupt(self):
         # handle keyboard interrupt. Hit "Enter" to exit the program
         stdIn = NSFileHandle.fileHandleWithStandardInput().retain()
-        s = objc.selector(self.handler,signature='v@:')
+        
+        # magic letters 'v@:@': void return, instance method, has 1 object argument.
+        s = objc.selector(self.handler_,signature='v@:@') 
         NSNotificationCenter.defaultCenter().addObserver_selector_name_object_\
                         (self, s, NSFileHandleReadCompletionNotification, stdIn)
 
@@ -30,18 +44,17 @@ class EcoBTApp(object):
         self.running = Event()
         stdIn.readInBackgroundAndNotify()
         
-        # run NSRunLoop infinitely
-        while (not self.running.isSet()) and self.runLoop.runMode_beforeDate_(NSDefaultRunLoopMode, NSDate.distantFuture()):
-            pass # do nothing        
-        self.managerWorker.stop()
-        NSLog("Program Terminated")
-        del self.pool
-    
     def setSockets(self, sockets):
         self.managerWorker.sockets = sockets
-        
-    def handler(self):
+       
+    def handler_(self, notification): # handlder must has a function name ended by a single "_"        
         NSLog("Keyboard Interrupt Captured")
+        data = notification.userInfo().objectForKey_(NSFileHandleNotificationDataItem)
+        string = NSString.alloc().initWithData_encoding_(data, NSUTF8StringEncoding).autorelease()
+        NSLog("string == %@", string)
+        print str(string)
+        
+        # stop NSRunLoop        
         self.running.set()
 
 
