@@ -12,7 +12,6 @@ import tornado.options
 import os.path
 import threading
 
-from EcoBTWorker import EcoBTWorker
 from EcoBTApp import EcoBTApp
 
 import sys
@@ -21,9 +20,23 @@ from tornado.options import define, options
 define("port", default=8001, help="run on the given port", type=int)
 
 
+class Sockets(object):
+    def __init__(self):
+        self.sockets = []
+        
+    def append(self, socket):
+        self.sockets.append(socket)
+        
+    def remove(self, socket):
+        self.sockets.remove(socket)
+    
+    def __len__(self):
+        return len(self.sockets)
+        
+
 class Application(tornado.web.Application):
     def __init__(self):
-        self.globalSockets = []
+        self.globalSockets = Sockets()
         handlers = [
             (r"/socket", EcoBTWebSocket, dict(globalSockets = self.globalSockets))
         ]
@@ -64,9 +77,10 @@ if __name__ == "__main__":
     
     #start web server
     t = threading.Thread(target = tornado.ioloop.IOLoop.instance().start)
+    t.setDaemon(True)
     #t.daemon = True
     t.start()
-    app = EcoBTApp(app.globalSockets)
+    ecoBTApp = EcoBTApp(app.globalSockets)
     
     '''    
     sys.stdout = stdOut

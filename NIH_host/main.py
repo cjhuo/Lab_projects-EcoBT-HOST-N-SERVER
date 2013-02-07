@@ -19,13 +19,13 @@ from db.Models import DataSource, Device, DataLog
 
 class Application(tornado.web.Application):
     def __init__(self):
-        ds = DataSource()
-        ecg = ECG_reader()
+        self.ds = DataSource()
+        self.ecg = ECG_reader()
         
         handlers = [
             (r'/', MainHandler),
             (r'/soundMonitor', SoundMonitorHandler),
-            (r'/fileHandler', FileHandler, dict(ecg = ecg)),
+            (r'/fileHandler', FileHandler, dict(ecg = self.ecg)),
             (r'/cardReader', CardReaderHandler),
             (r'/tempAnalysis', TempAnalysisHandler),
             (r'/analysis_old', AnalysisOldHandler),
@@ -34,9 +34,9 @@ class Application(tornado.web.Application):
             (r'/temperature', TemperatureHandler),
             (r'/plot', PlotHandler),
             (r'/analysis', AnalysisHandler),
-            (r'/point', PointHandler, dict(ds = ds)),
-            (r'/dsp', DSPHandler, dict(ecg = ecg)),
-            (r"/socket", ClientSocket, dict(ds = ds))
+            (r'/point', PointHandler, dict(ds = self.ds)),
+            (r'/dsp', DSPHandler, dict(ecg = self.ecg)),
+            (r"/socket", ClientSocket, dict(ds = self.ds))
         ]
         settings = dict(
             template_path=os.path.join(

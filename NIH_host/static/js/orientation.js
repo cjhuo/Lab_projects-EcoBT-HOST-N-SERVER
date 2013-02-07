@@ -20,19 +20,21 @@ $(function () {
 
 	var parent;
 
-	var url = "ws://cps.eng.uci.edu:8001/socket"; //push url, need to change this to server's url, 
+	var url = "ws://localhost:8001/socket"; //push url, need to change this to server's url, 
 	//such as cps.eng.uci.edu:8000/socket
 	var socket = null; //websocket object
 	
 	
 	function onDataReceived(data){
-		if(data.axis == 'x')
-			parent.rotation.x = data.value;
-		else if(data.axis == 'y')
-			parent.rotation.y = data.value;
-		else if(data.axis == 'z')
-			parent.rotation.z = data.value;
-		renderer.render( scene, camera );
+		if(data.type == 'orientation'){
+			if(data.axis == 'x')
+				parent.rotation.x = data.value;
+			else if(data.axis == 'y')
+				parent.rotation.y = data.value;
+			else if(data.axis == 'z')
+				parent.rotation.z = data.value;
+			renderer.render( scene, camera );
+		}
 	}
 	
 	var reconMsg = null; //reconnect div object
@@ -150,15 +152,15 @@ $(function () {
 
 		requestAnimationFrame( animate );
 
-		//render();
+		render();
 		stats.update();
 
 	}
 
 	function render() {
 
-		parent.rotation.y += (Math.random()-0.5)*0.1;
-		parent.rotation.x += (Math.random()-0.5)*0.3;
+		//parent.rotation.y += (Math.random()-0.5)*0.1;
+		//parent.rotation.x += (Math.random()-0.5)*0.3;
 		renderer.render( scene, camera );
 
 	}

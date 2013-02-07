@@ -25,7 +25,7 @@ class EcoBTCentralManagerDelegateWorker(EcoBTDelegateWorker):
                     #print data
                     axis, val = data
                     data = {'axis': axis, 'value': val}
-                    for socket in self._global_sockets:
+                    for socket in self._global_sockets.sockets:
                         socket.write_message(data) 
             else: # stop signal received
                 break

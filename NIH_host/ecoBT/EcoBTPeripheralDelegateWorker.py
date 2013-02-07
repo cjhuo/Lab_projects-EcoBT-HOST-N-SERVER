@@ -18,14 +18,13 @@ class EcoBTPeripheralDelegateWorker(EcoBTDelegateWorker):
     def run(self):
         while True:
             data = self._queue.get()
-            self._queue.task_done()               
+            self._queue.task_done()
+            #print 'sockets: ', self.getGlobalSockets()               
             #process data
             if(data != 'stop'):
                 if(len(self._global_sockets) != 0):
                     #print data
-                    axis, val = data
-                    data = {'axis': axis, 'value': val}
-                    for socket in self._global_sockets:
+                    for socket in self._global_sockets.sockets:
                         socket.write_message(data) 
             else: # stop signal received
                 break

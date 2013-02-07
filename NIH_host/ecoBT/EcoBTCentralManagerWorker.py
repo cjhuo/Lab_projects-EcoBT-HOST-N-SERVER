@@ -22,7 +22,6 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
     def init(self):
         EcoBTWorker.__init__(self)
         self.peripheralWorkers = []
-        self.sockets = None
         # initialize CMdelegate worker
         self.delegateWorker =  EcoBTCentralManagerDelegateWorker()
         self.delegateWorker.start()
@@ -30,9 +29,13 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
         print "Initialize CBCentralManager Worker"
         self.manager = CBCentralManager.alloc().initWithDelegate_queue_(self, nil)
         return self
+    
+    def setSockets(self, sockets):
+        self.sockets = sockets
+        self.delegateWorker.setGlobalSockets(sockets)
         
     def stop(self): # clean up
-        print "Cleaning Up"
+        NSLog("Cleaning Up")
         for w in self.peripheralWorkers:
             w.delegateWorker.getQueue().put('stop')
             w.delegateWorker.join()
@@ -99,6 +102,8 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
         if found == False:
             # initializae peripheral worker when peripheral is added to the list
             worker = EcoBTPeripheralWorker.alloc().init()
+            worker.setSockets(self.sockets)
+            #print 'Peripheral socket: ', worker.sockets
             worker.peripheral = peripheral
             self.peripheralWorkers.append(worker)
             
@@ -121,14 +126,14 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
             
         #delegate.sockets = self.sockets     
         
-        self.worker = self.findWorkerForPeripheral(peripheral)
-        if self.worker != False:
-            self.worker.peripheral.setDelegate_(self.worker)
+        w = self.findWorkerForPeripheral(peripheral)
+        if w != False:
             # start peripheral's delegate worker only when it's connected
-            self.worker.delegateWorker.start()
+            w.peripheral.setDelegate_(w)
+            w.delegateWorker.start()
             
             # for test
-            self.worker.discoverServices()
+            w.discoverServices()
         else: 
             print "error, peripheral hasn't been added to watch list"
         #peripheral.discoverServices_(None)

@@ -24,13 +24,14 @@ from EcoBTPeripheralDelegateWorker import EcoBTPeripheralDelegateWorker
 class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
     def init(self):
         EcoBTWorker.__init__(self)
-        self.delegateWorker = EcoBTPeripheralDelegateWorker()
-        #self.delegateWorker.start()
-        self.sockets = None
         self.peripheral = None
-        self.delegate = None
+        self.delegateWorker = EcoBTPeripheralDelegateWorker()
         print "Initialize Peripheral Worker"
         return self        
+
+    def setSockets(self, sockets):
+        self.sockets = sockets
+        self.delegateWorker.setGlobalSockets(sockets)
         
     def stop(self):
         self.delegateWorker.running.value = 0
@@ -140,12 +141,16 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
             value = value & 0xFFFC
             temp = -46.85 + (175.72 * value) / 65536
             print "SIDS SHT25 TEMP READING?(%s) %.2f" % (characteristic._.UUID, temp)
+            data = {'type': 'temperature', 'value': round(temp, 2)}
+            self.delegateWorker.getQueue().put(data)
         if characteristic._.UUID == CBUUID.UUIDWithString_("FE15"):
             hex_str = binascii.hexlify(characteristic._.value)
             value = int(hex_str[:-2], base=16)
             value = value & 0xFFFC
             humid = -6.0 +  (125.0 * value) / 65536
             print "SIDS SHT25 HUMID READING?(%s) %.2f" % (characteristic._.UUID, humid)
+            data = {'type': 'humidity', 'value': round(humid,2)}
+            self.delegateWorker.getQueue().put(data)
         # EPL LED PROFILE
         if characteristic._.UUID == CBUUID.UUIDWithString_("FF11"):
             hex_str = binascii.hexlify(characteristic._.value)
@@ -240,7 +245,7 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
                 x = 3.141592 - math.asin(x)
             else:   
                 x = math.asin(x)
-            data = ('x', x)
+            data = {'type': 'orientation', 'axis': 'x', 'value': x}
             self.delegateWorker.getQueue().put(data)
             
             '''

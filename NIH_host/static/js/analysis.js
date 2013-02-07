@@ -77,7 +77,8 @@ $(function () {
         	title: {
         		text: ""
         	},
-            min: 0
+        	min: 0,
+        	max: 100
         },
         /*
         legend: {
@@ -95,7 +96,7 @@ $(function () {
         tooltip: {
             formatter: function() {
                 return '<b>Result:<b><br>bin '+
-                    this.x +': '+ this.y;
+                    this.x +': '+ Math.round(this.y) + '%';
             }
         },
         
@@ -758,16 +759,23 @@ $(function () {
     	hOptions.xAxis = {};
     	hOptions.xAxis.categories = [];
     	hOptions.series = [];
-    	var tmpData = [];
+    	//var tmpData = [];
+    	tmpData = [];
+    	sum = 0;
     	$.each(data.data, function(key, val) {
-    		hOptions.xAxis.categories.push((val[0].toFixed(3) + '~' + val[1].toFixed(3)).toString());
-    		tmpData.push(val[2]);
+    		sum += val[2];
     	});
-
+    	$.each(data.data, function(key, val) {
+    		hOptions.xAxis.categories.push((val[0].toFixed(5) + '~' + val[1].toFixed(5)).toString());
+    		tmpData.push(100*val[2]/sum);
+    	});
+    	
     	hOptions.series.push({
     		//name: label,
             data: tmpData,
     	});
+
+
     	hPlot = new Highcharts.Chart(hOptions, function() {
     		hideSpinner();
     	});
