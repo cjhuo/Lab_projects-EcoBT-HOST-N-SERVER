@@ -20,47 +20,61 @@ $(function () {
 
 	var parent;
 
-	var url = "ws://localhost:8001/socket"; //push url, need to change this to server's url, 
-	//such as cps.eng.uci.edu:8000/socket
-	var socket = null; //websocket object
 	
 	
 	function onDataReceived(data){
 		if(data.type == 'orientation'){
+			/*
 			if(data.axis == 'x')
-				parent.rotation.x = data.value;
+				parent.rotation.setX(data.value);
+				//parent.rotation.x = data.value;
 			else if(data.axis == 'y')
-				parent.rotation.y = data.value;
+				parent.rotation.setY(data.value);
+				//parent.rotation.z = data.value;
 			else if(data.axis == 'z')
-				parent.rotation.z = data.value;
+				parent.rotation.setZ(data.value);
+				//parent.rotation.y = data.value;
+			*/
+			parent.lookAt(new THREE.Vector3(data.value.x, data.value.y, data.value.z));
 			renderer.render( scene, camera );
 		}
 	}
-	
-	var reconMsg = null; //reconnect div object
-	
-	/**
-	* use to store reconnect procedure, to make sure there is only 1 websocket to server generated
-	* not thread safe!!!TBD
-	*/
-	var reconn = null; 
+
 
 	function init() {
 
-		container = document.createElement( 'div' );
-		document.body.appendChild( container );
+		container = $('#container');
+		//container = document.createElement( 'div' );
+		//container.style.width = '400px';
+		//document.body.appendChild( container );
 		
-		var info = document.createElement( 'div' );
-		info.style.position = 'absolute';
-		info.style.top = '100px';
-		info.style.width = '100%';
-		info.style.textAlign = 'center';
-		info.innerHTML = "<h1>Simulator of the node's movement</h1>";
-		container.appendChild( info );
+		stats = new Stats();
+		stats.domElement.style.position = 'relative';
+		//stats.domElement.style.float = 'left';
+		//stats.domElement.style.top = 'auto';
+		//container.append( stats.domElement );
+
+		var info = $("<div/>").css( {
+            position: 'relative',
+            //width: '10%',
+            //cssFloat: 'center',
+			fontWeight: 'bold',
+			margin: '10px 10px 10px 10px',
+            textAlign: 'center'
+        });
+		//info.style.position = 'absolute';
+		//info.style.top = '100px';
+		//info.style.width = '100%';
+		//info.style.textAlign = 'center';
+		info.html("<h2>Simulator of the node's movement</h2>");
+		container.append( info );
 
 		camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 1000 );
-		camera.position.y = 0;
-		camera.position.z = 500;
+		camera.position.y = -250;
+		
+		camera.position.z = 0;
+
+		camera.rotation = new THREE.Vector3( 1.60, 0, 0 ); // turn z to be parallel to gravity
 
 		scene = new THREE.Scene();
 
@@ -70,13 +84,19 @@ $(function () {
 
 		for ( var i = 0; i < 6; i ++ ) {
 
-			materials.push( new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff } ) );
+			materials.push( new THREE.MeshBasicMaterial( { color: (i/100)* 0xffffff } ) );
 
 		}
 
-		cube = new THREE.Mesh( new THREE.CubeGeometry( 200, 10, 100, 1, 1, 1, materials ), new THREE.MeshFaceMaterial() );
-		cube.position.y = 0;//150;
-		cube.rotation.y = 0;//0.1;
+		cube = new THREE.Mesh( new THREE.CubeGeometry( 100, 200, 10, 1, 1, 1, materials ), new THREE.MeshFaceMaterial() );
+		cube.position.x = 0;//150;
+		
+		//cube.lookAt(a);
+		
+		//cube.rotation.x = 1.57;//0.1;
+		
+		//cube.rotation.y = 0;//0.1;
+		//cube.rotation.z = 0.5;//0.1;
 		//scene.add( cube );
 		
 		// Get text from hash
@@ -93,7 +113,7 @@ $(function () {
 
 		var text3d = new THREE.TextGeometry( theText, {
 
-			size: 20,
+			size: 15,
 			height: 3,
 			curveSegments: 2,
 			font: "helvetiker"
@@ -107,8 +127,9 @@ $(function () {
 		text = new THREE.Mesh( text3d, textMaterial );
 
 		text.position.x = centerOffset;
-		text.position.y = 50;
-		text.position.z = 0;
+		text.position.y = -100;
+		text.position.z = 10;
+		text.rotation.x = 1.57; 
 
 		//text.rotation.x = 0.1;
 		text.rotation.y = 0;
@@ -117,18 +138,16 @@ $(function () {
 		
 		parent.add( cube );
 		parent.add( text );
+		//parent.lookAt(new THREE.Vector3(0,0,0));
+		//parent.rotation.x = 1.57
 		scene.add( parent );
 
 
 		renderer = new THREE.CanvasRenderer();
-		renderer.setSize( window.innerWidth, window.innerHeight );
+		renderer.setSize( 400, 300 );
 
-		container.appendChild( renderer.domElement );
+		container.append( renderer.domElement );
 
-		stats = new Stats();
-		stats.domElement.style.position = 'absolute';
-		stats.domElement.style.top = '0px';
-		container.appendChild( stats.domElement );
 
 		//window.addEventListener( 'resize', onWindowResize, false );
 		
@@ -165,7 +184,21 @@ $(function () {
 
 	}
 	
+	
 
+	var url = "ws://localhost:8001/socket"; //push url, need to change this to server's url, 
+	//such as cps.eng.uci.edu:8000/socket
+	var socket = null; //websocket object
+	
+	
+	var reconMsg = null; //reconnect div object
+	
+	/**
+	* use to store reconnect procedure, to make sure there is only 1 websocket to server generated
+	* not thread safe!!!TBD
+	*/
+	var reconn = null; 
+	
 	function showReconMsg(msg) {
 		if(reconMsg == null) {
 			reconMsg = $('<div id="reconnect" >' + msg + '</div>').css( {
@@ -257,7 +290,7 @@ $(function () {
 		}
 	}
 	
-	$(window).bind('resize', onWindowResize);
+	//$(window).bind('resize', onWindowResize);
 	
 	$(window).bind('load', function(e) {
 		init();

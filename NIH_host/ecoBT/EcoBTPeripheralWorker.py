@@ -261,15 +261,21 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
             self.delegateWorker.getQueue().put(data)
             '''
             
-            x = math.asin(x)
-            data = {'type': 'orientation', 'axis': 'x', 'value': x}
+            #x = math.asin(x)
+            data = {'type': 'orientation', 
+                    'value': { 'x': x,
+                               'y': y,
+                               'z': z
+                              }
+                    }
+            #data = {'type': 'orientation', 'axis': 'x', 'value': x}
             self.delegateWorker.getQueue().put(data)
-            y = math.asin(y)
-            data = {'type': 'orientation', 'axis': 'y', 'value': y}
-            self.delegateWorker.getQueue().put(data)
-            z = math.acos(z)
-            data = {'type': 'orientation', 'axis': 'z', 'value': z}
-            self.delegateWorker.getQueue().put(data)
+            #y = math.asin(y)
+            #data = {'type': 'orientation', 'axis': 'y', 'value': y}
+            #self.delegateWorker.getQueue().put(data)
+            #z = math.acos(z)
+            #data = {'type': 'orientation', 'axis': 'z', 'value': z}
+            #self.delegateWorker.getQueue().put(data)
             
     '''
     def peripheral_didUpdateValueForCharacteristic_error_(self,
