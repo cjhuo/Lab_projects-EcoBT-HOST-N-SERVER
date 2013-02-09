@@ -40,15 +40,15 @@ $(function () {
 	}
 	
 	function init() {
-		initSimulation();
 		initChart();
+		initSimulation();
 	}
 	
 	var chartContainer;
 	var chart;
 	var total_points = 100;
 	function initChart() {
-		chartContainer = $("<div id='chart' class='chart'/>").appendTo(document.body);
+		chartContainer = $("<div class='container'><div id='chart' class='chart'/></div>").appendTo(document.body);
 		options = {
             chart: {
                 renderTo: 'chart',
@@ -101,7 +101,7 @@ $(function () {
                 min: -1.0,
                 max: 1.0,
                 offset: 0,
-                top: 300,
+                top: 260,
                 lineWidth: 2,
                 height: 100
             	
@@ -171,7 +171,7 @@ $(function () {
 
 	function initSimulation() {
 
-		simContainer = $("<div id='simulation' class='simulation'/>").appendTo(document.body);;
+		simContainer = $("<div id='simulation' class='container'/>").appendTo(document.body);;
 		//console.log(simContainer);
 		//simContainer = document.createElement( 'div' );
 		//simContainer.style.width = '400px';
