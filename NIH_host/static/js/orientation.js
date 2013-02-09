@@ -6,21 +6,6 @@
  */
 
 $(function () {
-	var container, stats;
-
-	var camera, scene, renderer;
-
-	var cube, plane;
-
-	var targetRotation = 0;
-	var targetRotationOnMouseDown = 0;
-
-	//var windowHalfX = window.innerWidth / 2;
-	//var windowHalfY = window.innerHeight / 2;
-
-	var parent;
-
-	
 	
 	function onDataReceived(data){
 		if(data.type == 'orientation'){
@@ -35,24 +20,168 @@ $(function () {
 				parent.rotation.setZ(data.value);
 				//parent.rotation.y = data.value;
 			*/
-			parent.lookAt(new THREE.Vector3(data.value.x, data.value.y, data.value.z));
-			renderer.render( scene, camera );
+			updateSimulation(data);
+			updateChart(data);
+
 		}
 	}
-
-
+	
+	function updateSimulation(data) {
+		//update simulation
+		parent.lookAt(new THREE.Vector3(-data.value.x, -data.value.y, data.value.z));
+		renderer.render( scene, camera );
+	}
+	
+	function updateChart(data) {
+		//update chart
+		chart.series[0].addPoint(data.value.x, true, true);
+		chart.series[1].addPoint(data.value.y, true, true);
+		chart.series[2].addPoint(data.value.z, true, true);
+	}
+	
 	function init() {
-
-		container = $('#container');
-		//container = document.createElement( 'div' );
-		//container.style.width = '400px';
-		//document.body.appendChild( container );
+		initSimulation();
+		initChart();
+	}
+	
+	var chartContainer;
+	var chart;
+	var total_points = 100;
+	function initChart() {
+		chartContainer = $("<div id='chart' class='chart'/>").appendTo(document.body);
+		options = {
+            chart: {
+                renderTo: 'chart',
+                type: 'line'
+            },
+            title: {
+                text: 'Live ACC RAW Data'
+            },
+            credits: {
+            	href: "http://embedded.ece.uci.edu/",
+            	text: "UCI Embedded Lab"
+            },
+            xAxis: {
+            	reversed: true,
+            	labels: {
+            		enabled: false
+            	},
+                lineWidth:0,
+                tickWidth:0
+            },
+            yAxis: [{
+                title: {
+                    text: 'X',
+                    rotation: 0
+                },
+                min: -1.0,
+                max: 1.0,
+                offset: 0,
+                lineWidth: 2,
+                height: 100
+            }, 
+            {
+                title: {
+                    text: 'Y',
+                    rotation: 0
+                },
+                min: -1.0,
+                max: 1.0,
+                offset: 0,
+                top: 150,
+                lineWidth: 2,
+                height: 100
+            	
+            },
+            {
+                title: {
+                    text: 'Z',
+                    rotation: 0
+                },
+                min: -1.0,
+                max: 1.0,
+                offset: 0,
+                top: 300,
+                lineWidth: 2,
+                height: 100
+            	
+            }],
+            plotOptions: {
+                series: {
+                    marker: {
+                        enabled: false
+                    }
+                }
+            },
+            tooltip: {
+                formatter: function() {
+                	return '<b>'+ this.series.yAxis.axisTitle.text +'</b>:'+ this.y;
+                }
+            },
+            legend: {
+            	layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'top',
+                x: -10,
+                y: 100,
+                borderWidth: 0
+            },
+            exporting: {
+                enabled: false
+            },
+            series: []
+        };
 		
+		// init chart with all point with 0
+	    var data = [];
+	    for (var i = 0; i < total_points; i++){
+			data.push(0);
+		}
+        options.series.push({
+        	name: 'X',
+            data: data,
+        });
+        options.series.push({
+        	name: 'Y',
+            data: data,
+            yAxis: 1
+        });
+        options.series.push({
+        	name: 'Z',
+            data: data,
+            yAxis: 2
+        });
+		chart = new Highcharts.Chart(options);
+	}
+
+	
+	var simContainer, stats;
+
+	var camera, scene, renderer;
+
+	var cube, plane;
+
+	//var targetRotation = 0;
+	//var targetRotationOnMouseDown = 0;
+
+	//var windowHalfX = window.innerWidth / 2;
+	//var windowHalfY = window.innerHeight / 2;
+
+	var parent;	
+
+	function initSimulation() {
+
+		simContainer = $("<div id='simulation' class='simulation'/>").appendTo(document.body);;
+		//console.log(simContainer);
+		//simContainer = document.createElement( 'div' );
+		//simContainer.style.width = '400px';
+		//$("body").append( simContainer );
+		//console.log(simContainer.width());
 		stats = new Stats();
 		stats.domElement.style.position = 'relative';
 		//stats.domElement.style.float = 'left';
 		//stats.domElement.style.top = 'auto';
-		//container.append( stats.domElement );
+		//simContainer.append( stats.domElement );
 
 		var info = $("<div/>").css( {
             position: 'relative',
@@ -67,14 +196,16 @@ $(function () {
 		//info.style.width = '100%';
 		//info.style.textAlign = 'center';
 		info.html("<h2>Simulator of the node's movement</h2>");
-		container.append( info );
+		simContainer.append( info );
 
 		camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 1000 );
-		camera.position.y = -250;
+		camera.position.x = -350;
+		camera.position.y = 0;
+		//camera.position.y = -250;
 		
-		camera.position.z = 0;
+		camera.position.z = -20;
 
-		camera.rotation = new THREE.Vector3( 1.60, 0, 0 ); // turn z to be parallel to gravity
+		camera.rotation = new THREE.Vector3( 0, -1.50, -1.57 ); // turn z to be parallel to gravity, facing up
 
 		scene = new THREE.Scene();
 
@@ -101,7 +232,7 @@ $(function () {
 		
 		// Get text from hash
 
-		var theText = "ECG node #1";
+		var theText = "SIDs node #1";
 
 		var hash = document.location.hash.substr( 1 );
 
@@ -113,7 +244,7 @@ $(function () {
 
 		var text3d = new THREE.TextGeometry( theText, {
 
-			size: 15,
+			size: 20,
 			height: 3,
 			curveSegments: 2,
 			font: "helvetiker"
@@ -127,12 +258,11 @@ $(function () {
 		text = new THREE.Mesh( text3d, textMaterial );
 
 		text.position.x = centerOffset;
-		text.position.y = -100;
-		text.position.z = 10;
+		text.position.y = 80;
+		text.position.z = 20;
 		text.rotation.x = 1.57; 
-
-		//text.rotation.x = 0.1;
-		text.rotation.y = 0;
+		text.rotation.y = -1.57;
+		text.rotation.z = 0;
 
 		parent = new THREE.Object3D();
 		
@@ -144,9 +274,9 @@ $(function () {
 
 
 		renderer = new THREE.CanvasRenderer();
-		renderer.setSize( 400, 300 );
+		renderer.setSize( simContainer.width(), 300 );
 
-		container.append( renderer.domElement );
+		simContainer.append( renderer.domElement );
 
 
 		//window.addEventListener( 'resize', onWindowResize, false );
