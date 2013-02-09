@@ -3,7 +3,7 @@ Created on Feb 5, 2013
 
 @author: cjhuo
 
-@summary: 
+@summary:
 monitor the input queue where command sent from UI is stored, and send to where the worker belongs to
 A EcoBTPeripheralWorker delegate has members as below:
 instance of peripheral,
@@ -21,26 +21,28 @@ import struct
 from EcoBTWorker import EcoBTWorker
 from EcoBTPeripheralDelegateWorker import EcoBTPeripheralDelegateWorker
 
+from datetime import datetime
+
 class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
     def init(self):
         EcoBTWorker.__init__(self)
         self.peripheral = None
         self.delegateWorker = EcoBTPeripheralDelegateWorker()
         print "Initialize Peripheral Worker"
-        return self        
+        return self
 
     def setSockets(self, sockets):
         self.sockets = sockets
         self.delegateWorker.setGlobalSockets(sockets)
-        
+
     def stop(self):
         self.delegateWorker.getQueue().put('stop')
         self.delegateWorker.join()
 
     def discoverServices(self):
         self.peripheral.discoverServices_(None)
-        
-        
+
+
     # CBPeripheral delegate methods
     def peripheral_didDiscoverServices_(self, peripheral, error):
         for service in peripheral._.services:
@@ -48,10 +50,13 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
             if service._.UUID == CBUUID.UUIDWithString_("180D"):
                 print "UUID Matched!!"
                 peripheral.discoverCharacteristics_forService_(nil, service)
-            elif service._.UUID == CBUUID.UUIDWithString_("180A"):#LED lights
+            elif service._.UUID == CBUUID.UUIDWithString_("180A"):
                 print "%s Found!!" % service._.UUID
                 peripheral.discoverCharacteristics_forService_(nil, service)
             elif service._.UUID == CBUUID.UUIDWithString_("FF10"):#LED lights
+                print "%s Found!!" % service._.UUID
+                peripheral.discoverCharacteristics_forService_(nil, service)
+            elif service._.UUID == CBUUID.UUIDWithString_("FF20"):#Real Time Clock
                 print "%s Found!!" % service._.UUID
                 peripheral.discoverCharacteristics_forService_(nil, service)
             elif service._.UUID == CBUUID.UUIDWithString_("FFA0"):#ACC
@@ -68,15 +73,23 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
                                                                service,
                                                                error):
         print "didDiscoverCharacteristicsForService"
+        # ECO BT DEFAULT PROFILE
         if service._.UUID == CBUUID.UUIDWithString_("180D"):
             for char in service._.characteristics:
                 NSLog("%@", char._.UUID)
                 peripheral.readValueForCharacteristic_(char)
+        # DEVINO PROFILE
         if service._.UUID == CBUUID.UUIDWithString_("180A"):
             for char in service._.characteristics:
                 NSLog("%@", char._.UUID)
                 peripheral.readValueForCharacteristic_(char)
+        # EPL LED PROFILE
         if service._.UUID == CBUUID.UUIDWithString_("FF10"):
+            for char in service._.characteristics:
+                NSLog("%@", char._.UUID)
+                peripheral.readValueForCharacteristic_(char)
+        # EPL RTC ROFILE
+        if service._.UUID == CBUUID.UUIDWithString_("FF20"):
             for char in service._.characteristics:
                 NSLog("%@", char._.UUID)
                 peripheral.readValueForCharacteristic_(char)
@@ -109,7 +122,7 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
                     peripheral.setNotifyValue_forCharacteristic_(True, char)
                 if char._.UUID == CBUUID.UUIDWithString_("FFA1"):
                     peripheral.readValueForCharacteristic_(char)
-                    
+
     def peripheral_didUpdateValueForCharacteristic_error_(self,
                                                           peripheral,
                                                           characteristic,
@@ -164,16 +177,7 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
             data = {'type': 'humidity', 'value': round(humid,2)}
             self.delegateWorker.getQueue().put(data)
         # EPL LED PROFILE
-        if characteristic._.UUID == CBUUID.UUIDWithString_("FF11"):
-            hex_str = binascii.hexlify(characteristic._.value)
-            value = int(hex_str, base=16)
-            print "CHAR(%s) %d" % (characteristic._.UUID, value)
-            byte_array = array.array('b', chr(1))
-            val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
-            peripheral.writeValue_forCharacteristic_type_(
-                val_data, characteristic,
-                CBCharacteristicWriteWithResponse)
-        if characteristic._.UUID == CBUUID.UUIDWithString_("FF12"):
+        if characteristic._.UUID == CBUUID.UUIDWithString_("FF11"): #LED 0(RED) state 0: off 1: on 2: blink
             hex_str = binascii.hexlify(characteristic._.value)
             value = int(hex_str, base=16)
             print "CHAR(%s) %d" % (characteristic._.UUID, value)
@@ -182,7 +186,16 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
             peripheral.writeValue_forCharacteristic_type_(
                 val_data, characteristic,
                 CBCharacteristicWriteWithResponse)
-        if characteristic._.UUID == CBUUID.UUIDWithString_("FF13"):
+        if characteristic._.UUID == CBUUID.UUIDWithString_("FF12"): # LED 1(GREEN) state 0: off 1: on 2: blink
+            hex_str = binascii.hexlify(characteristic._.value)
+            value = int(hex_str, base=16)
+            print "CHAR(%s) %d" % (characteristic._.UUID, value)
+            byte_array = array.array('b', chr(0))
+            val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
+            peripheral.writeValue_forCharacteristic_type_(
+                val_data, characteristic,
+                CBCharacteristicWriteWithResponse)
+        if characteristic._.UUID == CBUUID.UUIDWithString_("FF13"): # LED 0(RED) blink toggle interval (0.1 sec)
             hex_str = binascii.hexlify(characteristic._.value)
             value = int(hex_str, base=16)
             print "CHAR(%s) %d %s" % (characteristic._.UUID, value, hex_str)
@@ -191,7 +204,7 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
             peripheral.writeValue_forCharacteristic_type_(
                 val_data, characteristic,
                 CBCharacteristicWriteWithResponse)
-        if characteristic._.UUID == CBUUID.UUIDWithString_("FF14"):
+        if characteristic._.UUID == CBUUID.UUIDWithString_("FF14"): # LED 1(Green) blink toggle intrval (0.1 sec)
             hex_str = binascii.hexlify(characteristic._.value)
             value = int(hex_str, base=16)
             print "CHAR(%s) %d %s" % (characteristic._.UUID, value, hex_str)
@@ -200,16 +213,37 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
             peripheral.writeValue_forCharacteristic_type_(
                 val_data, characteristic,
                 CBCharacteristicWriteWithResponse)
+        # EPL RTC PROFILE
+        if characteristic._.UUID == CBUUID.UUIDWithString_("FF21"): # RTC Set Time
+            value = characteristic._.value
+            year, month, day, wday, hour, minute, second = struct.unpack("<HBBBBBB", value)
+            print "EPL RTC Set Time ", year, month, day, wday, hour, minute, second
+            now = datetime.now()
+            print now
+            timestamp = struct.pack("<HBBBBBB", now.year, now.month, now.day, now.isoweekday(), now.hour, now.minute, now.second)
+            val_data = NSData.dataWithBytes_length_(timestamp, len(timestamp))
+            peripheral.writeValue_forCharacteristic_type_(
+                val_data, characteristic,
+                CBCharacteristicWriteWithResponse)
+        if characteristic._.UUID == CBUUID.UUIDWithString_("FF22"): # RTC Get Time, not auto-notify
+            value = characteristic._.value
+            year, month, day, wday, hour, minute, second = struct.unpack("<HBBBBBB", value)
+            try:
+                rtc_time = datetime(year = year, month = month, day = day, hour = hour, minute = minute, second = second)
+                print "EPL RTC Get Time", rtc_time
+            except:
+                # if the RTC is not set, then the values are 0s
+                pass
         # EPL ACC PROFILE
         if characteristic._.UUID == CBUUID.UUIDWithString_("FFA1"):
             hex_str = binascii.hexlify(characteristic._.value)
             acc_enable = int(hex_str, base=16)
             if acc_enable == 0:
                 print "Enable ACC"
-                byte_array = array.array('b', chr(1))
+                byte_array = array.array('b', chr(0))
             else:
                 print "Disable ACC"
-                byte_array = array.array('b', chr(1))
+                byte_array = array.array('b', chr(0))
             val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
             peripheral.writeValue_forCharacteristic_type_(
                 val_data, characteristic,
@@ -238,14 +272,14 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
             y = 1.0 if y>1.0 else y
             y = -1.0 if y<-1.0 else y
             z = 1.0 if z>1.0 else z
-            z = -1.0 if z<-1.0 else z         
-            
-            print "X: % .3fg Y: % .3fg Z: % .3fg" % (x, y, z)  
+            z = -1.0 if z<-1.0 else z
+
+            print "X: % .3fg Y: % .3fg Z: % .3fg" % (x, y, z)
             '''
             x = math.atan2(x, math.sqrt(y*y+z*z))
             data = ('x', x)
             self.worker.getQueue().put(data)
-            
+
             z = math.atan2(y, math.sqrt(x*x+z*z))
             data = ('z', z)
             self.worker.getQueue().put(data)
@@ -255,14 +289,14 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
                 x = -math.asin(x)-3.141592
             elif x>0 and z<0:
                 x = 3.141592 - math.asin(x)
-            else:   
+            else:
                 x = math.asin(x)
             data = {'type': 'orientation', 'axis': 'x', 'value': x}
             self.delegateWorker.getQueue().put(data)
             '''
-            
+
             #x = math.asin(x)
-            data = {'type': 'orientation', 
+            data = {'type': 'orientation',
                     'value': { 'x': x,
                                'y': y,
                                'z': z
@@ -276,7 +310,7 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
             #z = math.acos(z)
             #data = {'type': 'orientation', 'axis': 'z', 'value': z}
             #self.delegateWorker.getQueue().put(data)
-            
+
     '''
     def peripheral_didUpdateValueForCharacteristic_error_(self,
                                                           peripheral,
@@ -315,7 +349,7 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
                 self.worker.getQueue().put(data)
     #def setData(self, data):
     '''
-            
+
     def setWorker(self, worker):
         self.worker = worker
         print worker
