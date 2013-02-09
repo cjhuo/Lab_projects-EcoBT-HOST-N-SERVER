@@ -1,16 +1,9 @@
-<!doctype html>
-<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-<script language="javascript" type="text/javascript" src="{{ static_url("js/jquery-1.8.2.js") }}"></script>
-
-<script language="javascript" type="text/javascript" src="{{ static_url("js/highcharts/highcharts.js") }}"></script>
-<script language="javascript" type="text/javascript" src="{{ static_url("js/highcharts/highcharts-more.js") }}"></script>
-<script language="javascript" type="text/javascript" src="{{ static_url("js/highcharts/modules/exporting.js") }}"></script>
-
-<body>
-<div id="container1" style="width: 400px; height: 300px; margin: 0 auto"></div>
-<div id="container2" style="width: 400px; height: 300px; margin: 0 auto"></div>
-
-<script>
+/**
+ * Main script for generating plot.
+ *
+ * .with push technology
+ *
+ */
 
 $(function () {
 	var url = "ws://localhost:8001/socket"; //push url, need to change this to server's url, 
@@ -37,7 +30,6 @@ $(function () {
     // Add some life
     function updateChart(chart, value) {
 		var point = chart.series[0].points[0];
-		console.log()
 		point.update(value);
     }
 	
@@ -89,7 +81,7 @@ $(function () {
 	                rotation: 'auto'
 	            },
 	            title: {
-	                text: 'Â°C'
+	                text: '¡C'
 	            },
 	            plotBands: [{
 	                from: 30,
@@ -108,7 +100,7 @@ $(function () {
 	    
 	        series: [{
 	            name: 'Skin',
-	            data: [10],
+	            data: [36],
 	            yAxis: 0,
 	            tooltip: {
 	                valueSuffix: ' Degree'
@@ -144,8 +136,8 @@ $(function () {
 	           
 	        // the value axis
 	        yAxis: {
-	            min: 0,
-	            max: 100,
+	            min: -10,
+	            max: 45,
 	            
 	            minorTickInterval: 'auto',
 	            minorTickWidth: 1,
@@ -153,7 +145,7 @@ $(function () {
 	            minorTickPosition: 'inside',
 	            minorTickColor: '#666',
 	    
-	            tickInterval: 10,
+	            tickInterval: 5,
 	            tickWidth: 1,
 	            tickPosition: 'inside',
 	            tickLength: 10,
@@ -182,7 +174,7 @@ $(function () {
 	    
 	        series: [{
 	            name: 'Humidity',
-	            data: [0],
+	            data: [22],
 	            yAxis: 0,
 	            tooltip: {
 	                valueSuffix: ' %'
@@ -341,9 +333,3 @@ $(function () {
 		*/
 	});
 });
-</script>
-
-</body>
-
-
-
