@@ -316,7 +316,7 @@ $(function () {
 	
 	
 
-	var url = "ws://localhost:8001/socket"; //push url, need to change this to server's url, 
+	var url = "ws://cps.eng.uci.edu:8001/socket"; //push url, need to change this to server's url, 
 	//such as cps.eng.uci.edu:8000/socket
 	var socket = null; //websocket object
 	
