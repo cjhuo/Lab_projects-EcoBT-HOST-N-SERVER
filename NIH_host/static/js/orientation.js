@@ -5,6 +5,9 @@
  *
  */
 
+var url = "ws://cps.eng.uci.edu:8001/socket"; //push url, need to change this to server's url, 
+//such as cps.eng.uci.edu:8000/socket
+
 $(function () {
 	
 	function onDataReceived(data){
@@ -22,7 +25,6 @@ $(function () {
 			*/
 			updateSimulation(data);
 			updateChart(data);
-
 		}
 	}
 	
@@ -314,21 +316,14 @@ $(function () {
 
 	}
 	
-	
-
-	var url = "ws://cps.eng.uci.edu:8001/socket"; //push url, need to change this to server's url, 
-	//such as cps.eng.uci.edu:8000/socket
-	var socket = null; //websocket object
-	
-	
+	var socket = null; //websocket object	
 	var reconMsg = null; //reconnect div object
 	
 	/**
 	* use to store reconnect procedure, to make sure there is only 1 websocket to server generated
 	* not thread safe!!!TBD
 	*/
-	var reconn = null; 
-	
+	var reconn = null; 	
 	function showReconMsg(msg) {
 		if(reconMsg == null) {
 			reconMsg = $('<div id="reconnect" >' + msg + '</div>').css( {
