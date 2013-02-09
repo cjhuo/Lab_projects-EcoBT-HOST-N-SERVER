@@ -41,31 +41,13 @@ class DSPHandler(tornado.web.RequestHandler):
         print bins
         self.write({'data': bins}) #format of bins json: {'data': bins info}
           
-    '''
+    ''' 
     def get(self):        
         val = self.fakeData()  #should be replaced by ecg dsp data generation module
-    
         print val
-
         self.write({'dspData': val})   
-    '''     
-    ''' 
-    generate data for n channels with 100 data each, ranged from (-100, 100)
-    The datasets dict should have the structure as below:
-    datasets = [
-                    {
-                        label: "channel",
-                        #data: [array of [x, y]]
-                        data: [array of y]
-                    },
-                    {
-                        label: "channel2",
-                        #data: [array of [x, y]]
-                        data: [array of y]
-                    },
-                ]
-    '''
-    '''
+    
+    #generate data for n channels with 100 data each, ranged from (-100, 100)
     def fakeData(self, n=2):
         datasets = dict()
         for i in range(n):
@@ -83,15 +65,7 @@ class DSPHandler(tornado.web.RequestHandler):
 class FileHandler(tornado.web.RequestHandler):
     def initialize(self, ecg):
         self.ecg = ecg
-    '''    
-    def get(self):        
-        #val = self.fakeData()  #should be replaced by ecg dsp data generation module
-        f = self.get_argument("file")      
-#        print f
-        self.ecg.setFile(f)
-        val = self.getDataFromDicomFile()
-        self.write(val)
-    '''        
+    
     def post(self):
         try:
             if len(self.request.files) != 0: #user uploaded file from UI  
@@ -107,7 +81,22 @@ class FileHandler(tornado.web.RequestHandler):
             self.write(val)
         except:
             self.send_error(302) # 302: invalid file
-               
+            
+    '''           
+    The datasets dict should have the structure as below:
+    datasets = [
+                    {
+                        label: "channel",
+                        #data: [array of [x, y]]
+                        data: [array of y]
+                    },
+                    {
+                        label: "channel2",
+                        #data: [array of [x, y]]
+                        data: [array of y]
+                    },
+                ]
+    '''
     def getDataFromDicomFile(self):
         #wavech, peaks = ecg.ECG_reader.getTestData()
         wavech, peaks = self.ecg.getTestData()
@@ -129,6 +118,15 @@ class FileHandler(tornado.web.RequestHandler):
         #print val
         return val
 
+    '''    
+    def get(self):        
+        #val = self.fakeData()  #should be replaced by ecg dsp data generation module
+        f = self.get_argument("file")      
+#        print f
+        self.ecg.setFile(f)
+        val = self.getDataFromDicomFile()
+        self.write(val)
+    '''    
         
 class ClientSocket(websocket.WebSocketHandler):
     def initialize(self, ds):

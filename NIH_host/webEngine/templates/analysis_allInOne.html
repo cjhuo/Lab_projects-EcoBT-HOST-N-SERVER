@@ -1,0 +1,55 @@
+{% extends "main.html" %}
+
+{% block header %}
+	<h1>{{ header_text }}</h1>
+{% end %}
+
+{% block body %}
+<!-- 
+ 	<p>1. Choose a radio button to pick the channel you want to analyze
+    <br>
+       2. Zoom to the range where you feel comfortable to pick start and end peak points
+    <br>
+       3. Pick 2 peak points and hit submit for further analysis in range between those 2 peak points
+    <br>
+       <b>Note:</b> <br>
+       a) De-select the point you've already selected by clicking it again <br>
+       b) You can always go back to the original state by choose any of the radio buttons
+    </p>
+ -->
+{% end %}
+
+{% block footer %}
+	{{ footer_text }}
+{% end %}
+
+{% block script_include %}
+
+<!--  
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/flot/jquery.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/flot/jquery.flot.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/flot/jquery.flot.resize.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/flot/jquery.flot.crosshair.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/flot/jquery.flot.selection.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/flot/jquery.flot.symbol.js") }}"></script>
+-->
+
+<link type="text/css" href="{{ static_url("css/smoothness/jquery-ui-1.8.23.custom.css") }}" rel="stylesheet" />
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/jquery-1.8.2.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/jquery-ui-1.8.23.custom.min.js") }}"></script>
+
+<!--  
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/highcharts/highcharts.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/highcharts/highcharts-more.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/highcharts/modules/exporting.js") }}"></script>
+-->
+
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/highstock/highstock.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/highstock/highcharts-more.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/highstock/modules/exporting.js") }}"></script>
+
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/spin.min.js") }}"></script>
+
+<script language="javascript" type="text/javascript" src="{{ static_url("js/analysis_allInOne.js") }}"></script>
+{% end %}
+

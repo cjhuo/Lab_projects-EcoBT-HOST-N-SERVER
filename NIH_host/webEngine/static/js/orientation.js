@@ -5,10 +5,11 @@
  *
  */
 
-var url = "ws://cps.eng.uci.edu:8001/socket"; //push url, need to change this to server's url, 
-//such as cps.eng.uci.edu:8000/socket
 
 $(function () {
+	var url = $('#serverAddr').val(); 	//push url, need to change this to server's url, 
+	//such as cps.eng.uci.edu:8000/socket
+	console.log(url);
 	
 	function onDataReceived(data){
 		if(data.type == 'orientation'){

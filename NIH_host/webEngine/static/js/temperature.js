@@ -6,7 +6,9 @@
  */
 
 $(function () {
-	var url = "ws://localhost:8001/socket"; //push url, need to change this to server's url, 
+	var url = $('#serverAddr').val(); 	//push url, need to change this to server's url, 
+										//such as cps.eng.uci.edu:8000/socket
+	console.log(url);
 	var chartTemp;
 	var chartHum;
 	var reconMsg = null; //reconnect div object
@@ -30,6 +32,7 @@ $(function () {
     // Add some life
     function updateChart(chart, value) {
 		var point = chart.series[0].points[0];
+		console.log()
 		point.update(value);
     }
 	
@@ -81,7 +84,7 @@ $(function () {
 	                rotation: 'auto'
 	            },
 	            title: {
-	                text: '¡C'
+	                text: 'Â°C'
 	            },
 	            plotBands: [{
 	                from: 30,
@@ -100,7 +103,7 @@ $(function () {
 	    
 	        series: [{
 	            name: 'Skin',
-	            data: [36],
+	            data: [10],
 	            yAxis: 0,
 	            tooltip: {
 	                valueSuffix: ' Degree'
@@ -136,8 +139,8 @@ $(function () {
 	           
 	        // the value axis
 	        yAxis: {
-	            min: -10,
-	            max: 45,
+	            min: 0,
+	            max: 100,
 	            
 	            minorTickInterval: 'auto',
 	            minorTickWidth: 1,
@@ -145,7 +148,7 @@ $(function () {
 	            minorTickPosition: 'inside',
 	            minorTickColor: '#666',
 	    
-	            tickInterval: 5,
+	            tickInterval: 10,
 	            tickWidth: 1,
 	            tickPosition: 'inside',
 	            tickLength: 10,
@@ -174,7 +177,7 @@ $(function () {
 	    
 	        series: [{
 	            name: 'Humidity',
-	            data: [22],
+	            data: [0],
 	            yAxis: 0,
 	            tooltip: {
 	                valueSuffix: ' %'
