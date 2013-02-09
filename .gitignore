@@ -2,3 +2,6 @@
 log.txt
 *.pyc
 .DS_Store
+/HttpWebSocketTest/*
+/NIH_host/ecg/Uploads/*
+/NIH_host/host/Uploads/*
