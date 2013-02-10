@@ -20,11 +20,15 @@ import struct
 
 from EcoBTWorker import EcoBTWorker
 from EcoBTPeripheralDelegateWorker import EcoBTPeripheralDelegateWorker
+from Service import *
+from characteristic import characteristicFactory
+from characteristic.implementation import Characteristic
 
 class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
     def init(self):
         EcoBTWorker.__init__(self)
         self.peripheral = None
+        self.services = []
         self.delegateWorker = EcoBTPeripheralDelegateWorker()
         print "Initialize Peripheral Worker"
         return self        
@@ -39,47 +43,113 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
 
     def discoverServices(self):
         self.peripheral.discoverServices_(None)
+
+    def setWorker(self, worker):
+        self.worker = worker
+        print worker
+        #self.worker.getQueue().put('This is a test')
         
+    def discoverCharacteristics_forService(self, service):
+        if type(service) == Service:
+            self.peripheral.discoverCharacteristics_forService_(nil, service.instance)
+        else:
+            self.peripheral.discoverCharacteristics_forService_(nil, service)
+        
+    def readValueForCharacteristic(self, characteristic):
+        if isinstance(characteristic, Characteristic.Characteristic):
+            self.peripheral.readValueForCharacteristic_(characteristic.instance)
+        else:
+            self.peripheral.readValueForCharacteristic_(characteristic)
+        
+    def setNotifyValueForCharacteristic(self, flag, characteristic):
+        if isinstance(characteristic, Characteristic.Characteristic):
+            self.peripheral.setNotifyValue_forCharacteristic_(flag, characteristic.instance)
+        else:
+            self.peripheral.setNotifyValue_forCharacteristic_(flag, characteristic)
+            
+    def writeValueForCharacteristic(self, value, characteristic):
+        if isinstance(characteristic, Characteristic.Characteristic):
+            self.peripheral.writeValue_forCharacteristic_type_(
+                                                               value, characteristic.instance,
+                                                               CBCharacteristicWriteWithResponse)
+        else:
+            self.peripheral.writeValue_forCharacteristic_type_(
+                                                               value, characteristic,
+                                                               CBCharacteristicWriteWithResponse)
+            
+    def findServiceByUUID(self, UUID):
+        for s in self.services:
+            if s.UUID == UUID:
+                return s
+        raise Exception # didn't find any service
+        
+    def findCharacteristicByUUID(self, UUID):
+        for s in self.services:
+            for c in s.characteristics:
+                if UUID == c.UUID:
+                    return c
+        raise Exception
+    
+    def appendService(self, service):
+        uuid = self.checkUUID(service._.UUID)
+        if uuid != None:
+            s = Service()
+            s.setUUID(uuid)
+            s.instance = service
+            self.services.append(s) # append to service list for tracking from UI   
+        else:
+            pass # found a service profile not listed in IOBluetooth.py
+        
+    def appendCharacteristicForService(self, characteristic, service, peripheral):
+        c = characteristicFactory.createCharacteristic(self.checkUUID(characteristic._.UUID), characteristic, peripheral)
+        # Characteristic that has read&write and system infor needs to be read at the beginning         
+        if c.privilege == 1 or c.privilege == 2: 
+            self.readValueForCharacteristic(c)
+        service.characteristics.append(c)
+    
+    def checkUUID(self, UUID):
+        for p in ProfileList:
+            if UUID == CBUUID.UUIDWithString_(p):
+                #peripheral.discoverCharacteristics_forService_(nil, service)
+                return p  
+        # does not raise exception now to ignore discovery of profiles 'Generic Access Profile' and 'Generic Attribute Profile'
+        # raise Exception # didn't find any UUID
+        return None
         
     # CBPeripheral delegate methods
     def peripheral_didDiscoverServices_(self, peripheral, error):
         for service in peripheral._.services:
             print "Service found with UUID: ", service._.UUID
-            if service._.UUID == CBUUID.UUIDWithString_("180D"):
-                print "UUID Matched!!"
-                peripheral.discoverCharacteristics_forService_(nil, service)
-            elif service._.UUID == CBUUID.UUIDWithString_("180A"):#LED lights
-                print "%s Found!!" % service._.UUID
-                peripheral.discoverCharacteristics_forService_(nil, service)
-            elif service._.UUID == CBUUID.UUIDWithString_("FF10"):#LED lights
-                print "%s Found!!" % service._.UUID
-                peripheral.discoverCharacteristics_forService_(nil, service)
-            elif service._.UUID == CBUUID.UUIDWithString_("FFA0"):#ACC
-                print "%s Found!!" % service._.UUID
-                peripheral.discoverCharacteristics_forService_(nil, service)
-            elif service._.UUID == CBUUID.UUIDWithString_("FE10"):#humidity&temperature
-                print "%s Found!!" % service._.UUID
-                peripheral.discoverCharacteristics_forService_(nil, service)
-            else:
-                pass
+            self.appendService(service)
+            
+            # for test
+            self.discoverCharacteristics_forService(service)
+        
+        # inform UI!
 
     def peripheral_didDiscoverCharacteristicsForService_error_(self,
                                                                peripheral,
                                                                service,
                                                                error):
         print "didDiscoverCharacteristicsForService"
-        if service._.UUID == CBUUID.UUIDWithString_("180D"):
+        uuid = self.checkUUID(service._.UUID)
+        if uuid != None:
+            s = self.findServiceByUUID(uuid)
             for char in service._.characteristics:
-                NSLog("%@", char._.UUID)
-                peripheral.readValueForCharacteristic_(char)
-        if service._.UUID == CBUUID.UUIDWithString_("180A"):
-            for char in service._.characteristics:
-                NSLog("%@", char._.UUID)
-                peripheral.readValueForCharacteristic_(char)
-        if service._.UUID == CBUUID.UUIDWithString_("FF10"):
-            for char in service._.characteristics:
-                NSLog("%@", char._.UUID)
-                peripheral.readValueForCharacteristic_(char)
+                #print char._.UUID
+                if (self.checkUUID(char._.UUID)) != None:
+                    #NSLog("%@", char._.UUID)
+                    self.appendCharacteristicForService(char, s, self.peripheral)        
+                        
+                    # for test
+                    #self.readValueForCharacteristic(char)
+                    self.setNotifyValueForCharacteristic(True, char)               
+                    #peripheral.readValueForCharacteristic_(char)
+                else:
+                    pass # found a characteristic profile not listed in IOBluetooth.py
+        else: 
+            pass # found a service profile not listed in IOBluetooth.py
+        '''    
         # SIDS SHT25 PROFILE
         if service._.UUID == CBUUID.UUIDWithString_("FE10"):
             for char in service._.characteristics:
@@ -109,88 +179,21 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
                     peripheral.setNotifyValue_forCharacteristic_(True, char)
                 if char._.UUID == CBUUID.UUIDWithString_("FFA1"):
                     peripheral.readValueForCharacteristic_(char)
-                    
+        '''          
+            
     def peripheral_didUpdateValueForCharacteristic_error_(self,
                                                           peripheral,
                                                           characteristic,
                                                           error):
 #        print "Read Characteristic(%s) value" % characteristic._.UUID
-        if characteristic._.UUID == CBUUID.UUIDWithString_("2a23"):
-            hex_str = binascii.hexlify(characteristic._.value)
-            print "180A Profile?(%s) %s" % (characteristic._.UUID, hex_str)
+        
+        char = self.findCharacteristicByUUID(self.checkUUID(characteristic._.UUID))
 
-        # SIDS SHT25 PROFILE
-        sht25_enable = False
-        if characteristic._.UUID == CBUUID.UUIDWithString_("FE11"):
-            hex_str = binascii.hexlify(characteristic._.value)
-            value = int(hex_str, base=16)
-            if value == 1:
-                sht25_enable = True
-            print "SIDS SHT25 ENABLE?(%s) %s" % (characteristic._.UUID, sht25_enable)
-        if characteristic._.UUID == CBUUID.UUIDWithString_("FE12"):
-            hex_str = binascii.hexlify(characteristic._.value)
-            value = int(hex_str, base=16)
-            print "SIDS SHT25 RATE?(%s) %d sec" % (characteristic._.UUID, value)
-            byte_array = array.array('b', chr(2))
-            val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
-            peripheral.writeValue_forCharacteristic_type_(
-                val_data, characteristic,
-                CBCharacteristicWriteWithResponse)
-        if characteristic._.UUID == CBUUID.UUIDWithString_("FE13"):
-            hex_str = binascii.hexlify(characteristic._.value)
-            value = int(hex_str, base=16)
-            print "SIDS SHT25 START?(%s) %d" % (characteristic._.UUID, value)
-            if value == 0:
-                print "START SIDS SHT25 Sensor"
-                byte_array = array.array('b', chr(1))
-                val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
-                peripheral.writeValue_forCharacteristic_type_(
-                    val_data, characteristic,
-                    CBCharacteristicWriteWithResponse)
-        if characteristic._.UUID == CBUUID.UUIDWithString_("FE14"):
-            hex_str = binascii.hexlify(characteristic._.value)
-            value = int(hex_str[:-2], base=16)
-            value = value & 0xFFFC
-            temp = -46.85 + (175.72 * value) / 65536
-            print "SIDS SHT25 TEMP READING?(%s) %.2f" % (characteristic._.UUID, temp)
-            data = {'type': 'temperature', 'value': round(temp, 2)}
-            self.delegateWorker.getQueue().put(data)
-        if characteristic._.UUID == CBUUID.UUIDWithString_("FE15"):
-            hex_str = binascii.hexlify(characteristic._.value)
-            value = int(hex_str[:-2], base=16)
-            value = value & 0xFFFC
-            humid = -6.0 +  (125.0 * value) / 65536
-            print "SIDS SHT25 HUMID READING?(%s) %.2f" % (characteristic._.UUID, humid)
-            data = {'type': 'humidity', 'value': round(humid,2)}
-            self.delegateWorker.getQueue().put(data)
+        # process the received data and put into queue
+        self.delegateWorker.getQueue().put(char.process())
+
+        ''' hasn't resolve
         # EPL LED PROFILE
-        if characteristic._.UUID == CBUUID.UUIDWithString_("FF11"):
-            hex_str = binascii.hexlify(characteristic._.value)
-            value = int(hex_str, base=16)
-            print "CHAR(%s) %d" % (characteristic._.UUID, value)
-            byte_array = array.array('b', chr(1))
-            val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
-            peripheral.writeValue_forCharacteristic_type_(
-                val_data, characteristic,
-                CBCharacteristicWriteWithResponse)
-        if characteristic._.UUID == CBUUID.UUIDWithString_("FF12"):
-            hex_str = binascii.hexlify(characteristic._.value)
-            value = int(hex_str, base=16)
-            print "CHAR(%s) %d" % (characteristic._.UUID, value)
-            byte_array = array.array('b', chr(0))
-            val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
-            peripheral.writeValue_forCharacteristic_type_(
-                val_data, characteristic,
-                CBCharacteristicWriteWithResponse)
-        if characteristic._.UUID == CBUUID.UUIDWithString_("FF13"):
-            hex_str = binascii.hexlify(characteristic._.value)
-            value = int(hex_str, base=16)
-            print "CHAR(%s) %d %s" % (characteristic._.UUID, value, hex_str)
-            byte_array = array.array('b', chr(1))
-            val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
-            peripheral.writeValue_forCharacteristic_type_(
-                val_data, characteristic,
-                CBCharacteristicWriteWithResponse)
         if characteristic._.UUID == CBUUID.UUIDWithString_("FF14"):
             hex_str = binascii.hexlify(characteristic._.value)
             value = int(hex_str, base=16)
@@ -200,138 +203,33 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
             peripheral.writeValue_forCharacteristic_type_(
                 val_data, characteristic,
                 CBCharacteristicWriteWithResponse)
-        # EPL ACC PROFILE
-        if characteristic._.UUID == CBUUID.UUIDWithString_("FFA1"):
-            hex_str = binascii.hexlify(characteristic._.value)
-            acc_enable = int(hex_str, base=16)
-            if acc_enable == 0:
-                print "Enable ACC"
-                byte_array = array.array('b', chr(1))
-            else:
-                print "Disable ACC"
-                byte_array = array.array('b', chr(1))
-            val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
-            peripheral.writeValue_forCharacteristic_type_(
-                val_data, characteristic,
-                CBCharacteristicWriteWithResponse)
-        """
-        if characteristic._.UUID == CBUUID.UUIDWithString_("FFA3"):
-            hex_str = binascii.hexlify(characteristic._.value)
-            print "ACC X: %3d\t" % int(hex_str, base=16),
-        if characteristic._.UUID == CBUUID.UUIDWithString_("FFA4"):
-            hex_str = binascii.hexlify(characteristic._.value)
-            print "ACC Y: %3d\t" % int(hex_str, base=16),
-        if characteristic._.UUID == CBUUID.UUIDWithString_("FFA5"):
-            hex_str = binascii.hexlify(characteristic._.value)
-            print "ACC Z: %3d" % int(hex_str, base=16)
-        """
-        import math
-        if characteristic._.UUID == CBUUID.UUIDWithString_("FFA6"):
-            value = characteristic._.value
-            hex_str = binascii.hexlify(value)
-            x, y, z = struct.unpack("<hhh", value) #only first 12bit is valid according to data sheet
-            x = (0.0 + (x >> 4))  / 1000
-            y = (0.0 + (y >> 4)) / 1000
-            z = (0.0 + (z >> 4)) / 1000
-            x = 1.0 if x>1.0 else x
-            x = -1.0 if x<-1.0 else x
-            y = 1.0 if y>1.0 else y
-            y = -1.0 if y<-1.0 else y
-            z = 1.0 if z>1.0 else z
-            z = -1.0 if z<-1.0 else z         
-            
-            print "X: % .3fg Y: % .3fg Z: % .3fg" % (x, y, z)  
-            '''
-            x = math.atan2(x, math.sqrt(y*y+z*z))
-            data = ('x', x)
-            self.worker.getQueue().put(data)
-            
-            z = math.atan2(y, math.sqrt(x*x+z*z))
-            data = ('z', z)
-            self.worker.getQueue().put(data)
-            '''
-            '''
-            if x<0 and z<0:
-                x = -math.asin(x)-3.141592
-            elif x>0 and z<0:
-                x = 3.141592 - math.asin(x)
-            else:   
-                x = math.asin(x)
-            data = {'type': 'orientation', 'axis': 'x', 'value': x}
-            self.delegateWorker.getQueue().put(data)
-            '''
-            
-            #x = math.asin(x)
-            data = {'type': 'orientation', 
-                    'value': { 'x': x,
-                               'y': y,
-                               'z': z
-                              }
-                    }
-            #data = {'type': 'orientation', 'axis': 'x', 'value': x}
-            self.delegateWorker.getQueue().put(data)
-            #y = math.asin(y)
-            #data = {'type': 'orientation', 'axis': 'y', 'value': y}
-            #self.delegateWorker.getQueue().put(data)
-            #z = math.acos(z)
-            #data = {'type': 'orientation', 'axis': 'z', 'value': z}
-            #self.delegateWorker.getQueue().put(data)
-            
-    '''
-    def peripheral_didUpdateValueForCharacteristic_error_(self,
-                                                          peripheral,
-                                                          characteristic,
-                                                          error):
-#        print "Read Characteristic(%s) value" % characteristic._.UUID
-        if characteristic._.UUID == CBUUID.UUIDWithString_("FFA1"):
-            hex_str = binascii.hexlify(characteristic._.value)
-            acc_enable = int(hex_str, base=16)
-            if acc_enable == 0:
-                print "Enable ACC"
-                byte_array = array.array('b', chr(1))
-            else:
-                print "Disable ACC"
-                byte_array = array.array('b', chr(0))
-            val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
-            peripheral.writeValue_forCharacteristic_type_(
-                val_data, characteristic,
-                CBCharacteristicWriteWithResponse)
-        # FFA3: x, FFA4: y, FFA5: z
-        if characteristic._.UUID == CBUUID.UUIDWithString_("FFA3") or\
-           characteristic._.UUID == CBUUID.UUIDWithString_("FFA4") or\
-           characteristic._.UUID == CBUUID.UUIDWithString_("FFA5"):
-            hex_str = binascii.hexlify(characteristic._.value)
-            print characteristic._.UUID, hex_str, int(hex_str, base=16)
+        '''
 
-            # put data into queue
-            if characteristic._.UUID == CBUUID.UUIDWithString_("FFA3"):
-                data = ('x', int(hex_str, base=16))
-                self.worker.getQueue().put(data)
-            elif characteristic._.UUID == CBUUID.UUIDWithString_("FFA4"):
-                data = ('y', int(hex_str, base=16))
-                self.worker.getQueue().put(data)
-            elif characteristic._.UUID == CBUUID.UUIDWithString_("FFA5"):
-                data = ('z', int(hex_str, base=16))
-                self.worker.getQueue().put(data)
-    #def setData(self, data):
-    '''
-            
-    def setWorker(self, worker):
-        self.worker = worker
-        print worker
-        #self.worker.getQueue().put('This is a test')
 
     def peripheral_didWriteValueForCharacteristic_error_(self,
                                                          peripheral,
                                                          characteristic,
                                                          error):
+        print "CHAR(%s) is updated" % (characteristic._.UUID)
+        char = self.findCharacteristicByUUID(self.checkUUID(characteristic._.UUID))
+        # process the received data and put into queue
+
+        self.delegateWorker.getQueue().put(char.process())
+        
+        '''
         hex_str = binascii.hexlify(characteristic._.value)
         value = int(hex_str, base=16)
         print "CHAR(%s) is updated" % (characteristic._.UUID)
+        '''
 
     def peripheral_didUpdateNotificationStateForCharacteristic_error_(self,
                                                                       peripheral,
                                                                       characteristic,
                                                                       error):
+        
         print "char(" + str(characteristic._.UUID) + ") is auto-notify? " + str(characteristic.isNotifying())
+              
 
+        
+
+  

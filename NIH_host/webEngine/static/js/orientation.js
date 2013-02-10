@@ -8,25 +8,27 @@
 
 $(function () {
 	var url = $('#serverAddr').val(); 	//push url, need to change this to server's url, 
+	var name =  $('#name').text();
 	//such as cps.eng.uci.edu:8000/socket
-	console.log(url);
+	console.log(name);
 	
 	function onDataReceived(data){
-		if(data.type == 'orientation'){
-			/*
-			if(data.axis == 'x')
-				parent.rotation.setX(data.value);
-				//parent.rotation.x = data.value;
-			else if(data.axis == 'y')
-				parent.rotation.setY(data.value);
-				//parent.rotation.z = data.value;
-			else if(data.axis == 'z')
-				parent.rotation.setZ(data.value);
-				//parent.rotation.y = data.value;
-			*/
-			updateSimulation(data);
-			updateChart(data);
-		}
+		if(name == "Demo" || name == data.name)
+			if(data.type == 'orientation'){
+				/*
+				if(data.axis == 'x')
+					parent.rotation.setX(data.value);
+					//parent.rotation.x = data.value;
+				else if(data.axis == 'y')
+					parent.rotation.setY(data.value);
+					//parent.rotation.z = data.value;
+				else if(data.axis == 'z')
+					parent.rotation.setZ(data.value);
+					//parent.rotation.y = data.value;
+				*/
+				updateSimulation(data);
+				updateChart(data);
+			}
 	}
 	
 	function updateSimulation(data) {
@@ -43,6 +45,7 @@ $(function () {
 	}
 	
 	function init() {
+		showSpinner();
 		initChart();
 		initSimulation();
 	}
@@ -110,6 +113,9 @@ $(function () {
             	
             }],
             plotOptions: {
+            	line: {
+            		animation: false
+            	},
                 series: {
                     marker: {
                         enabled: false
@@ -154,7 +160,9 @@ $(function () {
             data: data,
             yAxis: 2
         });
-		chart = new Highcharts.Chart(options);
+		chart = new Highcharts.Chart(options, function() {
+    		hideSpinner();
+    	});
 	}
 
 	
@@ -475,4 +483,41 @@ $(function () {
 		hideReconMsg();
 		showReconMsg('connection lost, check wifi...')
 	});	
+	
+	var spinnerOpts = { //options settings for spinner
+			  lines: 13, // The number of lines to draw
+			  length: 7, // The length of each line
+			  width: 4, // The line thickness
+			  radius: 10, // The radius of the inner circle
+			  corners: 1, // Corner roundness (0..1)
+			  rotate: 0, // The rotation offset
+			  color: '#000', // #rgb or #rrggbb
+			  speed: 1, // Rounds per second
+			  trail: 60, // Afterglow percentage
+			  shadow: false, // Whether to render a shadow
+			  hwaccel: false, // Whether to use hardware acceleration
+			  className: 'spinner', // The CSS class to assign to the spinner
+			  zIndex: 2e9, // The z-index (defaults to 2000000000)
+			  top: 'auto', // Top position relative to parent in px
+			  left: 'auto' // Left position relative to parent in px
+			};
+	var spinTarget = $('<div id="spinner" ></div>').css( {
+	            position: 'relative',
+	            width: '50px',
+	            height: '50px',
+	            margin: 'auto'
+	});
+	spinTarget.appendTo("body");
+	var spinner = new Spinner(spinnerOpts);
+	
+    /* show loading spinner, stopped when chart is fully loaded */
+    function showSpinner(){
+    	spinTarget.show();
+		spinner.spin(spinTarget[0]);
+    }
+    
+    function hideSpinner(){
+		spinTarget.hide();
+		spinner.stop();
+    }
 });

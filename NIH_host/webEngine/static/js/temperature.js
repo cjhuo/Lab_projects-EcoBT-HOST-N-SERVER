@@ -8,6 +8,7 @@
 $(function () {
 	var url = $('#serverAddr').val(); 	//push url, need to change this to server's url, 
 										//such as cps.eng.uci.edu:8000/socket
+	var name =  $('#name').text();
 	console.log(url);
 	var chartTemp;
 	var chartHum;
@@ -20,12 +21,14 @@ $(function () {
 	var socket = null; //websocket object
 	
 	function onDataReceived(data){
-		if(data.type == 'temperature') {
-			updateChart(chartTemp, data.value);
-		}
-		
-		if(data.type == 'humidity') {
-			updateChart(chartHum, data.value);
+		if(name == "Demo" || name == data.name) {
+			if(data.type == 'temperature') {
+				updateChart(chartTemp, data.value);
+			}
+			
+			if(data.type == 'humidity') {
+				updateChart(chartHum, data.value);
+			}			
 		}
 	}
 	

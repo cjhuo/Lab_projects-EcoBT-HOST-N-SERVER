@@ -21,19 +21,34 @@ CBCharacteristicWriteWithResponse = 0
 CBCharacteristicWriteWithoutResponse = 1
 
 # Profile Identifier List
-ProfileList = list(
+ProfileList = [
 # Service Profile
 "180D",             # EcoBT Profile
-"180A",             # Generic Access Profile
+"180A",             # "180A" Generic Access Profile
 "FF10",             # LED Profile
 "FFA0",             # ACC Profile
-"FE10",             # SIDS SHT25 PROFILE
+"FE10",             # SIDS SHT25 Profile
+"FF20",             # RTC Profile
 # Characteristic Profile
+"2A23",             # Device Info Characteristic Profile
+"FE11",             # SIDs Enable Characteristic Profile
+"FE12",             # SIDs Rate Characteristic Profile
+"FE13",             # SIDs Start Characteristic Profile
 "FE14",             # Temperature Characteristic Profile
 "FE15",             # Humidity Characteristic Profile
-
-)
-
+"FF11",             # LED 1 Characteristic Profile
+"FF12",             # LED 2 Characteristic Profile
+"FF13",             # LED 3 Characteristic Profile
+"FF14",             # LED 4 Characteristic Profile
+"FFA1",             # ACC Enable Characteristic Profile
+#"FFA2",             # ACC Range Selection Characteristic Profile
+#"FFA3",             # ACC X Characteristic Profile
+#"FFA4",             # ACC Y Characteristic Profile
+#"FFA5",             # ACC Z Characteristic Profile
+"FFA6",             # ACC XYZ Characteristic Profile
+"FF21",             # RTC Set Time Characteristic Profile
+"FF22"              # RTC Get Time Characteristic Profile
+]
 
 
 

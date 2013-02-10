@@ -10,6 +10,7 @@ $(function () {
 	
 	var url = $('#serverAddr').val(); 		//push url, need to change this to server's url, 
 											//such as cps.eng.uci.edu:8000/socket
+	var name =  $('#name').text();
 	//console.log(url);
 	var socket = null; //websocket object
 	
@@ -28,10 +29,12 @@ $(function () {
 	}
 
 	function onDataReceived(series){
-		if (data.length > 0){
-			data = data.slice(0, -1);
+		if(name == "Demo" || name == data.name){
+			if (data.length > 0){
+				data = data.slice(0, -1);
+			}
+			data.unshift(series.point);
 		}
-		data.unshift(series.point);
 	}
 
 	function dataToRes(){

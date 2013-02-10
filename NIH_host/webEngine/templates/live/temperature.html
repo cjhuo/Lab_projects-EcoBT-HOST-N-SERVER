@@ -16,6 +16,7 @@
 
 
 {% block body %}
+Node Name: <div id="name" style="display: inline">{% if nodeName==None %}Demo{% else %}{{ nodeName }} {% end %}</div>
 <input type="text" id="serverAddr" style="display:none" value="{{ serverAddr }}">
 <div id="container1" style="width: 400px; height: 300px; margin: 0 auto"></div>
 <div id="container2" style="width: 400px; height: 300px; margin: 0 auto"></div>

@@ -108,30 +108,45 @@ class SoundMonitorHandler(tornado.web.RequestHandler):
 # live page rendering handlers
 class PlotHandler(tornado.web.RequestHandler):
     def get(self):
+        try:
+            name = self.get_argument("name") # node's name, e.g., MAC addres
+        except Exception:
+            name = None
         self.render(
             "live/plot.html",
             page_title="SIDs viewer 1",
             header_text="Generate a plot",
             footer_text="",
             serverAddr = plotServerAddr,
+            nodeName = name,
         )
         
 class OrientationHandler(tornado.web.RequestHandler):
     def get(self):
+        try:
+            name = self.get_argument("name") # node's name, e.g., MAC addres
+        except Exception:
+            name = None
         self.render(
             "live/orientation.html",
             page_title="Orientation viewer",
             header_text="Orientation viewer",
             footer_text="",
             serverAddr = orientationServerAddr,
+            nodeName = name,
         )   
         
 class TemperatureHandler(tornado.web.RequestHandler):
     def get(self):
+        try:
+            name = self.get_argument("name") # node's name, e.g., MAC addres
+        except Exception:
+            name = None        
         self.render(
             "live/temperature.html",
             page_title="temperature viewer",
             header_text="temperature viewer",
             footer_text="",
             serverAddr = temperatureServerAddr,
+            nodeName = name,
         )               

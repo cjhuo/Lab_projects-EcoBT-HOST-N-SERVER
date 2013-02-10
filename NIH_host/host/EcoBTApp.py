@@ -51,7 +51,7 @@ class EcoBTApp(object):
         NSLog("Keyboard Interrupt Captured")
         data = notification.userInfo().objectForKey_(NSFileHandleNotificationDataItem)
         string = NSString.alloc().initWithData_encoding_(data, NSUTF8StringEncoding).autorelease()
-        NSLog("string == %@", string)
+        NSLog("Got string: %@", string)
         print str(string)
         
         # stop NSRunLoop        

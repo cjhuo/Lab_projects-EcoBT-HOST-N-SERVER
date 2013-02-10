@@ -13,6 +13,7 @@ from multiprocessing import Value
 class EcoBTPeripheralDelegateWorker(EcoBTDelegateWorker):
     def __init__(self):
         EcoBTDelegateWorker.__init__(self)
+        self.address = None # mac address of this peripheral
 
 
     def run(self):
@@ -21,9 +22,13 @@ class EcoBTPeripheralDelegateWorker(EcoBTDelegateWorker):
             self._queue.task_done()
             #print 'sockets: ', self.getGlobalSockets()               
             #process data
-            if(data != 'stop'):
-                if len(self._global_sockets) != 0:
+            if data != 'stop':
+                print data
+                if data['type'] == 'deviceInfo':
+                    self.address = data['value']
+                elif len(self._global_sockets) != 0:
                     #print data
+                    data['name'] = self.address # add peripheral's MAC address as its name
                     for socket in self._global_sockets.sockets:
                         socket.write_message(data) 
             else: # stop signal received
