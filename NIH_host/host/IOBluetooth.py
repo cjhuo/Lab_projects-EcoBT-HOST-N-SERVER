@@ -20,3 +20,20 @@ CBConnectPeripheralOptionNotifyOnDisconnectionKey = u"kCBConnectOptionNotifyOnDi
 CBCharacteristicWriteWithResponse = 0
 CBCharacteristicWriteWithoutResponse = 1
 
+# Profile Identifier List
+ProfileList = list(
+# Service Profile
+"180D",             # EcoBT Profile
+"180A",             # Generic Access Profile
+"FF10",             # LED Profile
+"FFA0",             # ACC Profile
+"FE10",             # SIDS SHT25 PROFILE
+# Characteristic Profile
+"FE14",             # Temperature Characteristic Profile
+"FE15",             # Humidity Characteristic Profile
+
+)
+
+
+
+
