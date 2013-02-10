@@ -5,7 +5,7 @@ Created on Feb 9, 2013
 '''
 
 webGUIPort = 8000
-isWriteToLog = False # True to have std output write to log.txt
+isWriteToLog = True # True to have std output write to log.txt
 
 # addresses where live pages are going to fetch data from
 plotServerAddr = 'ws://cps.eng.uci.edu:8000/socket' 

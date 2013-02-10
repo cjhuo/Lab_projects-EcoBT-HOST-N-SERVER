@@ -60,7 +60,8 @@ $(function () {
 		options = {
             chart: {
                 renderTo: 'chart',
-                type: 'line'
+                type: 'line',
+                backgroundColor: '#dddddd'
             },
             title: {
                 text: 'Live ACC RAW Data'
