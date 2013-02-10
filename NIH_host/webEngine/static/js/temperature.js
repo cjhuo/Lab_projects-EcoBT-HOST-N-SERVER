@@ -21,15 +21,16 @@ $(function () {
 	var socket = null; //websocket object
 	
 	function onDataReceived(data){
-		if(name == "Demo" || name == data.name) {
-			if(data.type == 'temperature') {
-				updateChart(chartTemp, data.value);
+		if( data.from == 'node')
+			if(name == "Demo" || name == data.data.name) {
+				if(data.data.type == 'temperature') {
+					updateChart(chartTemp, data.data.value);
+				}
+				
+				if(data.data.type == 'humidity') {
+					updateChart(chartHum, data.data.value);
+				}			
 			}
-			
-			if(data.type == 'humidity') {
-				updateChart(chartHum, data.value);
-			}			
-		}
 	}
 	
     // Add some life

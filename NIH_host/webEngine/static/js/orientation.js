@@ -14,22 +14,23 @@ $(function () {
 	console.log(name);
 	
 	function onDataReceived(data){
-		if(name == "Demo" || name == data.name)
-			if(data.type == 'orientation'){
-				/*
-				if(data.axis == 'x')
-					parent.rotation.setX(data.value);
-					//parent.rotation.x = data.value;
-				else if(data.axis == 'y')
-					parent.rotation.setY(data.value);
-					//parent.rotation.z = data.value;
-				else if(data.axis == 'z')
-					parent.rotation.setZ(data.value);
-					//parent.rotation.y = data.value;
-				*/
-				updateSimulation(data);
-				updateChart(data);
-			}
+		if( data.from == 'node')
+			if(name == "Demo" || name == data.data.name)
+				if(data.data.type == 'orientation'){
+					/*
+					if(data.axis == 'x')
+						parent.rotation.setX(data.value);
+						//parent.rotation.x = data.value;
+					else if(data.axis == 'y')
+						parent.rotation.setY(data.value);
+						//parent.rotation.z = data.value;
+					else if(data.axis == 'z')
+						parent.rotation.setZ(data.value);
+						//parent.rotation.y = data.value;
+					*/
+					updateSimulation(data.data);
+					updateChart(data.data);
+				}
 	}
 	
 	function updateSimulation(data) {
