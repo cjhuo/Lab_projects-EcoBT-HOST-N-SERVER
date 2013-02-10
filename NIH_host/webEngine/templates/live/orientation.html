@@ -21,7 +21,7 @@ Node Name: <div id="name" style="display: inline">{% if nodeName==None %}Demo{% 
 {% block script_include %}
  <style type="text/css" media="screen">
      .container {
-        width: 500px;
+        width: 1000px;
         height: 400px;
         align: center;
         -webkit-border-radius: 25px;
@@ -37,9 +37,16 @@ Node Name: <div id="name" style="display: inline">{% if nodeName==None %}Demo{% 
 	.chart {
         width: 400px;
         height: 400px;
-        align: center;
-		margin-left:auto;
+		float: left;
+		margin-left:50px;
 		margin-right:auto;
+     }
+     .simulation {
+        width: 500px;
+        height: 400px;
+		float: right;
+		margin-left:auto;
+		margin-right:50px;
      }
  </style>
 

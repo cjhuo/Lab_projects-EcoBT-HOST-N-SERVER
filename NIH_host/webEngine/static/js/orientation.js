@@ -9,6 +9,7 @@
 $(function () {
 	var url = $('#serverAddr').val(); 	//push url, need to change this to server's url, 
 	var name =  $('#name').text();
+	var container = $("<div class='container' />").appendTo(document.body);
 	//such as cps.eng.uci.edu:8000/socket
 	console.log(name);
 	
@@ -54,7 +55,7 @@ $(function () {
 	var chart;
 	var total_points = 100;
 	function initChart() {
-		chartContainer = $("<div class='container'><div id='chart' class='chart'/></div>").appendTo(document.body);
+		chartContainer = $("<div id='chart' class='chart'/>").appendTo(container);
 		options = {
             chart: {
                 renderTo: 'chart',
@@ -182,7 +183,7 @@ $(function () {
 
 	function initSimulation() {
 
-		simContainer = $("<div id='simulation' class='container'/>").appendTo(document.body);;
+		simContainer = $("<div id='simulation' class='simulation'/>").appendTo(container);;
 		//console.log(simContainer);
 		//simContainer = document.createElement( 'div' );
 		//simContainer.style.width = '400px';
