@@ -2,7 +2,8 @@ import os.path
 
 import tornado.web
 
-from fakePlot import *
+from handlers.fake.fakePlotHandler import *
+from handlers.ECGHandler import *
 from webEngine.config import *
 from db.Models import DataSource, Device, DataLog
 from ecg.ECG_reader import ECG_reader
@@ -12,7 +13,7 @@ class Application(tornado.web.Application):
         self.ds = DataSource()
         self.ecg = ECG_reader()
         
-        handlers = [
+        self.handlers = [
                 (r'/', MainHandler),
                 (r'/soundMonitor', SoundMonitorHandler),
                 (r'/fileHandler', FileHandler, dict(ecg = self.ecg)),
@@ -36,9 +37,9 @@ class Application(tornado.web.Application):
                 os.path.dirname(__file__), "static"),
             debug=True,
         )
-        tornado.web.Application.__init__(self, handlers, **settings)
+        tornado.web.Application.__init__(self, self.handlers, **settings)
 
-# static page handlers
+# static page rendering handlers
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
         self.render(
@@ -104,7 +105,7 @@ class SoundMonitorHandler(tornado.web.RequestHandler):
             footer_text="",
         )     
         
-# live page handlers
+# live page rendering handlers
 class PlotHandler(tornado.web.RequestHandler):
     def get(self):
         self.render(
