@@ -14,6 +14,7 @@ import threading
 
 from EcoBTApp import EcoBTApp
 from Sockets import Sockets
+from EcoBTWebSocket import EcoBTWebSocket
 
 import sys
 sys.dont_write_bytecode = True
@@ -34,19 +35,6 @@ class Application(tornado.web.Application):
     
     def setEcoBTApp(self, app):
         self.EcoBTApp = app 
-        
-        
-class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
-    def initialize(self, globalSockets):
-        self.globalSockets = globalSockets                   
-        
-    def open(self):
-        self.globalSockets.append(self)
-        print "WebSocket opened"
-
-    def on_close(self):
-        self.globalSockets.remove(self)
-        print "WebSocket closed"
         
 if __name__ == "__main__":
     '''

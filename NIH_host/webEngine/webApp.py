@@ -100,8 +100,8 @@ class SoundMonitorHandler(tornado.web.RequestHandler):
     def get(self):
         self.render(
             "soundMonitor.html",
-            page_title="Sound Monitor",
-            header_text="Sound Monitor",
+            page_title="Sound Viewer",
+            header_text="Sound Viewer",
             footer_text="",
         )     
         
