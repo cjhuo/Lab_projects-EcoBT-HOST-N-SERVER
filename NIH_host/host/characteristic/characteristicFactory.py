@@ -5,7 +5,7 @@ Created on Feb 9, 2013
 '''
 from implementation import DeviceInfo, ACCXYZ, ACCEnable, \
 SIDsEnable, SIDsRate, SIDsStart,\
-SIDsTempRead, SIDsHumidRead, EPL_LED
+SIDsTempRead, SIDsHumidRead, LEDEnable, LEDBlinkInterval
 
 def createCharacteristic(UUID, instance, peripheral):
     c = None
@@ -25,8 +25,10 @@ def createCharacteristic(UUID, instance, peripheral):
         c = SIDsTempRead.SIDsTempRead()
     elif UUID == "FE15":
         c = SIDsHumidRead.SIDsHumidRead()
-    elif UUID == "FF11" or UUID == "FF12" or UUID == "FF13" or UUID == "FF14":
-        c = EPL_LED.EPL_LED()
+    elif UUID == "FF11" or UUID == "FF12":
+        c = LEDEnable.LEDEnable()
+    elif UUID == "FF13" or UUID == "FF14":
+        c = LEDBlinkInterval.LEDBlinkInterval()
                 
     c.setUUID(UUID)  
     c.setInstance(instance)      

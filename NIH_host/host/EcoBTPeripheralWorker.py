@@ -115,6 +115,23 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
         # does not raise exception now to ignore discovery of profiles 'Generic Access Profile' and 'Generic Attribute Profile'
         # raise Exception # didn't find any UUID
         return None
+    
+    # for the purpose of test, enable some certain characteristic(s) at the starting point
+    def initCharacteristicWhenDiscovered(self, uuid):
+        if uuid == "FFA0": # enable ACC
+            c = self.findCharacteristicByUUID("FFA1")
+            byte_array = array.array('b', chr(1))
+            val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
+            self.writeValueForCharacteristic(val_data, c)
+        if uuid == "FE10":
+            c = self.findCharacteristicByUUID("FE12") # set SIDs update frequency at 0.5Hz
+            byte_array = array.array('b', chr(2)) 
+            val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
+            self.writeValueForCharacteristic(val_data, c)
+            c = self.findCharacteristicByUUID("FE13")
+            byte_array = array.array('b', chr(1))
+            val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
+            self.writeValueForCharacteristic(val_data, c)
         
     # CBPeripheral delegate methods
     def peripheral_didDiscoverServices_(self, peripheral, error):
@@ -147,6 +164,10 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
                     #peripheral.readValueForCharacteristic_(char)
                 else:
                     pass # found a characteristic profile not listed in IOBluetooth.py
+            
+            # for the purpose of test, enable ACC and SIDs at the starting point
+            self.initCharacteristicWhenDiscovered(uuid)
+                
         else: 
             pass # found a service profile not listed in IOBluetooth.py
         '''    

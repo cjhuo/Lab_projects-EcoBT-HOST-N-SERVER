@@ -20,14 +20,7 @@ class ACCEnable(Characteristic):
         
     def process(self):
         hex_str = binascii.hexlify(self.instance._.value)
-        self.acc_enable = int(hex_str, base=16) # 1: enabled; 0: disabled
-                
-        # for the purpose of test, all profile should be enabled at the starting point
-        if self.acc_enable == 0:
-            self.peripheral.writeValue_forCharacteristic_type_(
-                                                   self.createEnableFlag(), self.instance,
-                                                   CBCharacteristicWriteWithResponse)
-                
+        self.acc_enable = int(hex_str, base=16) # 1: enabled; 0: disabled                
         print "ACC ENABLE?(%s) %s" % (self.instance._.UUID, self.acc_enable)
 
         data = {'type': 'ACCEnable', 

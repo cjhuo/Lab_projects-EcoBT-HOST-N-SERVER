@@ -14,7 +14,7 @@ import array
 
 from Characteristic import *
 
-class EPL_LED(Characteristic):
+class LEDEnable(Characteristic):
     def __init__(self):
         Characteristic.__init__(self)
         self.privilege = 1

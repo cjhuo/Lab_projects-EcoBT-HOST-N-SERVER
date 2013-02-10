@@ -23,14 +23,15 @@ class EcoBTPeripheralDelegateWorker(EcoBTDelegateWorker):
             #print 'sockets: ', self.getGlobalSockets()               
             #process data
             if data != 'stop':
-                print data
+                #print data
                 if data['type'] == 'deviceInfo':
                     self.address = data['value']
                 elif len(self._global_sockets) != 0:
                     #print data
                     data['name'] = self.address # add peripheral's MAC address as its name
+                    packet = {'from': 'node', 'data': data}
                     for socket in self._global_sockets.sockets:
-                        socket.write_message(data) 
+                        socket.write_message(packet) 
             else: # stop signal received
                 break
                     

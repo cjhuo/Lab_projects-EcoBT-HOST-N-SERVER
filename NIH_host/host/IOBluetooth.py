@@ -32,14 +32,14 @@ ProfileList = [
 # Characteristic Profile
 "2A23",             # Device Info Characteristic Profile
 "FE11",             # SIDs Enable Characteristic Profile
-"FE12",             # SIDs Rate Characteristic Profile
-"FE13",             # SIDs Start Characteristic Profile
+"FE12",             # SIDs Rate Characteristic Profile, default 10
+"FE13",             # SIDs Start Characteristic Profile , default 0
 "FE14",             # Temperature Characteristic Profile
 "FE15",             # Humidity Characteristic Profile
-"FF11",             # LED 1 Characteristic Profile
-"FF12",             # LED 2 Characteristic Profile
-"FF13",             # LED 3 Characteristic Profile
-"FF14",             # LED 4 Characteristic Profile
+"FF11",             # LED 0 Enable Characteristic Profile
+"FF12",             # LED 1 Enable Characteristic Profile
+"FF13",             # LED 0 Blink Characteristic Profile
+"FF14",             # LED 1 Blink Characteristic Profile
 "FFA1",             # ACC Enable Characteristic Profile
 #"FFA2",             # ACC Range Selection Characteristic Profile
 #"FFA3",             # ACC X Characteristic Profile
