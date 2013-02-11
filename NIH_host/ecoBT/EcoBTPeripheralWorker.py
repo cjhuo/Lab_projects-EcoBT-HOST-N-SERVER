@@ -22,6 +22,7 @@ from EcoBTWorker import EcoBTWorker
 from EcoBTPeripheralDelegateWorker import EcoBTPeripheralDelegateWorker
 
 from datetime import datetime
+import time
 
 class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
     def init(self):
@@ -29,6 +30,10 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
         self.peripheral = None
         self.delegateWorker = EcoBTPeripheralDelegateWorker()
         print "Initialize Peripheral Worker"
+        self.record_cnt = 1
+        self.fd = None
+        self.status = None
+        self.data_prefix = None
         return self
 
     def setSockets(self, sockets):
@@ -102,12 +107,14 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
             notify_list.append(CBUUID.UUIDWithString_("FEC2"))
             notify_list.append(CBUUID.UUIDWithString_("FEC6"))
             notify_list.append(CBUUID.UUIDWithString_("FEC7"))
+#            notify_list.append(CBUUID.UUIDWithString_("FEC8"))
             for char in service._.characteristics:
                 NSLog("%@", char._.UUID)
                 if char._.UUID in notify_list:
                     print "Set Notify for ", char._.UUID
                     peripheral.setNotifyValue_forCharacteristic_(True, char)
-                peripheral.readValueForCharacteristic_(char)
+                else:
+                    peripheral.readValueForCharacteristic_(char)
         # SIDS SHT25 PROFILE
         if service._.UUID == CBUUID.UUIDWithString_("FE10"):
             for char in service._.characteristics:
@@ -142,12 +149,14 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
                                                           peripheral,
                                                           characteristic,
                                                           error):
-        print "Read Characteristic(%s) value" % characteristic._.UUID
+#        print "Read Characteristic(%s) value" % characteristic._.UUID
         if characteristic._.UUID == CBUUID.UUIDWithString_("2a23"):
             hex_str = binascii.hexlify(characteristic._.value)
             print "180A Profile?(%s) %s" % (characteristic._.UUID, hex_str)
 
         # ECO ECG PROFILE
+        data_prefix = 0
+        data = None
         if characteristic._.UUID == CBUUID.UUIDWithString_("FEC1"): # info
             hex_str = binascii.hexlify(characteristic._.value)
             print "CHAR(%s) %s" % (characteristic._.UUID, hex_str)
@@ -158,18 +167,118 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
             hex_str = binascii.hexlify(characteristic._.value)
             print "CHAR(%s) %s" % (characteristic._.UUID, hex_str)
         if characteristic._.UUID == CBUUID.UUIDWithString_("FEC4"): # config2
+            value = characteristic._.value
+            config2 = struct.unpack("13B", value)
+            t = []
+            for e in config2:
+                t.append(e)
+            t[2] = 0x00 # turn off lead off detection
+            data = struct.pack("13B", t[0], t[1], t[2],t[3], t[4], t[5],t[6],t[7],
+                                      t[8], t[9], t[10],t[11], t[12])
+            val_data = NSData.dataWithBytes_length_(data, len(data))
+#            peripheral.writeValue_forCharacteristic_type_(
+#                val_data, characteristic,
+#                CBCharacteristicWriteWithResponse)
             hex_str = binascii.hexlify(characteristic._.value)
             print "CHAR(%s) %s" % (characteristic._.UUID, hex_str)
-        if characteristic._.UUID == CBUUID.UUIDWithString_("FEC5"): # status
-            hex_str = binascii.hexlify(characteristic._.value)
-            print "CHAR(%s) %s" % (characteristic._.UUID, hex_str)
+        if characteristic._.UUID == CBUUID.UUIDWithString_("FEC5"): # start ECG to record/read data
+            value = characteristic._.value
+            (start,) = struct.unpack("@B", value)
+            if start == 0x00:
+                #time.sleep(3)
+                print "START ECG RECORD"
+                data = struct.pack("@B", 0x01)
+                val_data = NSData.dataWithBytes_length_(data, len(data))
+                peripheral.writeValue_forCharacteristic_type_(
+                    val_data, characteristic,
+                    CBCharacteristicWriteWithResponse)
+            if start == 0x01:
+                print "STOP ECG, READ ECG DATA"
+                # stop ecg
+                data = struct.pack("@B", 0x00)
+                val_data = NSData.dataWithBytes_length_(data, len(data))
+                peripheral.writeValue_forCharacteristic_type_(
+                    val_data, characteristic,
+                    CBCharacteristicWriteWithResponse)
+                # read ecg from sd card
+                data = struct.pack("@B", 0x11)
+                val_data = NSData.dataWithBytes_length_(data, len(data))
+                peripheral.writeValue_forCharacteristic_type_(
+                    val_data, characteristic,
+                    CBCharacteristicWriteWithResponse)
+                self.fd = open("log.txt", 'w')
+                self.record_cnt = 1
+            if start == 0x11:
+                print "READING ECG DATA"
+                self.record_cnt = 1
         if characteristic._.UUID == CBUUID.UUIDWithString_("FEC6"): # data1
             hex_str = binascii.hexlify(characteristic._.value)
-            print "CHAR(%s) %s" % (characteristic._.UUID, hex_str)
-        if characteristic._.UUID == CBUUID.UUIDWithString_("FEC7"): # data2
-            hex_str = binascii.hexlify(characteristic._.value)
-            print "CHAR(%s) %s" % (characteristic._.UUID, hex_str)
+            print "%s" % hex_str
+            value = characteristic._.value
+            ret = struct.unpack("16B", value)
+            self.data_prefix = ret[0]
+            (temp,) = struct.unpack(">I", chr(ret[1]) + chr(ret[2]) + chr(ret[3]) + chr(0))
+            self.status = temp >> 8
+            (temp,) = struct.unpack(">i", chr(ret[4]) + chr(ret[5]) + chr(ret[6]) + chr(0))
+            self.V6 = temp >> 8
+            (temp,) = struct.unpack(">i", chr(ret[7]) + chr(ret[8]) + chr(ret[9]) + chr(0))
+            self.LeadI = temp >> 8
+            (temp,) = struct.unpack(">i", chr(ret[10]) + chr(ret[11]) + chr(ret[12]) + chr(0))
+            self.LeadII = temp >> 8
+            (temp,) = struct.unpack(">i", chr(ret[13]) + chr(ret[14]) + chr(ret[15]) + chr(0))
+            self.V2 = temp >> 8
+            self.LeadIII = self.LeadII - self.LeadI
+            self.aVR = 0 - ((self.LeadI + self.LeadII) / 2)
+            self.aVL = self.LeadI - (self.LeadII / 2)
+            self.aVF = self.LeadII - (self.LeadI / 2)
 
+        if characteristic._.UUID == CBUUID.UUIDWithString_("FEC7"): # data2
+            value = characteristic._.value
+            ret = struct.unpack("16B", value)
+            if self.data_prefix != None and self.data_prefix == ret[0]:
+                data_prefix = ret[0]
+            else:
+                print "miss match"
+                return
+            (temp,) = struct.unpack(">i", chr(ret[1]) + chr(ret[2]) + chr(ret[3]) + chr(0))
+            self.V3 = temp >> 8
+            (temp,) = struct.unpack(">i", chr(ret[4]) + chr(ret[5]) + chr(ret[6]) + chr(0))
+            self.V4 = temp >> 8
+            (temp,) = struct.unpack(">i", chr(ret[7]) + chr(ret[8]) + chr(ret[9]) + chr(0))
+            self.V5 = temp >> 8
+            (temp,) = struct.unpack(">i", chr(ret[10]) + chr(ret[11]) + chr(ret[12]) + chr(0))
+            self.V1 = temp >> 8
+            output = ""
+            if self.status != None:
+                output += "Record  number       : %8d            status: %06X\n" % (self.record_cnt ,self.status)
+            output += " V1: %8d  V2: %8d  V3: %8d    V4: %8d     V5: %8d      V6: %8d\n" % (self.V1, self.V2, self.V3, self.V4, self.V5, self.V6)
+            output += "aVR: %8d aVL: %8d aVF: %8d LeadI: %8d LeadII: %8d LeadIII: %8d\n" % (self.aVR, self.aVL, self.aVF, self.LeadI, self.LeadII, self.LeadIII)
+            if self.fd == None:
+                self.fd = open("log.txt", 'w')
+            if self.record_cnt % 100 == 1:
+                print output
+            self.fd.write(output)
+            self.record_cnt = self.record_cnt + 1
+            self.data_prefix = None
+
+        if characteristic._.UUID == CBUUID.UUIDWithString_("FEC8"): # data info
+            value = characteristic._.value
+            start_time = value[:8]
+            end_time   = value[8:]
+            year, month, day, wday, hour, minute, second = struct.unpack("<HBBBBBB", start_time)
+            try:
+                rtc_time = datetime(year = year, month = month, day = day, hour = hour, minute = minute, second = second)
+                print "ECG Record Start Time", rtc_time
+            except:
+                # if the RTC is not set, then the values are 0s
+                pass
+            year, month, day, wday, hour, minute, second = struct.unpack("<HBBBBBB", end_time)
+            try:
+                rtc_time = datetime(year = year, month = month, day = day, hour = hour, minute = minute, second = second)
+                print "ECG Record End Time", rtc_time
+            except:
+                # if the RTC is not set, then the values are 0s
+                pass
         # SIDS SHT25 PROFILE
         sht25_enable = False
         if characteristic._.UUID == CBUUID.UUIDWithString_("FE11"):

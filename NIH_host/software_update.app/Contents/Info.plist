@@ -11,11 +11,11 @@
 	<key>CFBundleIconFile</key>
 	<string>applet</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.apple.ScriptEditor.id.start-ecobt</string>
+	<string>com.apple.ScriptEditor.id.software-update</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>start_ecobt</string>
+	<string>software_update</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleSignature</key>
@@ -38,7 +38,7 @@
 		<key>positionOfDivider</key>
 		<real>333</real>
 		<key>savedFrame</key>
-		<string>262 366 602 597 0 0 1680 1028 </string>
+		<string>785 275 602 597 0 0 1680 1028 </string>
 		<key>selectedTabView</key>
 		<string>result</string>
 	</dict>
