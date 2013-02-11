@@ -23,10 +23,11 @@ class EcoBTCentralManagerDelegateWorker(EcoBTDelegateWorker):
             if(data != 'stop'):
                 if(len(self._global_sockets) != 0):
                     #print data
-
                     packet = {'from': 'central', 'data': data}
+                    print packet
+                    print len(self._global_sockets.sockets)
                     for socket in self._global_sockets.sockets:
-                        socket.write_message(data) 
+                        socket.write_message(packet) 
             else: # stop signal received
                 break
     

@@ -23,10 +23,11 @@ define("port", default=8001, help="run on the given port", type=int)
 
 
 class Application(tornado.web.Application):
-    def __init__(self):
+    def __init__(self, ecoBTApp):
         self.globalSockets = Sockets()
+        self.EcoBTApp = ecoBTApp
         handlers = [
-            (r"/socket", EcoBTWebSocket, dict(globalSockets = self.globalSockets))
+            (r"/socket", EcoBTWebSocket, dict(globalSockets = self.globalSockets, ecoBTApp = self.EcoBTApp))
         ]
         settings = dict(
             debug=True
@@ -44,16 +45,19 @@ if __name__ == "__main__":
     sys.stdout = logFile
     sys.stderr = logFile
     '''
+    ecoBTApp = EcoBTApp()
+    
     print "Running on localhost:8001"
     tornado.options.parse_command_line()
-    app = Application()
+    app = Application(ecoBTApp)
     http_server = tornado.httpserver.HTTPServer(app)
     http_server.listen(options.port)
     
+    ecoBTApp.setSockets(app.globalSockets)
+    
     #open a browser for the web interface
     #webbrowser.open_new('http://localhost:8000/')
-    ecoBTApp = EcoBTApp(app.globalSockets)
-    app.setEcoBTApp(ecoBTApp)
+    
     #start web server
     t = threading.Thread(target = tornado.ioloop.IOLoop.instance().start)
     t.setDaemon(True)

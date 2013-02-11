@@ -14,6 +14,7 @@ class EcoBTPeripheralDelegateWorker(EcoBTDelegateWorker):
     def __init__(self):
         EcoBTDelegateWorker.__init__(self)
         self.address = None # mac address of this peripheral
+        self.number = None # peripheral's sequence number
 
 
     def run(self):
@@ -26,9 +27,10 @@ class EcoBTPeripheralDelegateWorker(EcoBTDelegateWorker):
                 #print data
                 if data['type'] == 'deviceInfo':
                     self.address = data['value']
-                elif len(self._global_sockets) != 0:
+                if len(self._global_sockets) != 0:
                     #print data
                     data['name'] = self.address # add peripheral's MAC address as its name
+                    data['number'] = self.number
                     packet = {'from': 'node', 'data': data}
                     for socket in self._global_sockets.sockets:
                         socket.write_message(packet) 

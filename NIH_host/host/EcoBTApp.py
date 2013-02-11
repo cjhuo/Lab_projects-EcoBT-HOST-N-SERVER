@@ -10,10 +10,10 @@ from Sockets import Sockets
 
 class EcoBTApp(object):
 
-    def __init__(self, sockets):
+    def __init__(self):
         #initialize CMManagerWorker
         self.managerWorker = EcoBTCentralManagerWorker.alloc().init()   
-        self.managerWorker.setSockets(sockets)
+        #self.managerWorker.setSockets(sockets)
 
         
     def start(self):
@@ -45,7 +45,7 @@ class EcoBTApp(object):
         stdIn.readInBackgroundAndNotify()
         
     def setSockets(self, sockets):
-        self.managerWorker.sockets = sockets
+        self.managerWorker.setSockets(sockets)
        
     def handler_(self, notification): # handlder must has a function name ended by a single "_"        
         NSLog("Keyboard Interrupt Captured")

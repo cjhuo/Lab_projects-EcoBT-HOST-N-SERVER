@@ -73,3 +73,45 @@ p {
 }
 
 
+.container {
+    width: 1000px;
+    height: 400px;
+    /*align: center;*/
+    float: left;
+    -webkit-border-radius: 25px;
+    border: solid 1px #333;
+	margin:0px 0px 0px 0px;border:2px;border:2px solid #a1a1a1;
+	padding:0px 0px; 
+	background:#dddddd;
+	border-radius:25px;
+	-moz-border-radius:25px; /* Firefox 3.6 and earlier */
+	margin-left:auto;
+	margin-right:auto;
+}
+
+.chart {
+    width: 400px;
+    height: 400px;
+	float: right;
+	margin-left:auto;
+	margin-right:50px;
+}
+
+.simulation {
+	width: 500px;
+	height: 400px;
+	float: left;
+	margin-left:50px;
+	margin-right:auto;
+}
+
+#cardReader, #firmware, #reboot, #wipeout, #setRTC {
+margin:20px 0px 20px 0px;border:2px;border:2px solid #a1a1a1;
+padding:10px 40px; 
+background:#dddddd;
+width:300px;
+border-radius:25px;
+-moz-border-radius:25px; /* Firefox 3.6 and earlier */
+}
+
+

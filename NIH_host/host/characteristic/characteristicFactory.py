@@ -5,7 +5,8 @@ Created on Feb 9, 2013
 '''
 from implementation import DeviceInfo, ACCXYZ, ACCEnable, \
 SIDsEnable, SIDsRate, SIDsStart,\
-SIDsTempRead, SIDsHumidRead, LEDEnable, LEDBlinkInterval
+SIDsTempRead, SIDsHumidRead, LEDEnable, LEDBlinkInterval,\
+RTCSet, RTCGet
 
 def createCharacteristic(UUID, instance, peripheral):
     c = None
@@ -29,7 +30,10 @@ def createCharacteristic(UUID, instance, peripheral):
         c = LEDEnable.LEDEnable()
     elif UUID == "FF13" or UUID == "FF14":
         c = LEDBlinkInterval.LEDBlinkInterval()
-                
+    elif UUID == "FF21":
+        c = RTCSet.RTCSet()
+    elif UUID == "FF22":
+        c = RTCGet.RTCGet()      
     c.setUUID(UUID)  
     c.setInstance(instance)      
     c.setPeripheral(peripheral)   

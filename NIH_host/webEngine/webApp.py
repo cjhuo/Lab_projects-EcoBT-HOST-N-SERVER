@@ -45,9 +45,9 @@ class MainHandler(tornado.web.RequestHandler):
     def get(self):
         self.render(
             "index.html",
-            page_title="ECG and SIDs portal",
-            header_text="Header goes here",
-            footer_text="Footer goes heare"
+            page_title="ECG and SIDs Portal",
+            header_text="ECG and SIDs Portal",
+            footer_text="ECG and SIDs Portal"
         )
         
 class AnalysisHandler(tornado.web.RequestHandler):
@@ -92,8 +92,8 @@ class CardReaderHandler(tornado.web.RequestHandler):
     def get(self):
         self.render(
             "cardReader.html",
-            page_title="CardReader Viewer",
-            header_text="CardReader Viewer",
+            page_title="SD CardReader Viewer",
+            header_text="SD CardReader Viewer",
             footer_text="",
         )        
         

@@ -17,6 +17,8 @@ from EcoBTWorker import EcoBTWorker
 from EcoBTCentralManagerDelegateWorker import EcoBTCentralManagerDelegateWorker
 from EcoBTPeripheralWorker import EcoBTPeripheralWorker
 
+from Peripheral import Peripheral
+
 
 class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
     def init(self):
@@ -25,6 +27,14 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
         # initialize CMdelegate worker
         self.delegateWorker =  EcoBTCentralManagerDelegateWorker()
         self.delegateWorker.start()
+        self.pNum = 0 # this number is for each peripheral to identify themselves
+        '''
+        0: if down, 
+        1: if up but not startScan, 
+        2: up and startScan, 
+        3: has node connected, still scanning
+        '''
+        self.state = 0
         # initialize manager with delegate
         print "Initialize CBCentralManager Worker"
         self.manager = CBCentralManager.alloc().initWithDelegate_queue_(self, nil)
@@ -65,6 +75,23 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
     def stopScan(self):
         print "stop scan"
         self.manager.stopScan()
+        
+    def sendState(self):
+        data = {'type': 'state',
+                'value': self.state}
+        self.delegateWorker.getQueue().put(data)     
+        
+    def sendPeripheralList(self):
+        data = {'type': 'peripheralList',
+                'value': []
+                }
+        for worker in self.peripheralWorkers:
+            p = {'name': worker.peripheral.name,
+                 'rssi': worker.peripheral.rssi,
+                 'number': worker.peripheral.number
+                 }
+            data['value'].append(p)
+        self.delegateWorker.getQueue().put(data)
     
 
     # CBCentralManager delegate methods
@@ -84,8 +111,16 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
         elif ble_state == CBCentralManagerStatePoweredOn:
             print "ble is ready!!"
             
-            # for test
+            
+            
+            self.state = 1
+            self.sendState()
+            
+            # for test purpose
             self.startScan()
+            self.state = 2
+            self.sendState()
+            
             #self.startScan()
         else:
             print "test"
@@ -102,13 +137,19 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
         print "Found Peripheral ", peripheral._.name, rssi
         NSLog("%@", advtisement_data)
         
-        found = self.findWorkerForPeripheral(peripheral) # check if the peripheral has already been added to the list      
+        # update self's state and send to UI
+        self.state = 3
+        self.sendState()
+        # check if the peripheral has already been added to the list
+        found = self.findWorkerForPeripheral(peripheral)       
         if found == False:
             # initializae peripheral worker when peripheral is added to the list
             worker = EcoBTPeripheralWorker.alloc().init()
             worker.setSockets(self.sockets)
             #print 'Peripheral socket: ', worker.sockets
-            worker.peripheral = peripheral
+            
+            worker.setPeripheral(Peripheral(peripheral, peripheral._.name, rssi, self.pNum))
+            self.pNum += 1
             self.peripheralWorkers.append(worker)
             
             # for test
@@ -134,7 +175,7 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
         w = self.findWorkerForPeripheral(peripheral)
         if w != False:
             # start peripheral's delegate worker only when it's connected
-            w.peripheral.setDelegate_(w)
+            w.peripheral.instance.setDelegate_(w)
             w.delegateWorker.start()
             
             # for test
@@ -159,6 +200,9 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
             print "Disconnect"
         else:
             print "Didn't find the peripheral from list"
+        
+        # update UI
+        self.sendPeripheralList()
         #AppHelper.stopEventLoop()
         #sys.exit()
 
@@ -171,7 +215,7 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
     
     def findWorkerForPeripheral(self, peripheral):
         for w in self.peripheralWorkers:
-            if w.peripheral == peripheral:
+            if w.peripheral.instance == peripheral:
                 return w           
         return False # not found
 

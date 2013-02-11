@@ -15,7 +15,7 @@ $(function () {
 	
 	function onDataReceived(data){
 		if( data.from == 'node')
-			if(name == "Demo" || name == data.data.name)
+			if(name == "Demo" || name.trim() == data.data.name.trim())
 				if(data.data.type == 'orientation'){
 					/*
 					if(data.axis == 'x')

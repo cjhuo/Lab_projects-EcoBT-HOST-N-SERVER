@@ -31,7 +31,11 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
         self.services = []
         self.delegateWorker = EcoBTPeripheralDelegateWorker()
         print "Initialize Peripheral Worker"
-        return self        
+        return self   
+    
+    def setPeripheral(self, peripheral):
+        self.peripheral = peripheral
+        self.delegateWorker.number = peripheral.number     
 
     def setSockets(self, sockets):
         self.sockets = sockets
@@ -42,7 +46,7 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
         self.delegateWorker.join()
 
     def discoverServices(self):
-        self.peripheral.discoverServices_(None)
+        self.peripheral.instance.discoverServices_(None)
 
     def setWorker(self, worker):
         self.worker = worker
@@ -51,29 +55,29 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
         
     def discoverCharacteristics_forService(self, service):
         if type(service) == Service:
-            self.peripheral.discoverCharacteristics_forService_(nil, service.instance)
+            self.peripheral.instance.discoverCharacteristics_forService_(nil, service.instance)
         else:
-            self.peripheral.discoverCharacteristics_forService_(nil, service)
+            self.peripheral.instance.discoverCharacteristics_forService_(nil, service)
         
     def readValueForCharacteristic(self, characteristic):
         if isinstance(characteristic, Characteristic.Characteristic):
-            self.peripheral.readValueForCharacteristic_(characteristic.instance)
+            self.peripheral.instance.readValueForCharacteristic_(characteristic.instance)
         else:
-            self.peripheral.readValueForCharacteristic_(characteristic)
+            self.peripheral.instance.readValueForCharacteristic_(characteristic)
         
     def setNotifyValueForCharacteristic(self, flag, characteristic):
         if isinstance(characteristic, Characteristic.Characteristic):
-            self.peripheral.setNotifyValue_forCharacteristic_(flag, characteristic.instance)
+            self.peripheral.instance.setNotifyValue_forCharacteristic_(flag, characteristic.instance)
         else:
-            self.peripheral.setNotifyValue_forCharacteristic_(flag, characteristic)
+            self.peripheral.instance.setNotifyValue_forCharacteristic_(flag, characteristic)
             
     def writeValueForCharacteristic(self, value, characteristic):
         if isinstance(characteristic, Characteristic.Characteristic):
-            self.peripheral.writeValue_forCharacteristic_type_(
+            self.peripheral.instance.writeValue_forCharacteristic_type_(
                                                                value, characteristic.instance,
                                                                CBCharacteristicWriteWithResponse)
         else:
-            self.peripheral.writeValue_forCharacteristic_type_(
+            self.peripheral.instance.writeValue_forCharacteristic_type_(
                                                                value, characteristic,
                                                                CBCharacteristicWriteWithResponse)
             
@@ -156,7 +160,7 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
                 #print char._.UUID
                 if (self.checkUUID(char._.UUID)) != None:
                     #NSLog("%@", char._.UUID)
-                    self.appendCharacteristicForService(char, s, self.peripheral)        
+                    self.appendCharacteristicForService(char, s, self.peripheral.instance)        
                         
                     # for test
                     #self.readValueForCharacteristic(char)

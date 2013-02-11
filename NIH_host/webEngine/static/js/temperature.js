@@ -21,8 +21,9 @@ $(function () {
 	var socket = null; //websocket object
 	
 	function onDataReceived(data){
-		if( data.from == 'node')
-			if(name == "Demo" || name == data.data.name) {
+		if( data.from == 'node'){
+			if(name == "Demo" || name.trim() == data.data.name.trim()) {
+
 				if(data.data.type == 'temperature') {
 					updateChart(chartTemp, data.data.value);
 				}
@@ -31,6 +32,7 @@ $(function () {
 					updateChart(chartHum, data.data.value);
 				}			
 			}
+		}
 	}
 	
     // Add some life
