@@ -11,7 +11,7 @@ $(function () {
 
 	//such as cps.eng.uci.edu:8000/socket
 	console.log(url);
-	var container = $("<div class='container' />").appendTo(document.body);
+	var container = $("<div class='container' style='height:1000px'/>").appendTo(document.body);
 
 	var startDiscoverServices = false;
 	function onDataReceived(data){
@@ -180,6 +180,7 @@ $(function () {
         		y = 20;
         		$.each(plist, function(index, value){ //name, rssi, number
         			addNode(x, y, value);
+        			y+=150;
         		});
         	}
         	else{ 	// compare the list, if doesn't in plist then disabled, 

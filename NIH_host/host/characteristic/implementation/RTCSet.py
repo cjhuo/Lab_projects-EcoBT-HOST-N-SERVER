@@ -29,9 +29,10 @@ class RTCSet(Characteristic):
         value = self.instance._.value
         year, month, day, wday, hour, minute, second = struct.unpack("<HBBBBBB", value)
         print "EPL RTC Last Set Time ", year, month, day, wday, hour, minute, second
-        self.time = datetime(year, month, day, wday, hour, minute, second)
-        data = {'type': "RTCSet", 'value': self.time} # read to 2nd digit after decimal point
-        return data
+        #self.time = datetime(year, month, day, wday, hour, minute, second)
+        #data = {'type': "RTCSet", 'value': self.time} # read to 2nd digit after decimal point
+        #return data
+        return None
     
     def createHostCurrentTime(self):
         now = datetime.now()
