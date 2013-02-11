@@ -23,6 +23,7 @@ class Application(tornado.web.Application):
                 (r'/analysis_allInOne', AnalysisAllInOnceHandler),            
                 (r'/orientation', OrientationHandler),
                 (r'/temperature', TemperatureHandler),
+                (r'/liveECG', LiveECGHandler),
                 (r'/administration', AdministrationHandler),
                 (r'/plot', PlotHandler),
                 (r'/analysis', AnalysisHandler),
@@ -70,15 +71,6 @@ class AnalysisAllInOnceHandler(tornado.web.RequestHandler):
             footer_text="",
         )
         
-class AnalysisOldHandler(tornado.web.RequestHandler):
-    def get(self):
-        self.render(
-            "analysis_old.html",
-            page_title="ECG Analysis Viewer",
-            header_text="ECG Analysis Viewer",
-            footer_text="",
-        )
-        
 class TempAnalysisHandler(tornado.web.RequestHandler):
     def get(self):
         self.render(
@@ -122,6 +114,16 @@ class PlotHandler(tornado.web.RequestHandler):
             nodeName = name,
         )
         
+        
+class LiveECGHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render(
+            "lib/ecg.html",
+            page_title="ECG Live Viewer",
+            header_text="ECG Live Viewer",
+            footer_text="",
+        )
+        
 class OrientationHandler(tornado.web.RequestHandler):
     def get(self):
         try:
@@ -136,6 +138,21 @@ class OrientationHandler(tornado.web.RequestHandler):
             serverAddr = orientationServerAddr,
             nodeName = name,
         )   
+        
+class TemperatureHandler(tornado.web.RequestHandler):
+    def get(self):
+        try:
+            name = self.get_argument("name") # node's name, e.g., MAC addres
+        except Exception:
+            name = None        
+        self.render(
+            "live/temperature.html",
+            page_title="Temperature Viewer",
+            header_text="Temperature Viewer",
+            footer_text="",
+            serverAddr = temperatureServerAddr,
+            nodeName = name,
+        )  
         
 class TemperatureHandler(tornado.web.RequestHandler):
     def get(self):

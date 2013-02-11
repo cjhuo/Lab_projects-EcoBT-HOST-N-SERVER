@@ -28,7 +28,8 @@ ProfileList = [
 "FF10",             # LED Profile
 "FFA0",             # ACC Profile
 "FE10",             # SIDS SHT25 Profile
-"FF20",             # RTC Profile
+"FF20",             # RTC Profile,
+"FEC0",             # ECG Profile
 # Characteristic Profile
 "2A23",             # Device Info Characteristic Profile
 "FE11",             # SIDs Enable Characteristic Profile
@@ -47,7 +48,9 @@ ProfileList = [
 #"FFA5",             # ACC Z Characteristic Profile
 "FFA6",             # ACC XYZ Characteristic Profile
 "FF21",             # RTC Set Time Characteristic Profile
-"FF22"              # RTC Get Time Characteristic Profile
+"FF22",              # RTC Get Time Characteristic Profile
+"FEC6"              # ECG characteristic first half
+"FEC7"              # ECG characteristic second half
 ]
 
 
