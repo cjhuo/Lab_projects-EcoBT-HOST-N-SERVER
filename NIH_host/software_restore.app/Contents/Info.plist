@@ -11,11 +11,11 @@
 	<key>CFBundleIconFile</key>
 	<string>applet</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.apple.ScriptEditor.id.software-update</string>
+	<string>com.apple.ScriptEditor.id.software-restore</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>software_update</string>
+	<string>software_restore</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleSignature</key>
@@ -38,7 +38,7 @@
 		<key>positionOfDivider</key>
 		<real>333</real>
 		<key>savedFrame</key>
-		<string>464 297 602 597 0 0 1680 1028 </string>
+		<string>24 408 602 597 0 0 1680 1028 </string>
 		<key>selectedTabView</key>
 		<string>result</string>
 	</dict>
