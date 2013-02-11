@@ -11,7 +11,7 @@ $(function () {
 
 	//such as cps.eng.uci.edu:8000/socket
 	console.log(url);
-	var container = $("<div class='container' style='height:1000px'/>").appendTo(document.body);
+	var container = $("<div class='container' style='height:2000px'/>").appendTo(document.body);
 
 	var startDiscoverServices = false;
 	function onDataReceived(data){
@@ -117,7 +117,7 @@ $(function () {
                 stroke: "#333",
                 "stroke-width": 0,
                 cursor: "pointer",
-                transform: "t80,190r270s1,1,0,0"
+                transform: "t35,110r140s1,1,0,0"
             });        	
         },
         /**
