@@ -23,6 +23,7 @@ class Application(tornado.web.Application):
                 (r'/analysis_allInOne', AnalysisAllInOnceHandler),            
                 (r'/orientation', OrientationHandler),
                 (r'/temperature', TemperatureHandler),
+                (r'/administration', AdministrationHandler),
                 (r'/plot', PlotHandler),
                 (r'/analysis', AnalysisHandler),
                 (r'/point', PointHandler, dict(ds = self.ds)),
@@ -64,8 +65,8 @@ class AnalysisAllInOnceHandler(tornado.web.RequestHandler):
     def get(self):
         self.render(
             "analysis_allInOne.html",
-            page_title="DSP Analysis Viewer",
-            header_text="DSP Analysis Viewer",
+            page_title="ECG Viewer",
+            header_text="ECG Viewer",
             footer_text="",
         )
         
@@ -73,8 +74,8 @@ class AnalysisOldHandler(tornado.web.RequestHandler):
     def get(self):
         self.render(
             "analysis_old.html",
-            page_title="DSP Analysis Viewer",
-            header_text="DSP Analysis Viewer",
+            page_title="ECG Analysis Viewer",
+            header_text="ECG Analysis Viewer",
             footer_text="",
         )
         
@@ -82,8 +83,8 @@ class TempAnalysisHandler(tornado.web.RequestHandler):
     def get(self):
         self.render(
             "tempAnalysis.html",
-            page_title="TempAnalysis viewer",
-            header_text="TempAnalysis viewer",
+            page_title="TempAnalysis Viewer",
+            header_text="TempAnalysis Viewer",
             footer_text="",
         ) 
         
@@ -91,8 +92,8 @@ class CardReaderHandler(tornado.web.RequestHandler):
     def get(self):
         self.render(
             "cardReader.html",
-            page_title="cardReader viewer",
-            header_text="cardReader viewer",
+            page_title="CardReader Viewer",
+            header_text="CardReader Viewer",
             footer_text="",
         )        
         
@@ -114,7 +115,7 @@ class PlotHandler(tornado.web.RequestHandler):
             name = None
         self.render(
             "live/plot.html",
-            page_title="SIDs viewer 1",
+            page_title="SIDs Viewer 1",
             header_text="Generate a plot",
             footer_text="",
             serverAddr = plotServerAddr,
@@ -129,8 +130,8 @@ class OrientationHandler(tornado.web.RequestHandler):
             name = None
         self.render(
             "live/orientation.html",
-            page_title="Orientation viewer",
-            header_text="Orientation viewer",
+            page_title="Orientation Viewer",
+            header_text="Orientation Viewer",
             footer_text="",
             serverAddr = orientationServerAddr,
             nodeName = name,
@@ -144,9 +145,19 @@ class TemperatureHandler(tornado.web.RequestHandler):
             name = None        
         self.render(
             "live/temperature.html",
-            page_title="temperature viewer",
-            header_text="temperature viewer",
+            page_title="Temperature Viewer",
+            header_text="Temperature Viewer",
             footer_text="",
             serverAddr = temperatureServerAddr,
             nodeName = name,
+        )  
+
+class AdministrationHandler(tornado.web.RequestHandler):
+    def get(self):     
+        self.render(
+            "live/administration.html",
+            page_title="Administration Viewer",
+            header_text="Administration Viewer",
+            footer_text="",
+            serverAddr = administrationServerAddr,
         )               

@@ -25,11 +25,9 @@ class LEDEnable(Characteristic):
         print "EPL LED Enable?(%s) %d" % (self.instance._.UUID, self.enable)
         t = None
         if self.UUID == "FF11":
-            t = 'LED1'
+            t = 'LED0 Enable'
         elif self.UUID == "FF12":
-            t = 'LED2'            
-        elif self.UUID == "FF13": 
-            t = 'LED3'                   
+            t = 'LED1 Enable'                            
         data = {'type': t, 'value': self.enable} # read to 2nd digit after decimal point
         return data
     

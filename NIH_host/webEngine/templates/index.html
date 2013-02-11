@@ -46,6 +46,10 @@ function show(item){
 		$('#iframe1').removeAttr('srcdoc');
 		$('#iframe1').attr('src', "soundMonitor");
 	}
+	else if(item=='administration'){
+		$('#iframe1').removeAttr('srcdoc');
+		$('#iframe1').attr('src', "administration");
+	}
 	return false;
 }
 </script>
@@ -64,6 +68,7 @@ function show(item){
 <li><a href="#" onclick="return show('analysis');">ECG Data Analyzer</a></li>
 <li><a href="#" onclick="return show('tempAnalysis');">Historical Temperature Viewer</a></li>
 <li><a href="#" onclick="return show('cardReader');">Node configuration (local)</a></li>
+<li><a href="#" onclick="return show('administration');">Administration</a></li>
 <li><a href="#" >Node configuration (remote TBD)</a></li>
 
 
