@@ -65,6 +65,9 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
             elif service._.UUID == CBUUID.UUIDWithString_("FE10"):#humidity&temperature
                 print "%s Found!!" % service._.UUID
                 peripheral.discoverCharacteristics_forService_(nil, service)
+            elif service._.UUID == CBUUID.UUIDWithString_("FEC0"):#ECG
+                print "%s Found!!" % service._.UUID
+                peripheral.discoverCharacteristics_forService_(nil, service)
             else:
                 pass
 
@@ -92,6 +95,18 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
         if service._.UUID == CBUUID.UUIDWithString_("FF20"):
             for char in service._.characteristics:
                 NSLog("%@", char._.UUID)
+                peripheral.readValueForCharacteristic_(char)
+        # EPL ECG ROFILE
+        if service._.UUID == CBUUID.UUIDWithString_("FEC0"):
+            notify_list = []
+            notify_list.append(CBUUID.UUIDWithString_("FEC2"))
+            notify_list.append(CBUUID.UUIDWithString_("FEC6"))
+            notify_list.append(CBUUID.UUIDWithString_("FEC7"))
+            for char in service._.characteristics:
+                NSLog("%@", char._.UUID)
+                if char._.UUID in notify_list:
+                    print "Set Notify for ", char._.UUID
+                    peripheral.setNotifyValue_forCharacteristic_(True, char)
                 peripheral.readValueForCharacteristic_(char)
         # SIDS SHT25 PROFILE
         if service._.UUID == CBUUID.UUIDWithString_("FE10"):
@@ -127,10 +142,33 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
                                                           peripheral,
                                                           characteristic,
                                                           error):
-#        print "Read Characteristic(%s) value" % characteristic._.UUID
+        print "Read Characteristic(%s) value" % characteristic._.UUID
         if characteristic._.UUID == CBUUID.UUIDWithString_("2a23"):
             hex_str = binascii.hexlify(characteristic._.value)
             print "180A Profile?(%s) %s" % (characteristic._.UUID, hex_str)
+
+        # ECO ECG PROFILE
+        if characteristic._.UUID == CBUUID.UUIDWithString_("FEC1"): # info
+            hex_str = binascii.hexlify(characteristic._.value)
+            print "CHAR(%s) %s" % (characteristic._.UUID, hex_str)
+        if characteristic._.UUID == CBUUID.UUIDWithString_("FEC2"): # status
+            hex_str = binascii.hexlify(characteristic._.value)
+            print "CHAR(%s) %s" % (characteristic._.UUID, hex_str)
+        if characteristic._.UUID == CBUUID.UUIDWithString_("FEC3"): # config1
+            hex_str = binascii.hexlify(characteristic._.value)
+            print "CHAR(%s) %s" % (characteristic._.UUID, hex_str)
+        if characteristic._.UUID == CBUUID.UUIDWithString_("FEC4"): # config2
+            hex_str = binascii.hexlify(characteristic._.value)
+            print "CHAR(%s) %s" % (characteristic._.UUID, hex_str)
+        if characteristic._.UUID == CBUUID.UUIDWithString_("FEC5"): # status
+            hex_str = binascii.hexlify(characteristic._.value)
+            print "CHAR(%s) %s" % (characteristic._.UUID, hex_str)
+        if characteristic._.UUID == CBUUID.UUIDWithString_("FEC6"): # data1
+            hex_str = binascii.hexlify(characteristic._.value)
+            print "CHAR(%s) %s" % (characteristic._.UUID, hex_str)
+        if characteristic._.UUID == CBUUID.UUIDWithString_("FEC7"): # data2
+            hex_str = binascii.hexlify(characteristic._.value)
+            print "CHAR(%s) %s" % (characteristic._.UUID, hex_str)
 
         # SIDS SHT25 PROFILE
         sht25_enable = False
