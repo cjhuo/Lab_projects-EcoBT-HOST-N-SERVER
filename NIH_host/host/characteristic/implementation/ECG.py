@@ -22,14 +22,3 @@ class ECG(Characteristic):
         return {'type': 'test',
                 'uuid': self.UUID
                 }
- 
-    def createEnableFlag(self):
-        return self.createFlag(1)
-        
-    def createDisableFlag(self):
-        return self.createFlag(0)
-        
-    def createFlag(self, flag):
-        byte_array = array.array('b', chr(flag))
-        val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
-        return val_data
