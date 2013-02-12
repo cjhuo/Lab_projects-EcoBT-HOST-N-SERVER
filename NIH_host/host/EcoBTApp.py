@@ -56,8 +56,9 @@ class EcoBTApp(object):
         NSLog("Got string: %@", string)
         print str(string)
         
-        # stop NSRunLoop        
-        self.running.set()
+        # stop NSRunLoop
+        if(string == 'stop\n'): 
+            self.running.set()
 
 
 if __name__ == '__main__':
