@@ -36,7 +36,7 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
         '''
         self.state = 0
         # initialize manager with delegate
-        print "Initialize CBCentralManager Worker"
+        NSLog("Initialize CBCentralManager Worker")
         self.manager = CBCentralManager.alloc().initWithDelegate_queue_(self, nil)
         return self
     
@@ -54,7 +54,7 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
         self.delegateWorker.join()
 
     def connectPeripheral(self, peripheral):
-        print "Trying to connnect peripheral"
+        #NSLog("Trying to connnect peripheral %@", peripheral._.UUID)
         options = NSDictionary.dictionaryWithObject_forKey_(
             NSNumber.numberWithBool_(YES),
             CBConnectPeripheralOptionNotifyOnDisconnectionKey
@@ -73,7 +73,7 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
         )
         
     def stopScan(self):
-        print "stop scan"
+        NSLog("stop scan")
         self.manager.stopScan()
         
     def sendState(self):
@@ -98,18 +98,18 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
     def centralManagerDidUpdateState_(self, central):
         ble_state = central._.state
         if ble_state == CBCentralManagerStateUnkown:
-            print "state unkown"
+            NSLog("state unkown")
         elif ble_state == CBCentralManagerStateResetting:
-            print "resetting"
+            NSLog("resetting")
         elif ble_state == CBCentralManagerStateUnsupported:
-            print "BLE is not supported"
+            NSLog("BLE is not supported")
             #AppHelper.stopEventLoop()
         elif ble_state == CBCentralManagerStateUnauthorized:
-            print "unauthorized"
+            NSLog("unauthorized")
         elif ble_state == CBCentralManagerStatePoweredOff:
-            print "power off"
+            NSLog("power off")
         elif ble_state == CBCentralManagerStatePoweredOn:
-            print "ble is ready!!"
+            NSLog("ble is ready!!")
             
             
             
@@ -123,7 +123,8 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
             
             #self.startScan()
         else:
-            print "test"
+            NSLog("Can't get Central Manager's state!")
+            raise Exception
 
     '''
     Invoked when the central discovers a EcoBT node while scanning.
@@ -134,7 +135,7 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
                                                                      peripheral,
                                                                      advtisement_data,
                                                                      rssi):
-        print "Found Peripheral ", peripheral._.name, rssi
+        NSLog("Found Peripheral %@ %@", peripheral._.name, rssi)
         NSLog("%@", advtisement_data)
         
         # update self's state and send to UI
@@ -163,15 +164,15 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
         #self.stopScan()
 
     def centralManager_didRetrivePeripherals_(self, central, peripherals):
-        print "Retrive peripherals"
+        NSLog("Retrive peripherals")
 
     def centralManager_didConnectPeripheral_(self, central, peripheral):
         # Update UI
         
-        print "Connected to peripheral ", peripheral._.name
+        NSLog("Connected to peripheral %@", peripheral._.name)
             
         #delegate.sockets = self.sockets     
-        print "number of peripherals: ", len(self.peripheralWorkers)
+        NSLog("number of peripherals: %@", len(self.peripheralWorkers))
         w = self.findWorkerForPeripheral(peripheral)
         if w != False:
             # start peripheral's delegate worker only when it's connected
@@ -181,7 +182,8 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
             # for test
             w.discoverServices()
         else: 
-            print "error, peripheral hasn't been added to watch list"
+            NSLog("error, peripheral hasn't been added to watch list")
+            raise Exception
         #peripheral.discoverServices_(None)
 
 
@@ -197,9 +199,9 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
         if worker != False:
             worker.stop()
             self.peripheralWorkers.remove(worker)
-            print "Disconnect"
+            NSLog("Disconnect from Peripheral No %@", worker.peripheral.number)
         else:
-            print "Didn't find the peripheral from list"
+            NSLog("Didn't find the peripheral to remove from peripherhal list!")
         
         # update UI
         self.sendPeripheralList()
@@ -210,7 +212,7 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
                                                          central,
                                                          peripheral,
                                                          error):
-        print "Fail to Connect"
+        NSLog("Fail to Connect")
 
     
     def findWorkerForPeripheral(self, peripheral):

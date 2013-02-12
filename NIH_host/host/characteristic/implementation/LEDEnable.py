@@ -28,8 +28,15 @@ class LEDEnable(Characteristic):
             t = 'LED0 Enable'
         elif self.UUID == "FF12":
             t = 'LED1 Enable'                            
-        data = {'type': t, 'value': self.enable} # read to 2nd digit after decimal point
+        data = {
+                'type': t, 
+                'value': self.enable,
+                'uuid': self.UUID
+                } # read to 2nd digit after decimal point
         return data
+
+    def createBlinkFlag(self):
+        return self.createFlag(2)
     
     def createEnableFlag(self):
         return self.createFlag(1)

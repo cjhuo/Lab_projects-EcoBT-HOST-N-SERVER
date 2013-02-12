@@ -28,12 +28,14 @@ class LEDBlinkInterval(Characteristic): # unit 0.1 sec
             t = 'LED0 Interval'
         elif self.UUID == "FF14":
             t = 'LED1 Interval'             
-        data = {'type': t, 
-                'value': self.interval
+        data = {
+                'type': t, 
+                'value': self.interval,
+                'uuid': self.UUID
                 }
         return data
     
-    def createIntervalBySec(self, sec):
-        byte_array = array.array('b', chr(sec*10))
+    def createInterval(self, interval): # unit: 0.1 sec
+        byte_array = array.array('b', chr(interval))
         val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
         return val_data

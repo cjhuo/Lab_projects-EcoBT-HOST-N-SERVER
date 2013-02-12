@@ -19,5 +19,9 @@ class SIDsTempRead(Characteristic):
         value = value & 0xFFFC
         temp = -46.85 + (175.72 * value) / 65536
         print "SIDS SHT25 TEMP READING?(%s) %.2f" % (self.instance._.UUID, temp)
-        data = {'type': 'temperature', 'value': round(temp, 2)} # read to 2nd digit after decimal point
+        data = {
+                'type': 'temperature', 
+                'value': round(temp, 2),
+                'uuid': self.UUID
+                } # read to 2nd digit after decimal point
         return data

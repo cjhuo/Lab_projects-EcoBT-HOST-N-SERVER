@@ -37,7 +37,8 @@ class Application(tornado.web.Application):
     def setEcoBTApp(self, app):
         self.EcoBTApp = app 
         
-if __name__ == "__main__":
+        
+def main():
     '''
     logFile = open('EcoBTlog.txt','a+', 0)
     stdOut = sys.stdout
@@ -69,3 +70,6 @@ if __name__ == "__main__":
     sys.stdout = stdOut
     sys.stderr = stdErr
     '''
+    
+if __name__ == "__main__":
+    main()

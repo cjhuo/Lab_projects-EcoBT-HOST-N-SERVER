@@ -6,26 +6,15 @@ import tornado.options
 import sys
 import webbrowser
 
-from webEngine.config import *
-from webEngine.webApp import *
+from config import *
+from webApp import *
 
 #sys.dont_write_bytecode = True
 
 from tornado.options import define, options
 #define("port", default=webGUIPort, help="run on the given port", type=int)
 
-
-        
-def writeToLog(flag):
-    if flag == True:
-        logFile = open('log.txt','a+', 0)
-        stdOut = sys.stdout
-        stdErr = sys.stderr
-        sys.stdout = logFile
-        sys.stderr = logFile
-        
-if __name__ == "__main__":
-    
+def main():
     writeToLog(isWriteToLog)
     
     print "Running on localhost:", webGUIPort
@@ -43,3 +32,15 @@ if __name__ == "__main__":
     sys.stdout = stdOut
     sys.stderr = stdErr
     '''
+    
+        
+def writeToLog(flag):
+    if flag == True:
+        logFile = open('log.txt','a+', 0)
+        stdOut = sys.stdout
+        stdErr = sys.stderr
+        sys.stdout = logFile
+        sys.stderr = logFile
+        
+if __name__ == "__main__":
+    main()

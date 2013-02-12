@@ -24,7 +24,8 @@ class ACCEnable(Characteristic):
         print "ACC ENABLE?(%s) %s" % (self.instance._.UUID, self.acc_enable)
 
         data = {'type': 'ACCEnable', 
-                'value': self.acc_enable
+                'value': self.acc_enable,
+                'uuid': self.UUID
                 }
         return data
     

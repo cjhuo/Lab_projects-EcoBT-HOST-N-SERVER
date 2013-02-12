@@ -23,8 +23,10 @@ class SIDsStart(Characteristic):
         hex_str = binascii.hexlify(self.instance._.value)
         self.start = int(hex_str, base=16) # 1: enabled; 0: disabled
         print "SIDS SHT25 Start?(%s) %d" % (self.instance._.UUID, self.start)
-        data = {'type': 'SIDsStart', 
-                'value': self.start
+        data = {
+                'type': 'SIDsStart', 
+                'value': self.start,
+                'uuid': self.UUID
                 }
         return data
 

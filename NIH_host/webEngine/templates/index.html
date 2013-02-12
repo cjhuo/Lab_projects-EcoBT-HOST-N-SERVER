@@ -46,6 +46,10 @@ function show(item){
 		$('#iframe1').removeAttr('srcdoc');
 		$('#iframe1').attr('src', "administration");
 	}
+	else if(item=='liveECG'){
+		$('#iframe1').removeAttr('srcdoc');
+		$('#iframe1').attr('src', "liveECG");
+	}
 	return false;
 }
 </script>
@@ -56,7 +60,7 @@ function show(item){
 	<div class="navbox">
 		<ul class="nav">
 			<li><a href="#" onclick="return show('plot');">Live ECG Viewer (Primitive)</a></li>
-			<li><a href="#" onclick="return show('live');">Live ECG Viewer (Primitive)</a></li>
+			<li><a href="#" onclick="return show('liveECG');">Live ECG Viewer (Primitive)</a></li>
 			<li><a href="#" onclick="return show('orientation');">Live Orientation Viewer</a></li>
 			<li><a href="#" onclick="return show('temperature');">Live Temperature Viewer</a></li>
 			<li><a href="#" onclick="return show('analysis_allInOne');">ECG Data Viewer</a></li>

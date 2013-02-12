@@ -19,8 +19,9 @@ class Characteristic(object):
     def setInstance(self, instance):
         self.instance = instance
         
-    def setPeripheral(self, peripheral):
-        self.peripheral = peripheral
+    def setPeripheralWorker(self, peripheralWorker):
+        self.peripheralWorker = peripheralWorker
         
     def process(self):
-        pass
+        return {'type': 'Not implemented',
+                'uuid': self.UUID}

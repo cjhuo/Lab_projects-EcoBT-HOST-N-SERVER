@@ -15,7 +15,8 @@ class DeviceInfo(Characteristic):
         
     def process(self):
         data = {'type': 'deviceInfo', 
-                'value': self.decryptAddress(self.instance._.value)
+                'value': self.decryptAddress(self.instance._.value),
+                'uuid': self.UUID
                 }
         return data
         

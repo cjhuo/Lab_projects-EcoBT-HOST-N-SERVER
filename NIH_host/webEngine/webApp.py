@@ -4,7 +4,7 @@ import tornado.web
 
 from handlers.fake.fakePlotHandler import *
 from handlers.ECGHandler import *
-from webEngine.config import *
+from config import *
 from db.Models import DataSource, Device, DataLog
 from ecg.ECG_reader import ECG_reader
 
@@ -71,6 +71,15 @@ class AnalysisAllInOnceHandler(tornado.web.RequestHandler):
             footer_text="",
         )
         
+class AnalysisOldHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render(
+            "analysis_old.html",
+            page_title="ECG Analysis Viewer",
+            header_text="ECG Analysis Viewer",
+            footer_text="",
+        )
+        
 class TempAnalysisHandler(tornado.web.RequestHandler):
     def get(self):
         self.render(
@@ -114,16 +123,6 @@ class PlotHandler(tornado.web.RequestHandler):
             nodeName = name,
         )
         
-        
-class LiveECGHandler(tornado.web.RequestHandler):
-    def get(self):
-        self.render(
-            "lib/ecg.html",
-            page_title="ECG Live Viewer",
-            header_text="ECG Live Viewer",
-            footer_text="",
-        )
-        
 class OrientationHandler(tornado.web.RequestHandler):
     def get(self):
         try:
@@ -137,7 +136,7 @@ class OrientationHandler(tornado.web.RequestHandler):
             footer_text="",
             serverAddr = orientationServerAddr,
             nodeName = name,
-        )   
+        )
         
 class TemperatureHandler(tornado.web.RequestHandler):
     def get(self):
@@ -154,16 +153,16 @@ class TemperatureHandler(tornado.web.RequestHandler):
             nodeName = name,
         )  
         
-class TemperatureHandler(tornado.web.RequestHandler):
+class LiveECGHandler(tornado.web.RequestHandler):
     def get(self):
         try:
             name = self.get_argument("name") # node's name, e.g., MAC addres
         except Exception:
             name = None        
         self.render(
-            "live/temperature.html",
-            page_title="Temperature Viewer",
-            header_text="Temperature Viewer",
+            "live/ecg.html",
+            page_title="Live ECG Viewer",
+            header_text="Live ECG Viewer",
             footer_text="",
             serverAddr = temperatureServerAddr,
             nodeName = name,
@@ -177,4 +176,4 @@ class AdministrationHandler(tornado.web.RequestHandler):
             header_text="Administration Viewer",
             footer_text="",
             serverAddr = administrationServerAddr,
-        )               
+        )     

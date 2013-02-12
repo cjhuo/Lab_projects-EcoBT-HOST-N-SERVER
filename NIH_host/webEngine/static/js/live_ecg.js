@@ -16,14 +16,50 @@ $(function () {
 	//ajax call urls
 	var dataurl = 'fileHandler'; 
 	
+    /**
+	    Data received should have the structure as below:
+	    data.dspData = [
+	                    {
+	                        'label': "channel1",
+	                        'data': [array of y]
+	                    },
+	                    {
+	                        'label': "channel2",
+	                        'data': [array of y]
+	                    }
+	                ]
+	    data.peaks = [index of 1st peak, index of 2nd peak, ...]
+	    
+	    for fakePlot only:
+	    	data retrieved from server for n channels with 100 data each, ranged from (-100, 100)
+    
+	*/
 	var datasets; //store datasets
+	function onDataReceived(data) { //setup plot after retrieving data
+	    extractDatasets(data); //JSON {'dspData': datasets, 'peaks': indice of peak points}         
+		addPlot();  //generate main plot div
+	}
+	
+	function getAndProcessData() { //issue ajax call and further process the data on sucess
+		showSpinner();
+		$.ajax({
+			url: dataurl,
+			cache: false,
+			type: 'POST',
+			dataType: 'json',
+			success: onDataReceived
+		});
+	}
+	    
+	function extractDatasets(data) {
+		datasets = data.dspData;
+	}
+	
+
 	var diagram; //store DOM object of plot div
     var plot;  //store main plot object will be returned by flot
     var options; //options settings for main plot
-    
-    var spinTarget; //store DOM object used to show loading spinner
-    var spinner; //spinner
-    
+        
     var xGridInterval = 200; //0.2 second
     var yGridInterval = 500; //0.5 mV, assuming the unit of ECG output is microvolt
     var yAxisHeight = 100;
@@ -209,55 +245,10 @@ $(function () {
             yAxis: [],
             series: []
     };
-
-	function getAndProcessData() { //issue ajax call and further process the data on sucess
-		showSpinner();
-		$.ajax({
-			url: dataurl,
-			cache: false,
-			type: 'POST',
-			dataType: 'json',
-			success: onDataReceived
-		});
-	}
-	
-    /* 
-	    Data received should have the structure as below:
-	    data.dspData = [
-	                    {
-	                        'label': "channel1",
-	                        'data': [array of y]
-	                    },
-	                    {
-	                        'label': "channel2",
-	                        'data': [array of y]
-	                    }
-	                ]
-	    data.peaks = [index of 1st peak, index of 2nd peak, ...]
-	    
-	    for fakePlot only:
-	    	data retrieved from server for n channels with 100 data each, ranged from (-100, 100)
-	    
-    */
-    function onDataReceived(data) { //setup plot after retrieving data
-        extractDatasets(data); //JSON {'dspData': datasets, 'peaks': indice of peak points}         
-		addPlot();  //generate main plot div
-    }
-	    
-	function extractDatasets(data) {
-		datasets = data.dspData;
-	}
     
     function addPlot() { 
-    	/*//generate one plot for each channel
-    	var diagram = $('<div id="channel'+ index +'"/>').css( {
-            position: 'relative',
-            width: '500px',
-            height: '200px',
-            margin: 'auto',
-            padding: '2px'
-        });
-    	*/
+    	//generate one plot for each channel
+
     	var resizer = $('<div id="resizer" />').css( {
             width: '100%',
             minHeight: '400px',
@@ -284,22 +275,6 @@ $(function () {
 
     	diagram.appendTo(innerResizer);
     	
-    	//resizable
-    	/*
-		resizer.resizable({
-		    // On resize, set the chart size to that of the 
-		    // resizer minus padding. If your chart has a lot of data or other
-		    // content, the redrawing might be slow. In that case, we recommend 
-		    // that you use the 'stop' event instead of 'resize'.
-		    resize: function() {
-		    	plot.setSize(
-		            this.offsetWidth - 20, 
-		            this.offsetHeight - 20,
-		            false
-			       );
-			   }
-		});
-		*/
 		plotEverything(); //plot diagram on generated div and generate overview
     }
     
@@ -342,6 +317,9 @@ $(function () {
     	});      
     }
     
+    var spinTarget; //store DOM object used to show loading spinner
+    var spinner; //spinner
+
     //show loading spinner, stopped when chart is fully loaded
     function showSpinner(){
     	var opts = {

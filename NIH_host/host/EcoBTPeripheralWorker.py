@@ -29,8 +29,8 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
         EcoBTWorker.__init__(self)
         self.peripheral = None
         self.services = []
-        self.delegateWorker = EcoBTPeripheralDelegateWorker()
-        print "Initialize Peripheral Worker"
+        self.delegateWorker = EcoBTPeripheralDelegateWorker(self)
+        NSLog("Initialize Peripheral Worker")
         return self   
     
     def setPeripheral(self, peripheral):
@@ -50,7 +50,7 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
 
     def setWorker(self, worker):
         self.worker = worker
-        print worker
+        #print worker
         #self.worker.getQueue().put('This is a test')
         
     def discoverCharacteristics_forService(self, service):
@@ -85,14 +85,16 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
         for s in self.services:
             if s.UUID == UUID:
                 return s
-        raise Exception # didn't find any service
+        #raise Exception # didn't find any service
+        return None
         
     def findCharacteristicByUUID(self, UUID):
         for s in self.services:
             for c in s.characteristics:
                 if UUID == c.UUID:
                     return c
-        raise Exception
+        #raise Exception
+        return None
     
     def appendService(self, service):
         uuid = self.checkUUID(service._.UUID)
@@ -105,7 +107,7 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
             pass # found a service profile not listed in IOBluetooth.py
         
     def appendCharacteristicForService(self, characteristic, service, peripheral):
-        c = characteristicFactory.createCharacteristic(self.checkUUID(characteristic._.UUID), characteristic, peripheral)
+        c = characteristicFactory.createCharacteristic(self.checkUUID(characteristic._.UUID), characteristic, self)
         # Characteristic that has read&write and system infor needs to be read at the beginning         
         if c.privilege == 1 or c.privilege == 2: 
             self.readValueForCharacteristic(c)
@@ -124,23 +126,30 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
     def initCharacteristicWhenDiscovered(self, uuid):
         if uuid == "FFA0": # enable ACC
             c = self.findCharacteristicByUUID("FFA1")
-            byte_array = array.array('b', chr(1))
-            val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
-            self.writeValueForCharacteristic(val_data, c)
-        if uuid == "FE10":
-            c = self.findCharacteristicByUUID("FE12") # set SIDs update frequency at 0.5Hz
-            byte_array = array.array('b', chr(2)) 
-            val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
-            self.writeValueForCharacteristic(val_data, c)
-            c = self.findCharacteristicByUUID("FE13")
-            byte_array = array.array('b', chr(1))
-            val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
-            self.writeValueForCharacteristic(val_data, c)
+            if c != None:
+                val = c.createDisableFlag()
+                self.writeValueForCharacteristic(val, c)
+        if uuid == "FF10":
+            c = self.findCharacteristicByUUID("FF12") # set Green LED to blink
+            if c != None: 
+                val = c.createBlinkFlag()
+                self.writeValueForCharacteristic(val, c)
+            c = self.findCharacteristicByUUID("FF14")
+            if c != None: # set Green LED blink interval to 0.1sec
+                val = c.createInterval(1)
+                self.writeValueForCharacteristic(val, c)
+        if uuid == "FEC0":
+            c = self.findCharacteristicByUUID("FEC5") # Enable ECG
+            if c != None:
+                byte_array = array.array('b', chr(0x11)) 
+                val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
+                self.writeValueForCharacteristic(val_data, c)  
+
         
     # CBPeripheral delegate methods
     def peripheral_didDiscoverServices_(self, peripheral, error):
         for service in peripheral._.services:
-            print "Service found with UUID: ", service._.UUID
+            NSLog("Service found with UUID: %@", service._.UUID)
             self.appendService(service)
             
             # for test
@@ -152,59 +161,30 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
                                                                peripheral,
                                                                service,
                                                                error):
-        print "didDiscoverCharacteristicsForService"
+        #print "didDiscoverCharacteristicsForService", service._.UUID
         uuid = self.checkUUID(service._.UUID)
         if uuid != None:
             s = self.findServiceByUUID(uuid)
-            for char in service._.characteristics:
-                #print char._.UUID
-                if (self.checkUUID(char._.UUID)) != None:
-                    #NSLog("%@", char._.UUID)
-                    self.appendCharacteristicForService(char, s, self.peripheral.instance)        
+            if s != None:               
+                for char in service._.characteristics:             
+                    if (self.checkUUID(char._.UUID)) != None:
+                        NSLog("didDiscoverCharacteristicsForService %@ %@", service._.UUID, char._.UUID)
+                        self.appendCharacteristicForService(char, s, self.peripheral.instance)        
+                        # for test
+                        #self.readValueForCharacteristic(char)
+                        self.setNotifyValueForCharacteristic(True, char)               
+                        #peripheral.readValueForCharacteristic_(char)
                         
-                    # for test
-                    #self.readValueForCharacteristic(char)
-                    self.setNotifyValueForCharacteristic(True, char)               
-                    #peripheral.readValueForCharacteristic_(char)
-                else:
-                    pass # found a characteristic profile not listed in IOBluetooth.py
-            
-            # for the purpose of test, enable ACC and SIDs at the starting point
-            self.initCharacteristicWhenDiscovered(uuid)
+                        # for the purpose of test, enable ACC and SIDs at the starting point
+                        self.initCharacteristicWhenDiscovered(uuid)
+                    else:
+                        pass # found a characteristic profile not listed in IOBluetooth.py
+
+            else: # found a unkown service
+                pass
                 
         else: 
             pass # found a service profile not listed in IOBluetooth.py
-        '''    
-        # SIDS SHT25 PROFILE
-        if service._.UUID == CBUUID.UUIDWithString_("FE10"):
-            for char in service._.characteristics:
-                NSLog("%@", char._.UUID)
-                notify_list = []
-                notify_list.append(CBUUID.UUIDWithString_("FE14"))
-                notify_list.append(CBUUID.UUIDWithString_("FE15"))
-                if char._.UUID in notify_list:
-                    print "Set Notify for ", char._.UUID
-                    peripheral.setNotifyValue_forCharacteristic_(True, char)
-                if char._.UUID == CBUUID.UUIDWithString_("FE11") or\
-                   char._.UUID == CBUUID.UUIDWithString_("FE12") or\
-                   char._.UUID == CBUUID.UUIDWithString_("FE13"):
-                    peripheral.readValueForCharacteristic_(char)
-        # EPL ACC. PROFILE
-        if service._.UUID == CBUUID.UUIDWithString_("FFA0"):
-            print "discovering chars"
-            for char in service._.characteristics:
-                NSLog("%@", char._.UUID)
-                notify_list = []
-                notify_list.append(CBUUID.UUIDWithString_("FFA3"))
-                notify_list.append(CBUUID.UUIDWithString_("FFA4"))
-                notify_list.append(CBUUID.UUIDWithString_("FFA5"))
-                notify_list.append(CBUUID.UUIDWithString_("FFA6"))
-                if char._.UUID in notify_list:
-                    print "Set Notify for ", char._.UUID
-                    peripheral.setNotifyValue_forCharacteristic_(True, char)
-                if char._.UUID == CBUUID.UUIDWithString_("FFA1"):
-                    peripheral.readValueForCharacteristic_(char)
-        '''          
             
     def peripheral_didUpdateValueForCharacteristic_error_(self,
                                                           peripheral,
@@ -213,46 +193,28 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
 #        print "Read Characteristic(%s) value" % characteristic._.UUID
         
         char = self.findCharacteristicByUUID(self.checkUUID(characteristic._.UUID))
-
-        # process the received data and put into queue
-        self.delegateWorker.getQueue().put(char.process())
-
-        ''' hasn't resolve
-        # EPL LED PROFILE
-        if characteristic._.UUID == CBUUID.UUIDWithString_("FF14"):
-            hex_str = binascii.hexlify(characteristic._.value)
-            value = int(hex_str, base=16)
-            print "CHAR(%s) %d %s" % (characteristic._.UUID, value, hex_str)
-            byte_array = array.array('b', chr(2))
-            val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
-            peripheral.writeValue_forCharacteristic_type_(
-                val_data, characteristic,
-                CBCharacteristicWriteWithResponse)
-        '''
+        if char != None:
+            # process the received data and put into queue
+            self.delegateWorker.getQueue().put(char.process())
 
 
     def peripheral_didWriteValueForCharacteristic_error_(self,
                                                          peripheral,
                                                          characteristic,
                                                          error):
-        print "CHAR(%s) is updated" % (characteristic._.UUID)
+        NSLog("CHAR(%@) is updated", characteristic._.UUID)
         char = self.findCharacteristicByUUID(self.checkUUID(characteristic._.UUID))
-        # process the received data and put into queue
-
-        self.delegateWorker.getQueue().put(char.process())
-        
-        '''
-        hex_str = binascii.hexlify(characteristic._.value)
-        value = int(hex_str, base=16)
-        print "CHAR(%s) is updated" % (characteristic._.UUID)
-        '''
+        if char != None:
+            # process the received data and put into queue
+            self.delegateWorker.getQueue().put(char.process())
+            
 
     def peripheral_didUpdateNotificationStateForCharacteristic_error_(self,
                                                                       peripheral,
                                                                       characteristic,
                                                                       error):
         
-        print "char(" + str(characteristic._.UUID) + ") is auto-notify? " + str(characteristic.isNotifying())
+        NSLog("char(%@) is auto-notify? %@", str(characteristic._.UUID), str(characteristic.isNotifying()))
               
 
         

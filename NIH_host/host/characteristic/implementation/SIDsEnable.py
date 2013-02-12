@@ -24,7 +24,8 @@ class SIDsEnable(Characteristic):
         self.enable = int(hex_str, base=16) # 1: enabled; 0: disabled
         print "SIDS SHT25 ENABLE?(%s) %s" % (self.instance._.UUID, self.enable)
         data = {'type': 'SIDsEnable', 
-                'value': self.enable
+                'value': self.enable,
+                'uuid': self.UUID
                 }
         return data
     

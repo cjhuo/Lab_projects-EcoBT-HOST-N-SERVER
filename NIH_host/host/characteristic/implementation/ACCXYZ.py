@@ -55,7 +55,8 @@ class ACCXYZ(Characteristic):
                 'value': { 'x': x,
                            'y': y,
                            'z': z
-                          }
+                          },
+                'uuid': self.UUID
                 }
         #data = {'type': 'orientation', 'axis': 'x', 'value': x}
         return data

@@ -3,12 +3,12 @@ Created on Feb 9, 2013
 
 @author: cjhuo
 '''
-from implementation import DeviceInfo, ACCXYZ, ACCEnable, \
+from implementation import Characteristic, DeviceInfo, ACCXYZ, ACCEnable, \
 SIDsEnable, SIDsRate, SIDsStart,\
 SIDsTempRead, SIDsHumidRead, LEDEnable, LEDBlinkInterval,\
 RTCSet, RTCGet, ECG
 
-def createCharacteristic(UUID, instance, peripheral):
+def createCharacteristic(UUID, instance, peripheralWorker):
     c = None
     if UUID == "2A23":
         c = DeviceInfo.DeviceInfo()
@@ -36,8 +36,10 @@ def createCharacteristic(UUID, instance, peripheral):
         c = RTCGet.RTCGet()  
     elif UUID == "FEC6" or UUID == "FEC7":
         c = ECG.ECG()     
+    else: # found a profile that has not implemented
+        c = Characteristic.Characteristic()
     c.setUUID(UUID)  
     c.setInstance(instance)      
-    c.setPeripheral(peripheral)   
+    c.setPeripheralWorker(peripheralWorker)   
     return c    
     

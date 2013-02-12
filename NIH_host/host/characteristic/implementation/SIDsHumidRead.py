@@ -18,5 +18,9 @@ class SIDsHumidRead(Characteristic):
         value = value & 0xFFFC
         humid = -6.0 +  (125.0 * value) / 65536
         print "SIDS SHT25 HUMID READING?(%s) %.2f" % (self.instance._.UUID, humid)
-        data = {'type': 'humidity', 'value': round(humid,2)} # read to 2nd digit after decimal point
+        data = {
+                'type': 'humidity', 
+                'value': round(humid,2),
+                'uuid': self.UUID
+                } # read to 2nd digit after decimal point
         return data

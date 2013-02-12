@@ -23,8 +23,10 @@ class SIDsRate(Characteristic):
         hex_str = binascii.hexlify(self.instance._.value)
         self.rate = int(hex_str, base=16) # 1: enabled; 0: disabled
         print "SIDS SHT25 RATE?(%s) %d sec" % (self.instance._.UUID, self.rate)
-        data = {'type': 'SIDsRate', 
-                'value': self.rate
+        data = {
+                'type': 'SIDsRate', 
+                'value': self.rate,
+                'uuid': self.UUID
                 }
         return data
     
