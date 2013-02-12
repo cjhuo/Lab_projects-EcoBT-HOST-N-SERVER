@@ -14,6 +14,8 @@ import tornado.options
 import os.path
 import threading
 
+from config import *
+
 from EcoBTApp import EcoBTApp
 from Sockets import Sockets
 from EcoBTWebSocket import EcoBTWebSocket
@@ -45,7 +47,7 @@ def main():
     sys.stdout = logFile
     sys.stderr = logFile
     '''
-    ecoBTApp = EcoBTApp()
+    ecoBTApp = EcoBTApp(enableKeyboardInterrupt)
     
     print "Running on localhost:8001"
     tornado.options.parse_command_line()

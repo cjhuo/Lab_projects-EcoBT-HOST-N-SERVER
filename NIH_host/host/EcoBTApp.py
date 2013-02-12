@@ -12,17 +12,21 @@ from Sockets import Sockets
 
 class EcoBTApp(object):
 
-    def __init__(self):
+    def __init__(self, enableKeyboardInterrupt):
         #initialize CMManagerWorker
-        self.managerWorker = EcoBTCentralManagerWorker.alloc().init()   
+        self.managerWorker = EcoBTCentralManagerWorker.alloc().init()  
+        self.enableKeyboardInterrupt = enableKeyboardInterrupt 
         #self.managerWorker.setSockets(sockets)
 
         
     def start(self):
         # initialize NSAutoreleasePool
         self.pool = NSAutoreleasePool.alloc().init()
-        
-        self.handleKeyboardInterrupt()
+        if self.enableKeyboardInterrupt != False:
+            self.handleKeyboardInterrupt()
+            
+        self.running = Event()
+        self.runLoop = NSRunLoop.currentRunLoop()
 
         # run NSRunLoop infinitely
         while (not self.running.isSet()) and self.runLoop.runMode_beforeDate_(NSDefaultRunLoopMode, NSDate.distantFuture()):
@@ -42,8 +46,7 @@ class EcoBTApp(object):
         NSNotificationCenter.defaultCenter().addObserver_selector_name_object_\
                         (self, s, NSFileHandleReadCompletionNotification, stdIn)
 
-        self.runLoop = NSRunLoop.currentRunLoop()
-        self.running = Event()
+
         stdIn.readInBackgroundAndNotify()
         
     def setSockets(self, sockets):
