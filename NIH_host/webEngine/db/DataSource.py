@@ -1,3 +1,4 @@
 #MACROS Speicfy location of DB, relative path
-DB_PATH = 'sqlite:///NIH.db'
+import os
+DB_PATH = 'sqlite:///' + os.path.join(os.path.dirname(__file__), 'NIH.db')
 
