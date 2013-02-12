@@ -14,7 +14,7 @@
 
 $(function () {
 	//ajax call urls
-	var dataurl = 'fileHandler'; 
+	var dataurl = 'ecgHandler'; 
 	
     /**
 	    Data received should have the structure as below:
@@ -152,7 +152,7 @@ $(function () {
             		type: 'all',
             		text: 'All'
             	}],
-            	selected: 1
+            	selected: 0
             },
             subtitle: {
             	/*

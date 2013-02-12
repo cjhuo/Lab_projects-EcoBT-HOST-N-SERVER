@@ -59,6 +59,8 @@ class EcoBTApp(object):
         # stop NSRunLoop
         if(string == 'stop\n'): 
             self.running.set()
+        else:
+            self.handleKeyboardInterrupt()
 
 
 if __name__ == '__main__':

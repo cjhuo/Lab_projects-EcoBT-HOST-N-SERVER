@@ -25,7 +25,6 @@ def main():
     #webbrowser.open_new('http://localhost:8000/')
     
     #start web server
-    tornado.ioloop.IOLoop.instance().start()
     
     '''
     sys.stdout = stdOut
@@ -43,3 +42,5 @@ def writeToLog(flag):
         
 if __name__ == "__main__":
     main()
+    tornado.ioloop.IOLoop.instance().start()
+

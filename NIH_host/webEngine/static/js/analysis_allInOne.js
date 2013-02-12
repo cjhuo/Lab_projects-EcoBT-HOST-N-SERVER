@@ -14,7 +14,7 @@
 
 $(function () {
 	//ajax call urls
-	var dataurl = 'fileHandler'; 
+	var dataurl = 'ecgHandler'; 
 	
 	var datasets; //store datasets
 	var diagram; //store DOM object of plot div
