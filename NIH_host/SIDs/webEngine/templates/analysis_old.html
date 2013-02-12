@@ -1,0 +1,37 @@
+{% extends "main.html" %}
+
+{% block header %}
+	<h1>{{ header_text }}</h1>
+{% end %}
+
+{% block body %}
+<!-- 
+ 	<p>1. Choose a radio button to pick the channel you want to analyze
+    <br>
+       2. Zoom to the range where you feel comfortable to pick start and end peak points
+    <br>
+       3. Pick 2 peak points and hit submit for further analysis in range between those 2 peak points
+    <br>
+       <b>Note:</b> <br>
+       a) De-select the point you've already selected by clicking it again <br>
+       b) You can always go back to the original state by choose any of the radio buttons
+    </p>
+ -->
+{% end %}
+
+{% block footer %}
+	{{ footer_text }}
+{% end %}
+
+{% block script_include %}
+
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/flot/jquery.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/flot/jquery.flot.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/flot/jquery.flot.resize.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/flot/jquery.flot.crosshair.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/flot/jquery.flot.selection.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/flot/jquery.flot.symbol.js") }}"></script>
+
+<script language="javascript" type="text/javascript" src="{{ static_url("js/analysis_flot.js") }}"></script>
+{% end %}
+
