@@ -46,19 +46,21 @@ class DSPHandler(tornado.web.RequestHandler):
         return datasets
     '''
     
-class FileHandler(tornado.web.RequestHandler):
+class ECGHandler(tornado.web.RequestHandler):
     def initialize(self, ecg):
         self.ecg = ecg
     
     def post(self):
         try:
-            if len(self.request.files) != 0: #user uploaded file from UI  
+            if len(self.request.files) != 0: #user uploaded file from UI 
                 f = self.request.files['uploaded_files'][0]
                 orig_fname = f['filename']
-                ofd = open("Uploads/" + orig_fname, 'w')
+                import os
+                path = os.path.join(os.path.dirname(__file__), os.pardir, "Uploads/")
+                ofd = open(path + orig_fname, 'w')
                 ofd.write(f['body'])
                 ofd.close()
-                self.ecg.setFile("Uploads/" + orig_fname)               
+                self.ecg.setFile(path + orig_fname)               
             else: #user user the default test file
                 self.ecg.setFile()               
             val = self.getDataFromDicomFile()

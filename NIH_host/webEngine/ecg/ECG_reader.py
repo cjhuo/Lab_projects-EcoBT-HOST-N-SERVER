@@ -9,6 +9,10 @@ import Histogram
 
 #from pylab import *
 
+import os
+filePath = os.path.join(os.path.dirname(__file__), os.pardir, "Uploads/MIICWwIBAAKBgQCMs1QxLEFE.dcm")
+
+
 class ECG_reader():
     def __init__(self):
         pass
@@ -20,7 +24,7 @@ class ECG_reader():
         self.NumofChannels = None
         '''
         
-    def setFile(self, Dfile = "Uploads/MIICWwIBAAKBgQCMs1QxLEFE.dcm"):
+    def setFile(self, Dfile = filePath):
         self._parseDicomFile(Dfile)
         
     def _parseDicomFile(self, Dfile):

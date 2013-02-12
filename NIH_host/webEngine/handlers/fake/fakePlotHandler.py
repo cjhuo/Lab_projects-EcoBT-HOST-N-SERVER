@@ -33,8 +33,11 @@ class ClientSocket(websocket.WebSocketHandler):
         print "WebSocket opened"
 
     def on_close(self):
-        FakePush(self.ds).getGlobalSockets().remove(self)
-        print "WebSocket closed"
+        try:
+            FakePush(self.ds).getGlobalSockets().remove(self)
+            print "WebSocket closed"
+        except:
+            print "Exception catched on closing websocket for plot_push"
 
 
         

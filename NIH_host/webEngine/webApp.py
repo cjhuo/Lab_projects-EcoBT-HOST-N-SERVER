@@ -16,7 +16,7 @@ class Application(tornado.web.Application):
         self.handlers = [
                 (r'/', MainHandler),
                 (r'/soundMonitor', SoundMonitorHandler),
-                (r'/fileHandler', FileHandler, dict(ecg = self.ecg)),
+                (r'/fileHandler', ECGHandler, dict(ecg = self.ecg)),
                 (r'/cardReader', CardReaderHandler),
                 (r'/tempAnalysis', TempAnalysisHandler),
                 (r'/analysis_old', AnalysisOldHandler),
@@ -154,17 +154,17 @@ class TemperatureHandler(tornado.web.RequestHandler):
         )  
         
 class LiveECGHandler(tornado.web.RequestHandler):
-    def get(self):
+    def get(self):  
         try:
             name = self.get_argument("name") # node's name, e.g., MAC addres
         except Exception:
-            name = None        
+            name = None   
         self.render(
             "live/ecg.html",
             page_title="Live ECG Viewer",
             header_text="Live ECG Viewer",
             footer_text="",
-            serverAddr = temperatureServerAddr,
+            serverAddr = LiveECGServerAddr,
             nodeName = name,
         )  
 

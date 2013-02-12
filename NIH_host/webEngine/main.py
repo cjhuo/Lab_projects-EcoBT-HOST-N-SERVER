@@ -1,15 +1,14 @@
+import sys
+sys.dont_write_bytecode = True
+
 import tornado.httpserver
 import tornado.ioloop
 import tornado.options
 
-
-import sys
 import webbrowser
 
 from config import *
 from webApp import *
-
-#sys.dont_write_bytecode = True
 
 from tornado.options import define, options
 #define("port", default=webGUIPort, help="run on the given port", type=int)

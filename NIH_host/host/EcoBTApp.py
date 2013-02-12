@@ -1,7 +1,9 @@
+import sys
+sys.dont_write_bytecode = True
+
 from Foundation import * 
 from objc import *
 import threading
-
 
 from EcoBTCentralManagerWorker import EcoBTCentralManagerWorker
 from threading import Event
