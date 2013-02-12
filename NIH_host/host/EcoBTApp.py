@@ -60,7 +60,9 @@ class EcoBTApp(object):
         if(string == 'stop\n'): 
             self.running.set()
         else:
-            self.handleKeyboardInterrupt()
+            stdIn = NSFileHandle.fileHandleWithStandardInput().retain()
+            stdIn.readInBackgroundAndNotify()
+            #self.handleKeyboardInterrupt()
 
 
 if __name__ == '__main__':
