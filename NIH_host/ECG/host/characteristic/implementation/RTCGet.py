@@ -29,5 +29,6 @@ class RTCGet(Characteristic):
             # if the RTC is not set, then the values are 0s
             print "EPL RTC Get Time not set yet!"
             rtc_time = 0
-        data = {'type': "RTCGet", 'value': rtc_time, 'uuid': self.UUID} # read to 2nd digit after decimal point
-        return data
+        data = {'type': "RTCGet", 'value': rtc_time} # read to 2nd digit after decimal point
+        self.peripheralWorker.delegateWorker.getQueue().put(data)
+

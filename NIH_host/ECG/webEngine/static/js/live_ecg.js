@@ -13,46 +13,54 @@
  */
 
 $(function () {
-	//ajax call urls
-	var dataurl = 'ecgHandler'; 
+	var url = $('#serverAddr').val(); 	//push url, need to change this to server's url, 
+	var name =  $('#name').text();
+    var ECG_CHANNELLABELS = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6'];
 	
     /**
 	    Data received should have the structure as below:
-	    data.dspData = [
+	    data.from = "node"
+	    data.type = "ecg"
+	    data.name = node's MAC
+	    data.data = [
 	                    {
-	                        'label': "channel1",
-	                        'data': [array of y]
+	                        'channelName': value,
+	                        'data': value,
 	                    },
 	                    {
 	                        'label': "channel2",
-	                        'data': [array of y]
+	                        'data': value
 	                    }
-	                ]
-	    data.peaks = [index of 1st peak, index of 2nd peak, ...]
-	    
-	    for fakePlot only:
-	    	data retrieved from server for n channels with 100 data each, ranged from (-100, 100)
-    
+	                    ...
+	                ]    
 	*/
-	var datasets; //store datasets
+
 	function onDataReceived(data) { //setup plot after retrieving data
-	    extractDatasets(data); //JSON {'dspData': datasets, 'peaks': indice of peak points}         
-		addPlot();  //generate main plot div
+		if( data.from == 'node')
+			if(name == "Demo" || name.trim() == data.data.name.trim())
+				if(data.data.type == 'ecg'){
+					updateChart(data.data);
+				}
+	}
+	function updateChart(data) {
+		//update chart
+		chart.series[0].addPoint(data.I, true, true);
+		chart.series[1].addPoint(data.II, true, true);
+		chart.series[2].addPoint(data.III, true, true);
+		chart.series[3].addPoint(data.aVR, true, true);
+		chart.series[4].addPoint(data.aVL, true, true);		
+		chart.series[5].addPoint(data.aVF, true, true);		
+		chart.series[6].addPoint(data.V1, true, true);		
+		chart.series[7].addPoint(data.V2, true, true);		
+		chart.series[8].addPoint(data.V3, true, true);		
+		chart.series[9].addPoint(data.V4, true, true);		
+		chart.series[10].addPoint(data.V5, true, true);		
+		chart.series[11].addPoint(data.V6, true, true);			
 	}
 	
-	function getAndProcessData() { //issue ajax call and further process the data on sucess
+	var init = function() {
 		showSpinner();
-		$.ajax({
-			url: dataurl,
-			cache: false,
-			type: 'POST',
-			dataType: 'json',
-			success: onDataReceived
-		});
-	}
-	    
-	function extractDatasets(data) {
-		datasets = data.dspData;
+		addPlot();
 	}
 	
 
@@ -61,7 +69,7 @@ $(function () {
     var options; //options settings for main plot
         
     var xGridInterval = 200; //0.2 second
-    var yGridInterval = 500; //0.5 mV, assuming the unit of ECG output is microvolt
+    var yGridInterval = 500; //0.5 mV, assuming the unit of ECG output is milli volt
     var yAxisHeight = 100;
     
     var yAxisOptionsTemplate = {
@@ -88,16 +96,26 @@ $(function () {
         		text: "AAA"
         	},
         	*/
+	    	plotLines: [{
+	    		value: 0,
+	    		width: 1,
+	    		label: {
+	    			text: '0',
+	    			align: 'left',
+	    			y: 0,
+	    			x: -10
+	    		}
+	    	}],
         	labels: {
-        		enabled: false
+        		enabled: true,
         	},
         	offset: 0,
         	height: yAxisHeight,
-        	min: -500,
-        	max: 2000
+        	min: -1000,
+        	max: 1000
         };
     
-    options = {
+    chartOptions = {
             chart: {
                 renderTo: 'diagram',
                 /*zoomType: 'x',
@@ -118,9 +136,11 @@ $(function () {
                     backgroundColor: 'gray'
                 }
             },
+           
             title: {
-                text: 'QRS Wave data analysis'
+                text: '10 seconds ECG Data'
             },
+            
             legend: {
                 enabled: true,
                 align: 'right',
@@ -152,7 +172,7 @@ $(function () {
             		type: 'all',
             		text: 'All'
             	}],
-            	selected: 0
+            	selected: 1
             },
             subtitle: {
             	/*
@@ -215,6 +235,7 @@ $(function () {
                 }
             },
             xAxis: {
+            	reversed: true,
             	lineColor: 'rgb(245, 149, 154)',
             	gridLineColor: 'rgb(245, 149, 154)',
             	gridLineWidth: 0.5,
@@ -246,6 +267,7 @@ $(function () {
             series: []
     };
     
+    var total_points = 2500;
     function addPlot() { 
     	//generate one plot for each channel
 
@@ -264,7 +286,7 @@ $(function () {
 		
 		//calculate the diagram height
 		
-		var diagramHeight = 65 + yAxisHeight*datasets.length + 93; //!!!!!65 is the top padding of chart,
+		var diagramHeight = 65 + yAxisHeight*ECG_CHANNELLABELS.length + 93; //!!!!!65 is the top padding of chart,
 															//93 is bottom padding
 		
     	//plot all channels on one plot
@@ -272,37 +294,44 @@ $(function () {
             height: diagramHeight.toString() + 'px',
         });
 		
-
     	diagram.appendTo(innerResizer);
     	
-		plotEverything(); //plot diagram on generated div and generate overview
+    	plotInit();
+		//plotEverything(); //plot diagram on generated div and generate overview
     }
     
-    function plotEverything() {
-        var yTop = 65;
+    var plotInit = function() {
+        var yTop = 65//65;
         
         //loop to fill in yAxis and data series
-        for(var i=0; i<datasets.length;i++) {
+        for(var i=0; i<ECG_CHANNELLABELS.length;i++) {
         	var yAxisOptions = $.extend(true, {}, yAxisOptionsTemplate); //!!!deep copy JSON object
         	yAxisOptions.title = {
-        			text: datasets[i].label,
+        			text: ECG_CHANNELLABELS[i],
+        			y: -20,
         			rotation: 0
-        	};   	
+        	};
         	yAxisOptions.top = yTop;
         	yTop += yAxisHeight; //!!!!adjust the distance to the top
         	
-        	options.yAxis.push(yAxisOptions);        	
-        	options.series.push({
-        		name: datasets[i].label,
-                data: datasets[i].data,
+        	chartOptions.yAxis.push(yAxisOptions);    
+        	
+        	//generate 0 for all 2500 samples at the beginning
+        	var initData = [];
+        	for(var j=0; j<total_points; j++){
+        		initData.push(0);
+        	}
+        	chartOptions.series.push({
+        		name: ECG_CHANNELLABELS[i],
+                data: initData,
                 pointStart: Date.UTC(0, 0, 0, 0, 0, 0, 0),
                 yAxis: i, //use the index of dataset as the index of yAxis
-                pointInterval: 4.17 // 5 millisecond<--wrong! should be 1000/frequency. in this case 1000/240 = 4.17
+                pointInterval: 4 // should be 1000/frequency. in this case 1000/250 = 4
         	});
         }
     	
         //format tooltip
-        options.tooltip.formatter = function() {
+        chartOptions.tooltip.formatter = function() {
         	var s = '';
         	$.each(this.points, function(key, val) {
         		s += '<b>'+ val.series.name +'</b>'+
@@ -311,43 +340,208 @@ $(function () {
             return s;
         };
 
-    	plot = new Highcharts.StockChart(options, function() {
-    		spinner.stop();
-    		spinTarget.hide();
+    	plot = new Highcharts.StockChart(chartOptions, function() {
+    		hideSpinner();
     	});      
     }
     
-    var spinTarget; //store DOM object used to show loading spinner
-    var spinner; //spinner
+	var socket = null; //websocket object	
+	var reconMsg = null; //reconnect div object
+	
+	/**
+	* use to store reconnect procedure, to make sure there is only 1 websocket to server generated
+	* not thread safe!!!TBD
+	*/
+	var reconn = null; 	
+	function showReconMsg(msg) {
+		if(reconMsg == null) {
+			reconMsg = $('<div id="reconnect" >' + msg + '</div>').css( {
+		        position: 'absolute',
+		        top:0,
+		        right:0,
+		        //width: '100%',
+		        //height: '50px',
+		        margin: 'auto'
+			});
+			reconMsg.appendTo("body");
+		}
+	}
+	
+	function hideReconMsg() {
+		if(reconMsg != null){
+			reconMsg.remove();
+			reconMsg = null;
+		}
+	}
+	
+	function establishConnection() {
+		/*
+		if(socket != null){
+			socket.close();
+			socket = null;
+		}
+		*/
+	    socket = new WebSocket(url);
+	    hideReconMsg();
+		showReconMsg('connecting to server...');
+	    socket.onopen = function(event) {
+			hideReconMsg();
+	    };
+	    socket.onmessage = function(event) {
+	    	onDataReceived($.parseJSON(event.data));
+	    };
+	    socket.onerror = function(event) {
+	    	alert('Error, readyState code is: ' + socket.readyState);
+	    	socket.close();
+	    	establishConnection();
+	    };
+	    
+	    socket.onclose = function(event) {
+	    	//alert(socket.readyState);
+		    //var t = setInterval(function() {//check if connection is lost, for the case when server is down
+				//if(socket.readyState == 2 || socket.readyState == 3){ //connection is closed or closing
+			
+	    	/**
+			 * try to reconnect when connection is closed or closing. If reconnection has been 
+			 * issued by other functions such as 'online' event handler then skip to prevent
+			 * duplication of socket. 'closing' connection will eventually be timed out and garbage collected,
+			 * so no worry of duplicated connection
+			 * 
+			 * */
+	    	if(socket.readyState == 2 || socket.readyState == 3){
+				hideReconMsg();
+				showReconMsg('connection reset by server, reconnecting in 5 secs...');
+				if(reconn == null){
+					reconn = setTimeout(function() {
+						establishConnection();
+						hideReconMsg();
+						reconn = null;
+						//alert('Network is back, readyState is: ' + socket.readyState);
+					}, 5000);
+				}
+				/*
+				else {
+					alert('reconnect issued!');
+				}
+				*/
+			}
+			/*
+			else if(socket.readyState == 1) {
+				clearInterval(t);
+				hideReconMsg();
+			}
+			*/			
+		    //}, 6000);
+	    };
+	}
+	
+	function update(){
+		if (navigator.onLine) { //navigator.onLine supports limited browsers, see https://developer.mozilla.org/en-US/docs/DOM/window.navigator.onLine
+			establishConnection();	
+		}
+		else {
+			showReconMsg('brower is offline, check wifi...');
+		}
+	}
+	
+	$(window).bind('load', function(e) {
+		init();
+		//animate();
+		update();
+		/*
+		setInterval(function(){
+			render();
+		}, 1000);
+		*/
+	});
 
+	$(window).bind('online', function(e) {
+		/*
+		if(socket != null)
+			alert('Network is back, readyState is: ' + socket.readyState);
+		*/
+		/*
+		if(socket != null){
+			socket.close();
+			//socket = null;
+		}
+		*/
+		hideReconMsg();
+		showReconMsg('connection is back, connecting server in 5 secs...');
+		if(reconn == null) {
+			reconn = setTimeout(function() {
+				establishConnection();
+				//alert('Network is back, readyState is: ' + socket.readyState);
+				hideReconMsg();
+				reconn = null;
+			}, 5000);
+		}
+	});
+	
+	$(window).bind('offline', function(e) {
+		/**
+		 * firing a close() cause a connection to close or to timeout on user browser's side after 
+		 * 300secs by default; WebSocket on tornado server will also be closed or timed out.
+		 * 
+		 * This is just for the purpose of setting socket.readyState to 'CLOSED' in order to garbage 
+		 * collect old socket and generate new socket next time when browser is online.
+		 * This is used for the case of lost connection when browser waked up from sleep and timed 
+		 * out at server side. if close() is not issued, when browser is back from sleep, readyState 
+		 * will still be 'OPEN'. Connection lost will only be detected unless after 300secs or 
+		 * (by sending to server something such as close(), send() I guess...).
+		 * 
+		 * The close is actually issued when browser is back from wake since there is no way close
+		 * request can be sent to server when offline 
+		 * 
+		 * This is only a workaround since there is no way whether the connection still exist even if
+		 * websocket.readyState on browser side is 'OPEN'. A short ping-pong mechanism might resolve 
+		 * the issue.
+		 * */
+		socket.close();
+		hideReconMsg();
+		showReconMsg('connection lost, check wifi...')
+	});	
+
+	var spinner; //spinner
     //show loading spinner, stopped when chart is fully loaded
+	var spinnerOpts = { //options settings for spinner
+			  lines: 13, // The number of lines to draw
+			  length: 7, // The length of each line
+			  width: 4, // The line thickness
+			  radius: 10, // The radius of the inner circle
+			  corners: 1, // Corner roundness (0..1)
+			  rotate: 0, // The rotation offset
+			  color: '#000', // #rgb or #rrggbb
+			  speed: 1, // Rounds per second
+			  trail: 60, // Afterglow percentage
+			  shadow: false, // Whether to render a shadow
+			  hwaccel: false, // Whether to use hardware acceleration
+			  className: 'spinner', // The CSS class to assign to the spinner
+			  zIndex: 2e9, // The z-index (defaults to 2000000000)
+			  top: 'auto', // Top position relative to parent in px
+			  left: 'auto' // Left position relative to parent in px
+			};
+	var spinTarget = $('<div id="spinner" ></div>').css( {
+        position: 'relative',
+        width: '50px',
+        height: '50px',
+        margin: 'auto'
+	});    
+	spinTarget.appendTo("body");
+	var spinner = new Spinner(spinnerOpts);
+	
+    /* show loading spinner, stopped when chart is fully loaded */
     function showSpinner(){
-    	var opts = {
-    			  lines: 13, // The number of lines to draw
-    			  length: 7, // The length of each line
-    			  width: 4, // The line thickness
-    			  radius: 10, // The radius of the inner circle
-    			  corners: 1, // Corner roundness (0..1)
-    			  rotate: 0, // The rotation offset
-    			  color: '#000', // #rgb or #rrggbb
-    			  speed: 1, // Rounds per second
-    			  trail: 60, // Afterglow percentage
-    			  shadow: false, // Whether to render a shadow
-    			  hwaccel: false, // Whether to use hardware acceleration
-    			  className: 'spinner', // The CSS class to assign to the spinner
-    			  zIndex: 2e9, // The z-index (defaults to 2000000000)
-    			  top: 'auto', // Top position relative to parent in px
-    			  left: 'auto' // Left position relative to parent in px
-    			};
-    			spinTarget = $('<div id="spinner" ></div>').css( {
-    	            position: 'relative',
-    	            width: '50px',
-    	            height: '50px',
-    	            margin: 'auto'
-    	        });
-    			spinTarget.appendTo("body");
-    			spinner = new Spinner(opts).spin(spinTarget[0]);
+    	spinTarget.show();
+		spinner.spin(spinTarget[0]);
     }
     
-    getAndProcessData();
+    function hideSpinner(){
+		spinTarget.hide();
+		spinner.stop();
+    }
+    
+    //getAndProcessData();
+    
+    //init();
 });

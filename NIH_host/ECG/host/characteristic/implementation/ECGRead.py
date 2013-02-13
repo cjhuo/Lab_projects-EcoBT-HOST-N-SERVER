@@ -9,7 +9,10 @@ import array
 
 from Characteristic import *
 
-class ECG(Characteristic):
+firstHalf = 'FEC6' # V6, I, II, V2
+secondHalf = 'FEC7' # V3, V4, V5, V1
+
+class ECGRead(Characteristic):
     def __init__(self):
         Characteristic.__init__(self)
         self.privilege = 0
@@ -19,6 +22,8 @@ class ECG(Characteristic):
         hex_str = binascii.hexlify(value)
         
         # TBD
-        return {'type': 'test',
-                'uuid': self.UUID
+        data = {
+                'type': 'ECG',
+                'value': ''
                 }
+        self.peripheralWorker.delegateWorker.getQueue().put(data)

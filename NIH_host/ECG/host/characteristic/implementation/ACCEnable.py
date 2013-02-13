@@ -16,18 +16,22 @@ from Characteristic import *
 class ACCEnable(Characteristic):
     def __init__(self):
         Characteristic.__init__(self)
-        self.privilege = 1
+        self.privilege = 2
         
     def process(self):
         hex_str = binascii.hexlify(self.instance._.value)
         self.acc_enable = int(hex_str, base=16) # 1: enabled; 0: disabled                
         print "ACC ENABLE?(%s) %s" % (self.instance._.UUID, self.acc_enable)
-
+        if self.acc_enable == 1:
+            NSLog("DISABLING ACC")
+            self.peripheralWorker.writeValueForCharacteristic(self.createDisableFlag(), self)
+        '''
         data = {'type': 'ACCEnable', 
                 'value': self.acc_enable,
                 'uuid': self.UUID
                 }
         return data
+        '''
     
     def createEnableFlag(self):
         return self.createFlag(1)

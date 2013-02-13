@@ -14,29 +14,29 @@ class histo() :
         self.originaldata = originaldata
         self.minimumVal = min(self.originaldata)
         self.maximumVal = max(self.originaldata)
-        self.binsize = float(self.maximumVal-self.minimumVal)/totalbin
+        self.binsize = float(self.maximumVal - self.minimumVal) / totalbin
 
     def Histogram(self, originaldata, totalbin) :
 
         histodata = []
         formatted = []
 
-        for i in range(0,totalbin) :
+        for i in range(0, totalbin) :
             histodata.append(0)
 
-        for i in range(0,len(originaldata)) :
+        for i in range(0, len(originaldata)) :
 
-            if originaldata[i]==self.maximumVal :
-                location=totalbin-1
+            if originaldata[i] == self.maximumVal :
+                location = totalbin - 1
             else :
-                location = int((originaldata[i]-self.minimumVal)/self.binsize)
+                location = int((originaldata[i] - self.minimumVal) / self.binsize)
 
-            histodata[location]+=1
+            histodata[location] += 1
 
-        for i in range(0,totalbin) :
+        for i in range(0, totalbin) :
             temp = []
-            temp.append(self.minimumVal+(i*self.binsize))
-            temp.append(self.minimumVal+((i+1)*self.binsize))
+            temp.append(self.minimumVal + (i * self.binsize))
+            temp.append(self.minimumVal + ((i + 1) * self.binsize))
             temp.append(histodata[i])
 
             formatted.append(temp)

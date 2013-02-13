@@ -17,7 +17,7 @@ class ACCXYZ(Characteristic):
         value = self.instance._.value
         hex_str = binascii.hexlify(value)
         x, y, z = struct.unpack("<hhh", value) #only first 12bit is valid according to data sheet
-        return self.processACC(x, y, z)
+        self.peripheralWorker.delegateWorker.getQueue().put(self.processACC(x, y, z))
  
     def processACC(self, x, y, z):
         x = (0.0 + (x >> 4))  / 1000

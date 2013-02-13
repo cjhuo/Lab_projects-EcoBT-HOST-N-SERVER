@@ -29,7 +29,8 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
         EcoBTWorker.__init__(self)
         self.peripheral = None
         self.services = []
-        self.delegateWorker = EcoBTPeripheralDelegateWorker(self)
+        self.address = None
+        self.delegateWorker = EcoBTPeripheralDelegateWorker()
         NSLog("Initialize Peripheral Worker")
         return self   
     
@@ -111,6 +112,8 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
         # Characteristic that has read&write and system infor needs to be read at the beginning         
         if c.privilege == 1 or c.privilege == 2: 
             self.readValueForCharacteristic(c)
+        elif c.privilege == 0:
+            self.setNotifyValueForCharacteristic(True, c)   
         service.characteristics.append(c)
     
     def checkUUID(self, UUID):
@@ -121,30 +124,25 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
         # does not raise exception now to ignore discovery of profiles 'Generic Access Profile' and 'Generic Attribute Profile'
         # raise Exception # didn't find any UUID
         return None
-    
+  
+    '''  
     # for the purpose of test, enable some certain characteristic(s) at the starting point
     def initCharacteristicWhenDiscovered(self, uuid):
-        if uuid == "FFA0": # enable ACC
+        if uuid == "FFA0": # disable ACC
             c = self.findCharacteristicByUUID("FFA1")
             if c != None:
                 val = c.createDisableFlag()
                 self.writeValueForCharacteristic(val, c)
         if uuid == "FF10":
-            c = self.findCharacteristicByUUID("FF12") # set Green LED to blink
+            c = self.findCharacteristicByUUID("FF11") # set Green LED to disable
             if c != None: 
-                val = c.createBlinkFlag()
+                val = c.createDisableFlag()
                 self.writeValueForCharacteristic(val, c)
-            c = self.findCharacteristicByUUID("FF14")
+            c = self.findCharacteristicByUUID("FF12")
             if c != None: # set Green LED blink interval to 0.1sec
-                val = c.createInterval(1)
+                val = c.createDisableFlag()
                 self.writeValueForCharacteristic(val, c)
-        if uuid == "FEC0":
-            c = self.findCharacteristicByUUID("FEC5") # Enable ECG
-            if c != None:
-                byte_array = array.array('b', chr(0x11)) 
-                val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
-                self.writeValueForCharacteristic(val_data, c)  
-
+    '''
         
     # CBPeripheral delegate methods
     def peripheral_didDiscoverServices_(self, peripheral, error):
@@ -171,12 +169,11 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
                         NSLog("didDiscoverCharacteristicsForService %@ %@", service._.UUID, char._.UUID)
                         self.appendCharacteristicForService(char, s, self.peripheral.instance)        
                         # for test
-                        #self.readValueForCharacteristic(char)
-                        self.setNotifyValueForCharacteristic(True, char)               
+                        #self.readValueForCharacteristic(char)            
                         #peripheral.readValueForCharacteristic_(char)
                         
                         # for the purpose of test, enable ACC and SIDs at the starting point
-                        self.initCharacteristicWhenDiscovered(uuid)
+                        #self.initCharacteristicWhenDiscovered(uuid)
                     else:
                         pass # found a characteristic profile not listed in IOBluetooth.py
 
@@ -194,8 +191,8 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
         
         char = self.findCharacteristicByUUID(self.checkUUID(characteristic._.UUID))
         if char != None:
-            # process the received data and put into queue
-            self.delegateWorker.getQueue().put(char.process())
+            # process the received data
+            char.process()
 
 
     def peripheral_didWriteValueForCharacteristic_error_(self,
@@ -204,9 +201,15 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
                                                          error):
         NSLog("CHAR(%@) is updated", characteristic._.UUID)
         char = self.findCharacteristicByUUID(self.checkUUID(characteristic._.UUID))
+        
+        # value sent out, start to read in new value
+        self.readValueForCharacteristic(char)
+        '''
         if char != None:
             # process the received data and put into queue
-            self.delegateWorker.getQueue().put(char.process())
+            char.process()
+            pass
+        '''
             
 
     def peripheral_didUpdateNotificationStateForCharacteristic_error_(self,

@@ -31,6 +31,10 @@ class RTCSet(Characteristic):
         print "EPL RTC Last Set Time ", year, month, day, wday, hour, minute, second
         now = datetime.now()
         self.time = datetime(now.year, now.month, now.day, now.isoweekday(), now.hour, now.minute, now.second)
+        
+        NSLog("SENDING TIME OF HOST TO NODE")
+        self.peripheralWorker.writeValueForCharacteristic(self.createHostCurrentTime(), self)
+        '''
         data = {
                 'type': "RTCSet", 
                 'value': self.time, 
@@ -38,10 +42,10 @@ class RTCSet(Characteristic):
                 } # read to 2nd digit after decimal point
         return data
         #return {'type': 'test'}
+        '''
     
     def createHostCurrentTime(self):
         now = datetime.now()
-        print "Creating host current time"
         timestamp = struct.pack("<HBBBBBB", now.year, now.month, now.day, now.isoweekday(), now.hour, now.minute, now.second)
         val_data = NSData.dataWithBytes_length_(timestamp, len(timestamp))
         return val_data

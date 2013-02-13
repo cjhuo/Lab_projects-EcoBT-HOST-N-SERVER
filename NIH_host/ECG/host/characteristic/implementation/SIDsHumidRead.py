@@ -23,4 +23,4 @@ class SIDsHumidRead(Characteristic):
                 'value': round(humid,2),
                 'uuid': self.UUID
                 } # read to 2nd digit after decimal point
-        return data
+        self.peripheralWorker.delegateWorker.getQueue().put(data)

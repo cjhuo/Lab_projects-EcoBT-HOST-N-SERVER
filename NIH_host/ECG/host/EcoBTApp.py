@@ -71,7 +71,7 @@ class EcoBTApp(object):
 if __name__ == '__main__':
     #main()
 
-    app = EcoBTApp()
+    app = EcoBTApp(True)
     app.setSockets(Sockets())
     app.start()
 

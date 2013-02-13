@@ -5,17 +5,15 @@ Created on Feb 5, 2013
 
 @summary: 
 monitor the output queue where data generated from EcoBT node is stored, and broadcast to UI
-
 '''
 from EcoBTDelegateWorker import EcoBTDelegateWorker
 from multiprocessing import Value
 
 class EcoBTPeripheralDelegateWorker(EcoBTDelegateWorker):
-    def __init__(self, peripheralWorker):
+    def __init__(self):
         EcoBTDelegateWorker.__init__(self)
         self.address = None # mac address of this peripheral
         self.number = None # peripheral's sequence number
-        self.peripheralWorker = peripheralWorker
 
 
     def run(self):

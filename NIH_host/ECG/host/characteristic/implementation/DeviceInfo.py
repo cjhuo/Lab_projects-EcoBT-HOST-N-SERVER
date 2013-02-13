@@ -18,7 +18,8 @@ class DeviceInfo(Characteristic):
                 'value': self.decryptAddress(self.instance._.value),
                 'uuid': self.UUID
                 }
-        return data
+        self.peripheralWorker.address = data['value']
+        self.peripheralWorker.delegateWorker.getQueue().put(data)
         
     
     def decryptAddress(self, value):

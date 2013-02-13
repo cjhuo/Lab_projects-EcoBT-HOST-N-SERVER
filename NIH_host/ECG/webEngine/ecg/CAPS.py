@@ -1,119 +1,98 @@
+from multiprocessing.pool import Pool
 import scipy
 import scipy.stats
 import numpy
 
-class caps() :
-    def __init__(self, originaldata, searchingpoint, peakdata) :
+threshold = 0.5
+tempsize = 40
 
-        # originaldata : original waveform data
-        # searchingpoint : index to be found
-        # peakdata : indices of peak point of original waveform data
-
-        self.threshold = 0.5        # threshold : threshold for determining the stepsize
-        self.tempsize = 40          # tempsize : template size for making template
-        self.originaldata = numpy.array(originaldata)
-        self.searchingpoint = searchingpoint
-        self.template = self.MakingTemplate()
-        self.stepsize = self.FindingStepSize()
-        self.peakdata = peakdata
-        self.offset = 0
-
-    def MakingTemplate(self) :
-        startpoint = self.searchingpoint-(self.tempsize/2)
-        endpoint = self.searchingpoint+(self.tempsize/2)
-
-        if startpoint < 0 :
-            self.offset = startpoint
-            startpoint = 0
-            endpoint = endpoint - self.offset
-
-        self.template = self.originaldata[startpoint:endpoint]
-
-        return self.template
-
-# Determine step size for coarse finding with autocorrelation
-    def FindingStepSize(self):
-        zeropad = numpy.zeros(self.template.size-1,numpy.int)
-        datapadded = numpy.hstack((zeropad, self.template, zeropad))
-
-        checkflag = False
-
-        for i in range(self.template.size*2-1) :
-            autocorr = scipy.stats.pearsonr(self.template, datapadded[i:i+self.template.size])
-
-            if checkflag==False :
-                if autocorr[0]>self.threshold :
-                    checkflag=True
-                    x1=i
-            if checkflag==True :
-                if autocorr[0]<self.threshold :
-                    checkflag = False
-                    x2=i
-
-        self.stepsize = x2-x1
-
-        return self.stepsize
-
-    def MakingOriginal(self, peakpoint, RtoR):
-        startpoint = peakpoint-((RtoR+self.template.size)/2)
-        endpoint = peakpoint+((RtoR+self.template.size)/2)
-
-        self.bufforiginal = self.originaldata[startpoint:endpoint]
-
-        return self.bufforiginal
+def get_step_size(template):
+    zeropad = numpy.zeros(len(template) - 1, numpy.int)
+    datapadded = numpy.hstack((zeropad, template, zeropad))
+    autocorrs = list(
+        scipy.stats.pearsonr(template, datapadded[ i:i + len(template) ])[0]
+            for i in range(len(template) * 2 - 1)
+    )
+    arr_autocorrs = numpy.array(autocorrs)
+    filtered_index = numpy.argwhere(arr_autocorrs > threshold)
+    return (filtered_index[-1][0] - filtered_index[0][0]) / 2
 
 # First coarse searching, and then specific searching
-    def MatchingTemplate(self):
-#        zerodata = numpy.zeros(self.template.size/2)
-#        datapadded = numpy.hstack((self.bufforiginal,zerodata))
-        checkflag = False
-        maxcorr = -1
+def get_matched_template_index(original_data, template, step_size):
 
-        x1=[]
-        x2=[]
+    # crosscorrs = list(
+    #    scipy.stats.pearsonr( template, original_data[i:i+template.size] )[0]
+    #    for i in range( 0, original_data.size - template.size, step_size )
+    # )
+    # arr_crosscorrs = numpy.array( crosscorrs )
+    #
+    # filtered_index = numpy.argwhere( arr_crosscorrs > threshold )
+    # startingpoint, endpoint = filtered_index[0][0], filtered_index[-1][0]
+    #
+    # crosscorrs = list(
+    #    scipy.stats.pearsonr( template, original_data[i:i+template.size] )[0]
+    #    for i in range( startingpoint, endpoint )
+    # )
+    #
+    # return numpy.array( crosscorrs ).argmax()
 
-        for i in range(0,self.bufforiginal.size-self.template.size, self.stepsize) :
-            crosscorr, pvalue = scipy.stats.pearsonr(self.template, self.bufforiginal[i:i+self.template.size])
 
-            if checkflag==False :
-                if crosscorr>self.threshold :
-                    checkflag=True
-                    x1.append(i)
-            if checkflag==True :
-                if crosscorr<self.threshold :
-                    checkflag = False
-                    x2.append(i)
+    checkflag = False
+    maxcorr = -1
 
-        if len(x1)==0 :
-            startingpoint = 0
-        else :
-            startingpoint = min(x1)
+    x1 = []
+    x2 = []
 
-        if len(x2)==0 :
-            endpoint = self.bufforiginal.size - self.template.size
-        else :
-            endpoint = max(x2)
+    for i in range(0, len(original_data) - len(template), step_size) :
+        crosscorr, pvalue = scipy.stats.pearsonr(template, original_data[i:i + len(template)])
+        if not checkflag:
+            if crosscorr > threshold:
+                checkflag = True
+                x1.append(i)
+        if checkflag:
+            if crosscorr < threshold:
+                checkflag = False
+                x2.append(i)
 
-        for i in range(startingpoint,endpoint) :
-            crosscorr, pvalue = scipy.stats.pearsonr(self.template, self.bufforiginal[i:i+self.template.size])
+    startingpoint = 0 if not x1 else min(x1)
+    endpoint = len(original_data) - len(template) if not x2 else max(x2)
 
-            if crosscorr>maxcorr :
-                maxcorr = crosscorr
-                maxindex = i
+    for i in range(startingpoint, endpoint):
+        crosscorr, pvalue = scipy.stats.pearsonr(template, original_data[i:i + len(template)])
 
-        return maxindex
+        if crosscorr > maxcorr:
+            maxcorr = crosscorr
+            maxindex = i
+        else: pass
 
-    def SearchingSimilarPoint(self, l):
-        self.FindingStepSize()
+    return maxindex
 
-        #maxidx = []
-        offset = (self.template.size/2);
+def SearchingSimilarPoint(searchingpoint, peakdata, originaldata, index):
+    template, offset = get_template_and_offset(originaldata, searchingpoint)
+    step_size = get_step_size(template)
+    new_offset = offset + (len(template) / 2)
+    return get_correlation(index, new_offset, template, step_size, peakdata, originaldata)
 
-        for i in range(1,len(self.peakdata)-2) :
+def get_correlation(index, offset, template, step_size, peakdata, originaldata):
 
-            RtoR = self.peakdata[i+1]-self.peakdata[i]
-            self.MakingOriginal(self.peakdata[i], RtoR)
-            l.append(self.peakdata[i]-((RtoR+self.template.size)/2)+self.MatchingTemplate()+offset+self.offset)
-#            maxidx.append(self.peakdata[i]-((RtoR+self.tempsize)/2)+self.MatchingTemplate()-offset+self.offset)
-        #print self.searchingpoint
-        #return maxidx
+    RtoR = peakdata[ index + 1 ] - peakdata[ index ]
+    original_data = get_original_chunk(template, peakdata[index], RtoR, originaldata)
+    matched_index = get_matched_template_index(original_data, template, step_size)
+    idx = peakdata[index] - ((RtoR + len(template)) / 2) + matched_index + offset
+    return idx
+
+def get_original_chunk(template, peakpoint, RtoR, originaldata):
+    startpoint = peakpoint - ((RtoR + len(template)) / 2)
+    endpoint = peakpoint + ((RtoR + len(template)) / 2)
+    return originaldata[startpoint:endpoint]
+
+def get_template_and_offset(originaldata, searchingpoint):
+    startpoint = searchingpoint - (tempsize / 2)
+    endpoint = searchingpoint + (tempsize / 2)
+    offset = 0
+    if startpoint < 0 :
+        offset = startpoint
+        startpoint = 0
+        endpoint -= offset
+
+    return originaldata[startpoint:endpoint], offset
