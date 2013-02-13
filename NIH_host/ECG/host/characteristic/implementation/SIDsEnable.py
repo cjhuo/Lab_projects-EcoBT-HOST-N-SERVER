@@ -17,17 +17,24 @@ from Characteristic import *
 class SIDsEnable(Characteristic):
     def __init__(self):
         Characteristic.__init__(self)
-        self.privilege = 1
+        self.privilege = 2
+        self.enable = 0
         
     def process(self):
         hex_str = binascii.hexlify(self.instance._.value)
-        self.enable = int(hex_str, base=16) # 1: enabled; 0: disabled
-        print "SIDS SHT25 ENABLE?(%s) %s" % (self.instance._.UUID, self.enable)
+        enable = int(hex_str, base=16) # 1: enabled; 0: disabled
+        print "SIDS SHT25 ENABLE?(%s) %s" % (self.instance._.UUID, enable)
+        if self.enable != enable:
+            log = "DISABLE" if self.enable == 0 else "ENABLE"
+            NSLog("SETTING SIDS MONITORING TO %@", log)
+            self.peripheralWorker.writeValueForCharacteristic(self.createFlag(self.enable), self)
+        '''
         data = {'type': 'SIDsEnable', 
                 'value': self.enable,
                 'uuid': self.UUID
                 }
         return data
+        '''
     
     def createEnableFlag(self):
         return self.createFlag(1)

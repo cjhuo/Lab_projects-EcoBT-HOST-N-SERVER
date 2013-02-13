@@ -17,14 +17,16 @@ class ACCEnable(Characteristic):
     def __init__(self):
         Characteristic.__init__(self)
         self.privilege = 2
+        self.acc_enable = 0
         
     def process(self):
         hex_str = binascii.hexlify(self.instance._.value)
-        self.acc_enable = int(hex_str, base=16) # 1: enabled; 0: disabled                
-        print "ACC ENABLE?(%s) %s" % (self.instance._.UUID, self.acc_enable)
-        if self.acc_enable == 1:
-            NSLog("DISABLING ACC")
-            self.peripheralWorker.writeValueForCharacteristic(self.createDisableFlag(), self)
+        acc_enable = int(hex_str, base=16) # 1: enabled; 0: disabled                
+        print "ACC ENABLE?(%s) %s" % (self.instance._.UUID, acc_enable)
+        if self.acc_enable != acc_enable:
+            log = "DISABLING ACC" if self.acc_enable == 0 else "ENABLING ACC"
+            NSLog(log)
+            self.peripheralWorker.writeValueForCharacteristic(self.createFlag(self.acc_enable), self)
         '''
         data = {'type': 'ACCEnable', 
                 'value': self.acc_enable,

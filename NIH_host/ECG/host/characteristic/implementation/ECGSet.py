@@ -14,6 +14,9 @@ import binascii
 import struct
 import array
 
+import threading
+import time
+
 from Characteristic import *
 
 startFlag = 0x01
@@ -25,29 +28,39 @@ class ECGSet(Characteristic):
     def __init__(self):
         Characteristic.__init__(self)
         self.privilege = 2
+    
+    def setRole(self):
+        self.service.setter = self
         
     def process(self):
         #print self.instance._.value
         value = self.instance._.value
         (start,) = struct.unpack("@B", value)
         #val = binascii.hexlify(start)
-        print 'value is : ', start
+        #print start
         if start == stopFlag:
-            print "START ECG RECORD"
-            self.peripheralWorker.writeValueForCharacteristic(self.createStartFlag(), self)
-        if start == startFlag:
+            if not hasattr(self.service, 'record_cnt'):
+                NSLog("START ECG RECORD")
+                self.peripheralWorker.writeValueForCharacteristic(self.createStartFlag(), self)
+        elif start == startFlag:
             # stop recording first
             # read ecg from sd card then
-            print "stop recording in 10 seconds"
-            DelayExecutor(10, self.peripheralWorker.writeValueForCharacteristic,
-                           self.createStopFlag(), self.createReadFromCardFlag(), self.instance).start()
-            
-        if start == readFromCardFlag:
-
+            NSLog("STOP RECORDING IN 10 SECONDS")
+            self.service.record_cnt = 1
+            #de = DelayExecutor(10, self.peripheralWorker.writeValueForCharacteristic, # memory leak reported from objc
+            #               self.createStopFlag(), self.createReadFromCardFlag(), self.instance)
+            time.sleep(10)
+            self.peripheralWorker.writeValueForCharacteristic(self.createStopFlag(), self)
+            self.peripheralWorker.writeValueForCharacteristic(self.createReadFromCardFlag(), self)
+           
+        elif start == readFromCardFlag or start == 62 or start == 63:
+            NSLog("START READING FROM CARD, RECEIVING...")   
             # start reading data, expect to see 'FEC6' and 'FEC7'
-            # do nothing further, maybe can throw a message to UI said I am reading? 
-            pass      
-        
+            # do nothing further, maybe can throw a message to UI said I am reading?    
+        else:
+            # stop and restart
+            NSLog("INVALID STATUS FOUND")
+            #self.peripheralWorker.writeValueForCharacteristic(self.createStopFlag(), self)  
         # TBD
         
     def createStartFlag(self):
@@ -64,8 +77,7 @@ class ECGSet(Characteristic):
         val_data = NSData.dataWithBytes_length_(data, len(data))     
         return val_data
     
-import threading
-import time
+
 
 # only can functions with 2 argument...
 class DelayExecutor(threading.Thread):
@@ -77,11 +89,9 @@ class DelayExecutor(threading.Thread):
         self.param3 = param3
         self.sleep = sleep
         threading.Thread.__init__(self,name = "DelayExecutor")
-        print 'init'
         self.setDaemon(1)
     def run(self):
         time.sleep(self.sleep)
-        print 'writing'
         self.func(self.param1, self.param3)
         self.func(self.param2, self.param3)
     

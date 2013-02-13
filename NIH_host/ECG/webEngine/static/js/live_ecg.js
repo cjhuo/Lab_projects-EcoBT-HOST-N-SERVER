@@ -69,7 +69,7 @@ $(function () {
     var options; //options settings for main plot
         
     var xGridInterval = 200; //0.2 second
-    var yGridInterval = 500; //0.5 mV, assuming the unit of ECG output is milli volt
+    var yGridInterval = 500; //0.5 mV, assuming the unit of ECG output is micro volt
     var yAxisHeight = 100;
     
     var yAxisOptionsTemplate = {

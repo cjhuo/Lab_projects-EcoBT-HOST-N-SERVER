@@ -16,7 +16,6 @@ class DeviceInfo(Characteristic):
     def process(self):
         data = {'type': 'deviceInfo', 
                 'value': self.decryptAddress(self.instance._.value),
-                'uuid': self.UUID
                 }
         self.peripheralWorker.address = data['value']
         self.peripheralWorker.delegateWorker.getQueue().put(data)

@@ -24,16 +24,19 @@ class RTCSet(Characteristic):
     def __init__(self):
         Characteristic.__init__(self)
         self.privilege = 2
+        self.isSet = False
         
     def process(self):
         value = self.instance._.value
         year, month, day, wday, hour, minute, second = struct.unpack("<HBBBBBB", value)
         print "EPL RTC Last Set Time ", year, month, day, wday, hour, minute, second
-        now = datetime.now()
-        self.time = datetime(now.year, now.month, now.day, now.isoweekday(), now.hour, now.minute, now.second)
-        
-        NSLog("SENDING TIME OF HOST TO NODE")
-        self.peripheralWorker.writeValueForCharacteristic(self.createHostCurrentTime(), self)
+        if(self.isSet != True):
+            now = datetime.now()
+            self.time = datetime(now.year, now.month, now.day, now.isoweekday(), now.hour, now.minute, now.second)
+            
+            NSLog("SENDING TIME OF HOST TO NODE")
+            self.peripheralWorker.writeValueForCharacteristic(self.createHostCurrentTime(), self)
+            self.isSet = True
         '''
         data = {
                 'type': "RTCSet", 

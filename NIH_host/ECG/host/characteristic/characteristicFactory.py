@@ -6,9 +6,9 @@ Created on Feb 9, 2013
 from implementation import Characteristic, DeviceInfo, ACCXYZ, ACCEnable, \
 SIDsEnable, SIDsRate, SIDsStart,\
 SIDsTempRead, SIDsHumidRead, LEDEnable, LEDBlinkInterval,\
-RTCSet, RTCGet, ECGRead, ECGSet
+RTCSet, RTCGet, ECGGet, ECGSet
 
-def createCharacteristic(UUID, instance, peripheralWorker):
+def createCharacteristic(UUID, instance, service, peripheralWorker):
     c = None
     if UUID == "2A23":
         c = DeviceInfo.DeviceInfo()
@@ -37,11 +37,11 @@ def createCharacteristic(UUID, instance, peripheralWorker):
     elif UUID == "FEC5":
         c = ECGSet.ECGSet() 
     elif UUID == "FEC6" or UUID == "FEC7":
-        c = ECGRead.ECGRead()     
+        c = ECGGet.ECGGet()     
     else: # found a profile that has not implemented
         c = Characteristic.Characteristic()
-    c.setUUID(UUID)  
-    c.setInstance(instance)      
-    c.setPeripheralWorker(peripheralWorker)   
+    c.setUUIDInstanceServicePeripheralWorker(UUID, instance, service, peripheralWorker)
+    c.setRole() # identify itself if it is a setter or getter of the service
+
     return c    
     

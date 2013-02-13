@@ -105,10 +105,11 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
             s.instance = service
             self.services.append(s) # append to service list for tracking from UI   
         else:
-            pass # found a service profile not listed in IOBluetooth.py
+            # found a service profile not listed in IOBluetooth.py
+            NSLog("FOUND AN UNKNOWN SERVICE %@", service._.UUID)
         
     def appendCharacteristicForService(self, characteristic, service, peripheral):
-        c = characteristicFactory.createCharacteristic(self.checkUUID(characteristic._.UUID), characteristic, self)
+        c = characteristicFactory.createCharacteristic(self.checkUUID(characteristic._.UUID), characteristic, service, self)
         # Characteristic that has read&write and system infor needs to be read at the beginning         
         if c.privilege == 1 or c.privilege == 2: 
             self.readValueForCharacteristic(c)
@@ -175,10 +176,10 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
                         # for the purpose of test, enable ACC and SIDs at the starting point
                         #self.initCharacteristicWhenDiscovered(uuid)
                     else:
-                        pass # found a characteristic profile not listed in IOBluetooth.py
-
+                        # found a characteristic profile not listed in IOBluetooth.py
+                        NSLog("FOUND AN UNKNOWN CHARACTERISTIC %@", char._.UUID)
             else: # found a unkown service
-                pass
+                NSLog("FOUND AN UNKNOWN SERVICE %@", service._.UUID)
                 
         else: 
             pass # found a service profile not listed in IOBluetooth.py
