@@ -17,7 +17,7 @@ class DeviceInfo(Characteristic):
         data = {'type': 'deviceInfo', 
                 'value': self.decryptAddress(self.instance._.value),
                 }
-        self.peripheralWorker.address = data['value']
+        self.peripheralWorker.peripheral.address = data['value']
         self.peripheralWorker.delegateWorker.getQueue().put(data)
         
     

@@ -75,6 +75,25 @@ class ECGGet(Characteristic):
             (self.service.V1, self.service.V2, self.service.V3, self.service.V4, self.service.V5, self.service.V6)
             output += "aVR: %8d aVL: %8d aVF: %8d LeadI: %8d LeadII: %8d LeadIII: %8d\n" % \
             (self.service.aVR, self.service.aVL, self.service.aVF, self.service.LeadI, self.service.LeadII, self.service.LeadIII)
+            data = {
+                    'type': 'ecg',
+                    'data': {
+                             'V1': self.service.V1,
+                             'V2': self.service.V2,
+                             'V3': self.service.V3,
+                             'V4': self.service.V4,
+                             'V5': self.service.V5,
+                             'V6': self.service.V6,
+                             'aVR': self.service.aVR,
+                             'aVL': self.service.aVL,
+                             'aVF': self.service.aVF,
+                             'I': self.service.LeadI,
+                             'II': self.service.LeadII,
+                             'III': self.service.LeadIII,
+                            }
+                    }
+            self.peripheralWorker.delegateWorker.getQueue().put(data)
+            
             if not hasattr(self.service, "fd"):
                 import os
                 path = os.path.join(os.path.dirname(__file__), "log.txt")

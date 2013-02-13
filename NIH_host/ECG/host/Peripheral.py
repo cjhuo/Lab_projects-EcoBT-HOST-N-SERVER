@@ -10,3 +10,5 @@ class Peripheral(object):
         self.name = name
         self.rssi = rssi
         self.number = number
+        self.address = None
+        self.type = None

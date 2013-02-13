@@ -33,25 +33,38 @@ class ECGSet(Characteristic):
         self.service.setter = self
         
     def process(self):
+        self.recorded = False
         #print self.instance._.value
         value = self.instance._.value
         (start,) = struct.unpack("@B", value)
         #val = binascii.hexlify(start)
-        #print start
-        if start == stopFlag:
+        print start
+        
+        if start == stopFlag and self.recorded == False:
+            # send UI a 'ready' signal
+            data = {'type': 'ECG',
+                    'value': {'type': 'state',
+                              'value': 0 # stopped == ready signal
+                              }
+                    }
+            self.peripheralWorker.peripheral.type = 'ECG'
+            self.peripheralWorker.delegateWorker.getQueue().put(data)
+            '''
             if not hasattr(self.service, 'record_cnt'):
                 NSLog("START ECG RECORD")
                 self.peripheralWorker.writeValueForCharacteristic(self.createStartFlag(), self)
-        elif start == startFlag:
+            '''
+        if start == startFlag:
             # stop recording first
             # read ecg from sd card then
             NSLog("STOP RECORDING IN 10 SECONDS")
             self.service.record_cnt = 1
             #de = DelayExecutor(10, self.peripheralWorker.writeValueForCharacteristic, # memory leak reported from objc
             #               self.createStopFlag(), self.createReadFromCardFlag(), self.instance)
-            time.sleep(10)
+            time.sleep(1)
             self.peripheralWorker.writeValueForCharacteristic(self.createStopFlag(), self)
             self.peripheralWorker.writeValueForCharacteristic(self.createReadFromCardFlag(), self)
+            self.recorded = True # set to true so that it won't be recorded automatically again, waiting for UI to send command
            
         elif start == readFromCardFlag or start == 62 or start == 63:
             NSLog("START READING FROM CARD, RECEIVING...")   
@@ -59,7 +72,7 @@ class ECGSet(Characteristic):
             # do nothing further, maybe can throw a message to UI said I am reading?    
         else:
             # stop and restart
-            NSLog("INVALID STATUS FOUND")
+            NSLog("INVALID STATUS FOUND...")
             #self.peripheralWorker.writeValueForCharacteristic(self.createStopFlag(), self)  
         # TBD
         

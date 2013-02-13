@@ -23,5 +23,4 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
         
     def on_message(self, message):
         print message
-        if message == 'peripheralList':
-            self.ecoBTApp.managerWorker.sendPeripheralList()
+        self.ecoBTApp.managerWorker.delegateWorker.getQueue().put(message)

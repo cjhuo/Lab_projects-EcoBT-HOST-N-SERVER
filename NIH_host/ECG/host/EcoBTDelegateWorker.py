@@ -27,3 +27,6 @@ class EcoBTDelegateWorker(threading.Thread):
     
     def setGlobalSockets(self, sockets):
         self._global_sockets = sockets
+    
+    def setEcoBTWorker(self, worker):
+        self.ecoBTWorker = worker

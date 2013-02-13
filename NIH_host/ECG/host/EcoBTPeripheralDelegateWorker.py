@@ -31,7 +31,7 @@ class EcoBTPeripheralDelegateWorker(EcoBTDelegateWorker):
                 print "Peripheral delegate worker ", self.number, " got data from Queue: \n", data
                 if len(self._global_sockets) != 0:
                     #print data
-                    data['name'] = self.address # add peripheral's MAC address as its name
+                    data['address'] = self.address # add peripheral's MAC address as its name
                     data['number'] = self.number
                     packet = {'from': 'node', 'data': data}
                     for socket in self._global_sockets.sockets:

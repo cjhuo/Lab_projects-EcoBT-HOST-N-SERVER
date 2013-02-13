@@ -15,7 +15,8 @@ $(function () {
 
 	var startDiscoverServices = false;
 	function onDataReceived(data){
-		//console.log(data.data.value);
+		console.log(data.from);
+		console.log(data.data);
 		if( data.from == 'central') {
 			if(data.data.type == 'state') {
 				toggleState(data.data.value);
@@ -30,14 +31,20 @@ $(function () {
 			// only list some service for demo purpose
 			if(data.data.type == 'deviceInfo'){
 				$.each(peripheralList, function(key, value){
-					if(value.number == data.data.number){
-						value.mac = data.data.value;
+					if(value.number == data.data.number){ //found a matched peripheral
+						updateMac(data.data, value);
 					}
 				});
 			}
+			else if(data.data.type == 'ECG'){
+				enableECGButtonEvent(data.data);
+				//ready to scan
+			}
+			/*
 			else{
 				addServiceNode(data.data);
 			}
+			*/
 		}
 			
 	}
@@ -96,6 +103,7 @@ $(function () {
         drawDown = function() {
         	r.remove();
         	initDraw();
+        	peripheralList = [];
     		
     		/*
     		if(scan != null)
@@ -130,10 +138,13 @@ $(function () {
         	if(value == 0){ //down state
         		toggleScan(false);
         		drawDown();
+        		startDiscoverServices = false;
         	}
         	else if(value == 1){
         		drawUp();
         		toggleScan(false);
+        		socket.send("start");
+        		toggleScan(true);
         	}
         	else if(value == 2){
         		drawUp();
@@ -164,8 +175,7 @@ $(function () {
         		if(cmInterv != null)
         			clearInterval(cmInterv);
         		cmInterv = null;
-        	}
-        	
+        	}	
         },
         startScan = function() {
 			scan.animate({"fill-opacity": .2}, 1000, function() {
@@ -232,27 +242,85 @@ $(function () {
         addNode = function(x, y, value) {
 			var peripheral = r.rect(x, y, 60, 40, 10).attr({
 				stroke: "orange",
-				"stroke-width": 5		
+				"stroke-width": 5
 			});
 			var conn = r.connection(peripheral, centralManager, "#000");
 			var text = r.text(x+30, y-10, value.name).attr({
     			opacity: 1, 
     			fill: 'green', 
     			"stroke-width": 2,
-    			"font-weight":900});;
+    			"font-weight":900});
 			conn.line.toBack();
-			
+			var address = null;
+
 			var p = { 'name': value.name,
-					'mac': null,
+					'address': address,
 					'rssi': value.rssi,
 					'number': value.number,
+					'type': value.type,
 					'instance': peripheral,
 					'connection': conn,
 					'enabled': true,
 					'services': []
 			};
+			if(value.address != null){
+				updateMac(value, p);
+			}
 			peripheralList.push(p);
+			if(value.type == 'ECG'){
+				enableECGButtonEvent(value);
+			}
+			
 			toggleNode(p, true);
+        },
+        enableECGButtonEvent = function(data) {
+        	// find relative peripheral
+        	var peripheral;
+        	$.each(peripheralList, function(key, val){
+        		if(val.number == data.number){
+        			peripheral = val;
+        		}
+        	})
+        	
+        	if(peripheral != null){
+        		peripheral.instance.attr({cursor: "pointer"});
+        		
+        		// draw ready text
+    			x = peripheral.instance.attr("x") + 10;
+    			y = peripheral.instance.attr("y") + 30;
+    			var text = r.text(x+20, y-10, "START").attr({
+        			opacity: 1, 
+        			fill: 'black', 
+        			"stroke-width": 2,
+        			"font-weight":900});
+    			var group = r.set();
+    			group.push(peripheral.instance);
+    			group.push(text);
+    			var ecgUrl = "/liveECG?name="+data.address;
+    			group.attr({
+    			    cursor: 'pointer',
+    			}).mouseover(function(e) {
+    				group[0].attr('fill', "green");
+    			}).mouseout(function(e) {
+    				group[0].attr('fill', "");
+    			}).mouseup(function(e) {
+    				startECG(peripheral.number);
+    				window.open(ecgUrl);
+    			}); 
+        	}
+        },
+        startECG = function(number) {
+        	socket.send("startECG"+number);
+        },
+        updateMac = function(data, p) {
+			p.address = data.address;
+			x = p.instance.attr("x") + 10;
+			y = p.instance.attr("y") + 60;
+			var text = r.text(x+30, y-10, data.address).attr({
+    			opacity: 1, 
+    			fill: 'black', 
+    			"stroke-width": 2,
+    			"font-weight":900});	
         },
         addServiceNode = function(value) {
         	// find relative peripheral
@@ -294,24 +362,24 @@ $(function () {
 		        			"font-weight":900});
 		    			var conn = r.connection(peripheral.instance, service, "#000");
 		        		
-		    			var s = { 'name': value.name,
+		    			var s = { 'name': value.address,
 		    					'instance': service,
 		    					'connection': conn,
 		    					'type': value.type
 		    					//'enabled': true,
 		    			};
-		    			var url;
+		    			var monitorUrl;
 		    			if(value.type == 'orientation'){
-		    				url = "/orientation?name="+value.name;
+		    				monitorUrl = "/orientation?name="+value.address;
 		    			}
 		    			if(value.type == 'temperature'){
-		    				url = "/temperature?name="+value.name;
+		    				monitorUrl = "/temperature?name="+value.address;
 		    			}
 		    			if(value.type == 'humidity'){
-		    				url = "/temperature?name="+value.name;
+		    				monitorUrl = "/temperature?name="+value.address;
 		    			}
 		    			service.click(function(){					
-							window.open(url);
+							window.open(monitorUrl);
 						});
 		    			peripheral.services.push(s);
 	        		}
@@ -369,7 +437,7 @@ $(function () {
 	        var color = typeof line == "string" ? line : "#000";
 	        return {
 	            bg: bg && bg.split && this.path(path).attr({stroke: bg.split("|")[0], fill: "none", "stroke-width": bg.split("|")[1] || 3}),
-	            line: this.path(path).attr({stroke: color, fill: "none", "stroke-width": 10}),
+	            line: this.path(path).attr({stroke: color, fill: "none", "stroke-width": 2}),
 	            from: obj1,
 	            to: obj2
 	        };

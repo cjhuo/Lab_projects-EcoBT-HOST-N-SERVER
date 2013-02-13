@@ -37,25 +37,30 @@ $(function () {
 
 	function onDataReceived(data) { //setup plot after retrieving data
 		if( data.from == 'node')
-			if(name == "Demo" || name.trim() == data.data.name.trim())
+			if(name.trim() == data.data.address.trim())
 				if(data.data.type == 'ecg'){
 					updateChart(data.data);
 				}
 	}
 	function updateChart(data) {
+		//console.log(data);
 		//update chart
-		chart.series[0].addPoint(data.I, true, true);
-		chart.series[1].addPoint(data.II, true, true);
-		chart.series[2].addPoint(data.III, true, true);
-		chart.series[3].addPoint(data.aVR, true, true);
-		chart.series[4].addPoint(data.aVL, true, true);		
-		chart.series[5].addPoint(data.aVF, true, true);		
-		chart.series[6].addPoint(data.V1, true, true);		
-		chart.series[7].addPoint(data.V2, true, true);		
-		chart.series[8].addPoint(data.V3, true, true);		
-		chart.series[9].addPoint(data.V4, true, true);		
-		chart.series[10].addPoint(data.V5, true, true);		
-		chart.series[11].addPoint(data.V6, true, true);			
+		//console.log(plot.series[0]);
+		
+		plot.series[0].addPoint(parseInt(data.I), true, true);
+		
+		plot.series[1].addPoint(parseInt(data.II), true, true);
+		plot.series[2].addPoint(parseInt(data.III), true, true);
+		plot.series[3].addPoint(parseInt(data.aVR), true, true);
+		plot.series[4].addPoint(parseInt(data.aVL), true, true);		
+		plot.series[5].addPoint(parseInt(data.aVF), true, true);		
+		plot.series[6].addPoint(parseInt(data.V1), true, true);		
+		plot.series[7].addPoint(parseInt(data.V2), true, true);		
+		plot.series[8].addPoint(parseInt(data.V3), true, true);		
+		plot.series[9].addPoint(parseInt(data.V4), true, true);		
+		plot.series[10].addPoint(parseInt(data.V5), true, true);		
+		plot.series[11].addPoint(parseInt(data.V6), true, true);	
+	
 	}
 	
 	var init = function() {
@@ -65,7 +70,7 @@ $(function () {
 	
 
 	var diagram; //store DOM object of plot div
-    var plot;  //store main plot object will be returned by flot
+    var plot;  //store main plot object will be returned by
     var options; //options settings for main plot
         
     var xGridInterval = 200; //0.2 second

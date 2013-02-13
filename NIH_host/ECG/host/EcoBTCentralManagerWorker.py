@@ -26,6 +26,7 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
         self.peripheralWorkers = []
         # initialize CMdelegate worker
         self.delegateWorker =  EcoBTCentralManagerDelegateWorker()
+        self.delegateWorker.setEcoBTWorker(self)
         self.delegateWorker.start()
         self.pNum = 0 # this number is for each peripheral to identify themselves
         '''
@@ -88,10 +89,18 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
         for worker in self.peripheralWorkers:
             p = {'name': worker.peripheral.name,
                  'rssi': worker.peripheral.rssi,
-                 'number': worker.peripheral.number
+                 'number': worker.peripheral.number,
+                 'address': worker.peripheral.address,
+                 'type': worker.peripheral.type
                  }
             data['value'].append(p)
         self.delegateWorker.getQueue().put(data)
+        
+    def startECG(self, pNum):
+        for worker in self.peripheralWorkers:
+            if worker.peripheral.number == pNum: # found the ecg peripheral
+                char = worker.findCharacteristicByUUID("FEC5")
+                worker.writeValueForCharacteristic(char.createStartFlag(), char)
     
 
     # CBCentralManager delegate methods
@@ -115,11 +124,12 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
             
             self.state = 1
             self.sendState()
-            
+            '''
             # for test purpose
             self.startScan()
             self.state = 2
             self.sendState()
+            '''
             
             #self.startScan()
         else:

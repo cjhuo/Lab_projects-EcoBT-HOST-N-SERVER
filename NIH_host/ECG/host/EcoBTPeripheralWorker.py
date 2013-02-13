@@ -29,7 +29,6 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
         EcoBTWorker.__init__(self)
         self.peripheral = None
         self.services = []
-        self.address = None
         self.delegateWorker = EcoBTPeripheralDelegateWorker()
         NSLog("Initialize Peripheral Worker")
         return self   
