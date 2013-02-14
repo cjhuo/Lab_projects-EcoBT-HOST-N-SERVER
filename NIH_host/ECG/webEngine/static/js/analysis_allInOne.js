@@ -14,7 +14,7 @@
 
 $(function () {
 	//ajax call urls
-	var dataurl = 'ecgHandler'; 
+	var dataurl = 'ecgAllInOne'; 
 	
 	var datasets; //store datasets
 	var diagram; //store DOM object of plot div
@@ -99,7 +99,19 @@ $(function () {
                 shadow: true
             },
             navigator: {
-            	enabled: true
+            	enabled: true,
+            	xAxis:{
+            		dateTimeLabelFormats: {
+        	        	second: '%H:%M:%S',
+        	        	minute: '%H:%M:%S',
+        	        	hour: '%H:%M',
+        	        	day: '%e. %b',
+        	        	week: '%e. %b',
+        	        	month: '%b \'%y',
+        	        	year: '%Y'
+        	        }
+            	}
+    	        
             },
             scrollbar: {
             	enabled: true
@@ -110,13 +122,13 @@ $(function () {
             	
             	buttons: [{
             		type: 'millisecond',
-            		count: 2500,
-            		text: '2.5s'
+            		count: 10000,
+            		text: '10s'
             	}, {
             		type: 'all',
             		text: 'All'
             	}],
-            	selected: 1
+            	selected: 0
             },
             subtitle: {
             	/*
@@ -155,7 +167,7 @@ $(function () {
                     enableMouseTracking: true
                 },
                 series: {
-                	allowPointSelect: true,  
+                	//allowPointSelect: true,  
                     marker: {
                     	radius: 0.1,
                         states: {
@@ -322,7 +334,7 @@ $(function () {
                 data: datasets[i].data,
                 pointStart: Date.UTC(0, 0, 0, 0, 0, 0, 0),
                 yAxis: i, //use the index of dataset as the index of yAxis
-                pointInterval: 4.17 // 5 millisecond<--wrong! should be 1000/frequency. in this case 1000/240 = 4.17
+                pointInterval: 5 // 5 millisecond<--wrong! should be 1000/frequency. in this case 1000/250 = 5
         	});
         }
     	

@@ -48,11 +48,12 @@ $(function () {
     
     var xGridInterval = 1200; //0.2 second = 200ms, pointInterval was multiplied by 6, so GridInterval is also multiplied by 6
     var yGridInterval = 500; //0.5 mV
+    var xPointInterval = 25;
     
     var hOptions = { // //options settings for histogram plot
         chart: {
             renderTo: 'histogram',
-            type: 'column'
+            //type: 'column'
         },
         title: {
             text: 'Histogram based on chosen Q/T point'
@@ -64,51 +65,160 @@ $(function () {
         	href: "http://cps.eng.uci.edu:8000/analysis",
         	text: "UCI Embedded Lab"
         },
-        legend: {
-        	enabled: false
-        },
-        /*
         xAxis: {
-            tickInterval: 1,
-            pointInterval: 1
+        	labels: {
+        		enabled: false
+        	},
+        	tickLength: 0
         },
-        */
         yAxis: {
         	title: {
         		text: ""
         	},
         	min: 0,
-        	max: 100
+        	//max: 100
         },
-        /*
-        legend: {
-            layout: 'vertical',
-            backgroundColor: '#FFFFFF',
-            align: 'left',
-            verticalAlign: 'top',
-            x: 100,
-            y: 70,
-            floating: true,
-            shadow: true
-        },
-        */
-        
         tooltip: {
             formatter: function() {
-                return '<b>Result:<b><br>bin '+
-                    this.x +': '+ Math.round(this.y) + '%';
-            }
+                var s;
+                if (this.point.name) { // the pie chart
+                    s = ''+
+                        this.point.name +': '+ this.percentage.toFixed(1) +' %';
+                } else {
+                    s = null;
+                }
+                return s;
+            },
         },
-        
         plotOptions: {
+        	pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                dataLabels: {
+                    enabled: true,
+                    color: '#000000',
+                    connectorColor: '#000000',
+                    formatter: function() {
+                        return '<b>'+ this.point.name +'</b>: '+ this.percentage.toFixed(1) +' %';
+                    }
+                },
+                tooltip: {
+                	enabled: false
+                },
+                showInLegend: false,
+                center: [100, 100],
+                	size: 100,    
+            },
             column: {
+                dataLabels: {
+                    enabled: true,
+                    formatter: function() {
+                        return '<b>'+ this.series.name +'</b>: '+ this.y;
+                    }
+                },
+                showInLegend: true,
+                /*
                 pointPadding: 0,
                 groupPadding: 0,
                 borderWidth: 0
+                */
             }
         },
         series: []
     }
+    colors = ['#A52A2A', '#DEB887', '#5F9EA0', '#7FFF00', '#D2691E', '#FF7F50','#6495ED','#FFF8DC',
+              '#DC143C','#00FFFF','#00008B']
+    function drawHistogram(data) {
+    	showSpinner();
+    	if(histogram != null){
+    		histogram.remove();
+    	}
+    	if(hPlot != null){
+    		hPlot.destroy();
+    	}
+    	histogram = $('<div id="histogram" ></div>').css( {    		
+            position: 'relative',
+            width: '100%',
+            height: '400px',
+            margin: 'auto',
+            padding: '2px'
+        });
+    	histogram.appendTo("body");
+    	//var tmpDataColumn = [];
+    	var tmpDataPie = [];
+    	sum = 0;
+    	$.each(data.data, function(key, val) {
+    		sum += val[2];
+    	});
+    	var i = 0
+    	hOptions.series = [];
+    	$.each(data.data, function(key, val) {    		
+    		hOptions.series.push({
+    			type: 'column',
+    			name: (val[0].toFixed(4) + '~' + val[1].toFixed(4)).toString(),
+    			data: [val[2]],
+    			dataLabels:{
+    				enabled: true
+    			},
+    			color: colors[i]
+    		});
+    		tmpDataPie.push({    			
+	    		name: (val[0].toFixed(5) + '~' + val[1].toFixed(5)).toString(), 
+	    		y: val[2],
+	    		color: colors[i]
+    		});
+    		i++;
+    	});
+
+    	hOptions.series.push({
+    		//name: label,
+    		type: 'pie',
+			name: 'percentage',
+            data: tmpDataPie
+    	});
+    	hPlot = new Highcharts.Chart(hOptions, function() {
+    		hideSpinner();
+    	});
+
+    }
+    
+    /* 
+     * draw histogram with bins
+     * format of bins json: {'data': [[min, max, value],[min,max,value],...]}
+     */
+    function onBinDataReceived(data) {
+		drawHistogram(data);
+    }
+	
+    /** 
+	    Data received should have the structure as below:
+	    data.dspData = [
+	                    {
+	                        'label': "channel1",
+	                        'data': [array of [x, y]]
+	                    },
+	                    {
+	                        'label': "channel2",
+	                        'data': [array of [x, y]]
+	                    }
+	                ]
+	    data.peaks = [index of 1st peak, index of 2nd peak, ...]
+	    
+	    for fakePlot only:
+	    	data retrieved from server for n channels with 100 data each, ranged from (-100, 100)
+	    
+	*/						
+	function onDataReceived(data) { //setup plot after retrieving data
+	    extractDatasets(data); //JSON {'dspData': datasets, 'peaks': indice of peak points}         
+		addChoices(); //add channel radio buttons
+		addReferenceImg();
+		addFileUploadDiv();
+		addPlot();  //generate main plot div
+		//addOverview(); // generate overview plot div
+		plotAccordingToChoices(); //plot diagram on generated div and generate overview
+	
+	}
+
     
     var options = { //options settings for main plot
             chart: {
@@ -370,35 +480,6 @@ $(function () {
         });
     	$(".ui-dialog-titlebar").hide(); //remove dialog title bar
 	}
-	
-    /** 
-	    Data received should have the structure as below:
-	    data.dspData = [
-	                    {
-	                        'label': "channel1",
-	                        'data': [array of [x, y]]
-	                    },
-	                    {
-	                        'label': "channel2",
-	                        'data': [array of [x, y]]
-	                    }
-	                ]
-	    data.peaks = [index of 1st peak, index of 2nd peak, ...]
-	    
-	    for fakePlot only:
-	    	data retrieved from server for n channels with 100 data each, ranged from (-100, 100)
-	    
-    */
-    function onDataReceived(data) { //setup plot after retrieving data
-        extractDatasets(data); //JSON {'dspData': datasets, 'peaks': indice of peak points}         
-		addChoices(); //add channel radio buttons
-		addReferenceImg();
-		addFileUploadDiv();
-		addPlot();  //generate main plot div
-		//addOverview(); // generate overview plot div
-		plotAccordingToChoices(); //plot diagram on generated div and generate overview
-
-    }
 	    
 	function extractDatasets(data) {
 		datasets = data.dspData;		
@@ -559,7 +640,7 @@ $(function () {
 	        	options.series.push({
 	        		name: label,
                     data: data,
-                    pointInterval: 25 // 5 millisecond<--wrong! should be 1000/frequency. 
+                    pointInterval: xPointInterval // 5 millisecond<--wrong! should be 1000/frequency. 
                     					//in this case 1000/240, multiply 6 on pointInterval = 25
 	        	});
 	        	plot = new Highcharts.Chart(options, function() {
@@ -687,14 +768,14 @@ $(function () {
 				peakText.append(domStr);*/
 	    	if(qPoint) {
 				var domStr = '<br>You have picked Q point at (x: ' 
-					+ qPoint.x + ', y: '
-					+ qPoint.y + ') .';
+					+ qPoint.x/xPointInterval + ', y: '
+					+ qPoint.y/xPointInterval + ') .';
 				peakText.append(domStr);
 	    	}
 	    	if(tPoint) {
 				var domStr = '<br>You have picked T point at (x: ' 
-					+ tPoint.x + ', y: '
-					+ tPoint.y + ') .';
+					+ tPoint.x/xPointInterval + ', y: '
+					+ tPoint.y/xPointInterval + ') .';
 				peakText.append(domStr);
 	    	}	    	
 	    	if(qPoint && tPoint) {	    		
@@ -720,8 +801,8 @@ $(function () {
     		}
     	*/
     	var pdata = {//'channel': selectedPoints[0].series.label.substring(8),
-    			'qPoint': [qPoint.x, qPoint.y],
-    			'tPoint': [tPoint.x, tPoint.y],
+    			'qPoint': [qPoint.x/xPointInterval, qPoint.y/xPointInterval],
+    			'tPoint': [tPoint.x/xPointInterval, tPoint.y/xPointInterval],
     			'bin': parseInt(bin.val()),
     			};
 		plotAccordingToChoices();
@@ -737,50 +818,6 @@ $(function () {
 			error: function() {alert("ECG module Error!!");}
 		});
     }
-    
-    /* 
-     * draw histogram with bins
-     * format of bins json: {'data': [[min, max, value],[min,max,value],...]}
-     */
-    function onBinDataReceived(data) {
-		drawHistogram(data);
-    }
-    
-    function drawHistogram(data) {
-    	showSpinner();
-    	histogram = $('<div id="histogram" ></div>').css( {    		
-            position: 'relative',
-            width: '100%',
-            height: '400px',
-            margin: 'auto',
-            padding: '2px'
-        });
-    	histogram.appendTo("body");
-    	hOptions.xAxis = {};
-    	hOptions.xAxis.categories = [];
-    	hOptions.series = [];
-    	//var tmpData = [];
-    	tmpData = [];
-    	sum = 0;
-    	$.each(data.data, function(key, val) {
-    		sum += val[2];
-    	});
-    	$.each(data.data, function(key, val) {
-    		hOptions.xAxis.categories.push((val[0].toFixed(5) + '~' + val[1].toFixed(5)).toString());
-    		tmpData.push(100*val[2]/sum);
-    	});
-    	
-    	hOptions.series.push({
-    		//name: label,
-            data: tmpData,
-    	});
-
-
-    	hPlot = new Highcharts.Chart(hOptions, function() {
-    		hideSpinner();
-    	});
-
-    }
-    
+       
     getAndProcessData();
 });

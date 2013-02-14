@@ -46,6 +46,49 @@ class DSPHandler(tornado.web.RequestHandler):
             datasets[i]['label'] = label
         return datasets
     '''
+from ecg.ECG_reader import ECG_reader
+class ECGAllInOneHandler(tornado.web.RequestHandler):
+    def initialize(self):
+        self.ecg = ECG_reader()
+
+    def post(self):
+        try:
+            if len(self.request.files) != 0: #user uploaded file from UI 
+                f = self.request.files['uploaded_files'][0]
+                orig_fname = f['filename']
+                import os
+                path = os.path.join(os.path.dirname(__file__), os.pardir, "Uploads/")
+                ofd = open(path + orig_fname, 'w')
+                ofd.write(f['body'])
+                ofd.close()
+                self.ecg.setFile(path + orig_fname)               
+            else: #user user the default test file
+                self.ecg.setFile()               
+            val = self.getDataFromDicomFile()
+            self.write(val)
+        except:
+            self.send_error(302) # 302: invalid file
+            
+    def getDataFromDicomFile(self):
+        #wavech, peaks = ecg.ECG_reader.getTestData()
+        wavech = self.ecg.wavech
+        
+        #create dataset dict to be sent to web server and fill in data
+        datasets = []
+        for i in range(len(wavech)):
+            data = [wavech[i][j] for j in range(len(wavech[i]))]
+            label = ECG_CHANNELLABELS[i]            
+            #label = "channel " + str(i)
+            datasets.append(dict())
+            datasets[i]['data'] = data 
+            datasets[i]['label'] = label
+            
+        #add peak information to structure to be sent to frontend
+        # format of peaks: "peaks": [index of 1st peak, index of 2nd peak, ...]
+
+        val = {'dspData': datasets}
+        return val        
+    
     
 class ECGHandler(tornado.web.RequestHandler):
     def initialize(self, ecg):
@@ -86,7 +129,7 @@ class ECGHandler(tornado.web.RequestHandler):
     '''
     def getDataFromDicomFile(self):
         #wavech, peaks = ecg.ECG_reader.getTestData()
-        wavech, peaks = self.ecg.getTestData()
+        wavech = self.ecg.getTestData()
         
         #create dataset dict to be sent to web server and fill in data
         datasets = []
@@ -101,7 +144,7 @@ class ECGHandler(tornado.web.RequestHandler):
         #add peak information to structure to be sent to frontend
         # format of peaks: "peaks": [index of 1st peak, index of 2nd peak, ...]
 
-        val = {'dspData': datasets, 'peaks': peaks}
+        val = {'dspData': datasets}
         #print val
         return val
 

@@ -17,6 +17,7 @@ class Application(tornado.web.Application):
                 (r'/', MainHandler),
                 (r'/soundMonitor', SoundMonitorHandler),
                 (r'/ecgHandler', ECGHandler, dict(ecg = self.ecg)),
+                (r'/ecgAllInOne', ECGAllInOneHandler),
                 (r'/cardReader', CardReaderHandler),
                 (r'/tempAnalysis', TempAnalysisHandler),
                 (r'/analysis_old', AnalysisOldHandler),

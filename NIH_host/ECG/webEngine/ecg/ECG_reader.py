@@ -27,6 +27,7 @@ class ECG_reader():
         '''
         
     def setFile(self, Dfile = filePath):
+        print filePath
         self._parseDicomFile(Dfile)
         
     def _parseDicomFile(self, Dfile):
@@ -50,8 +51,7 @@ class ECG_reader():
         print 'sampling rate is: ', self.samplingrate
         
         info = {'samplingrate':self.samplingrate,'name':self.name}
-        ecg = ECG.Ecg(self.wavech,info)
-        self.peakdata = ecg.qrsDetect(0)
+        self.ecg = ECG.Ecg(self.wavech,info)
         
     def getTestData(self):
         #get only first 2400 samples for each channels
@@ -63,10 +63,10 @@ class ECG_reader():
                     ] 
         else: 
             wavedata = self.wavech   
-        peaks = self.peakdata.tolist()
-        return (wavedata, peaks)
+        return wavedata
     
     def getBinInfo(self, qpoint, tpoint, bin=10, samplingrate=250) :
+        self.peakdata = self.ecg.qrsDetect(0)
         from datetime import datetime
         s1=datetime.now()
     
@@ -75,19 +75,19 @@ class ECG_reader():
     
         # Searching similar point from manually selected Q point
         new_func = partial( CAPS.SearchingSimilarPoint, qpoint, self.peakdata, self.wavech[0] )
-        Qpoint = multiprocessing.pool.Pool(1).map( new_func, index_range )
+        Qpoint = multiprocessing.pool.Pool().map( new_func, index_range )
     
         # Searching similar point from manually selected T point
     
         new_func = partial( CAPS.SearchingSimilarPoint, tpoint, self.peakdata, self.wavech[0] )
-        Tpoint = multiprocessing.pool.Pool(1).map( new_func, index_range )
+        Tpoint = multiprocessing.pool.Pool().map( new_func, index_range )
     
         # Calculate the Qtc value
         Qtcs = Qtc.CalculateQtc(self.peakdata, Qpoint, Tpoint, int(samplingrate))
     
         # Make histogram
-        histo = Histogram.histo(Qtcs,10)
-        histodata = histo.Histogram(Qtcs, 10 )
+        histo = Histogram.histo(Qtcs,bin)
+        histodata = histo.Histogram(Qtcs, bin)
     
         s2=datetime.now()
         print(histodata)

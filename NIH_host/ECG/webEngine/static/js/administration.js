@@ -379,7 +379,8 @@ $(function () {
 		    				monitorUrl = "/temperature?name="+value.address;
 		    			}
 		    			service.click(function(){					
-							window.open(monitorUrl);
+							window.location = monitorUrl;
+							return false;
 						});
 		    			peripheral.services.push(s);
 	        		}
