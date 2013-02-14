@@ -27,7 +27,7 @@ class ECG_reader():
         '''
         
     def setFile(self, Dfile = filePath):
-        print filePath
+        print Dfile
         self._parseDicomFile(Dfile)
         
     def _parseDicomFile(self, Dfile):

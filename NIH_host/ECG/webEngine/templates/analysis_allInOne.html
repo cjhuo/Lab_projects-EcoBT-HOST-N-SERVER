@@ -5,18 +5,7 @@
 {% end %}
 
 {% block body %}
-<!-- 
- 	<p>1. Choose a radio button to pick the channel you want to analyze
-    <br>
-       2. Zoom to the range where you feel comfortable to pick start and end peak points
-    <br>
-       3. Pick 2 peak points and hit submit for further analysis in range between those 2 peak points
-    <br>
-       <b>Note:</b> <br>
-       a) De-select the point you've already selected by clicking it again <br>
-       b) You can always go back to the original state by choose any of the radio buttons
-    </p>
- -->
+
 {% end %}
 
 {% block footer %}
@@ -24,6 +13,24 @@
 {% end %}
 
 {% block script_include %}
+<STYLE type="text/css">
+.file-wrapper {
+  cursor: pointer;
+  display: inline-block;
+  overflow: hidden;
+  position: relative;
+}
+.file-wrapper input {
+  cursor: pointer;
+  height: 100%;
+  filter: alpha(opacity=1);
+  -moz-opacity: 0.01;
+  opacity: 0.01;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+</STYLE>
 
 <!--  
 <script language="javascript" type="text/javascript" src="{{ static_url("lib/flot/jquery.js") }}"></script>
@@ -49,6 +56,11 @@
 <script language="javascript" type="text/javascript" src="{{ static_url("lib/highstock/modules/exporting.js") }}"></script>
 
 <script language="javascript" type="text/javascript" src="{{ static_url("lib/spin.min.js") }}"></script>
+
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/jquery.ui.widget.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/jquery.iframe-transport.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/jquery-fileupload/jquery.fileupload.js") }}"></script>
+
 
 <script language="javascript" type="text/javascript" src="{{ static_url("js/analysis_allInOne.js") }}"></script>
 {% end %}

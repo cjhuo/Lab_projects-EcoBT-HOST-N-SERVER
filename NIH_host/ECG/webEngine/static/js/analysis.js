@@ -189,36 +189,6 @@ $(function () {
     function onBinDataReceived(data) {
 		drawHistogram(data);
     }
-	
-    /** 
-	    Data received should have the structure as below:
-	    data.dspData = [
-	                    {
-	                        'label': "channel1",
-	                        'data': [array of [x, y]]
-	                    },
-	                    {
-	                        'label': "channel2",
-	                        'data': [array of [x, y]]
-	                    }
-	                ]
-	    data.peaks = [index of 1st peak, index of 2nd peak, ...]
-	    
-	    for fakePlot only:
-	    	data retrieved from server for n channels with 100 data each, ranged from (-100, 100)
-	    
-	*/						
-	function onDataReceived(data) { //setup plot after retrieving data
-	    extractDatasets(data); //JSON {'dspData': datasets, 'peaks': indice of peak points}         
-		addChoices(); //add channel radio buttons
-		addReferenceImg();
-		addFileUploadDiv();
-		addPlot();  //generate main plot div
-		//addOverview(); // generate overview plot div
-		plotAccordingToChoices(); //plot diagram on generated div and generate overview
-	
-	}
-
     
     var options = { //options settings for main plot
             chart: {
@@ -480,6 +450,36 @@ $(function () {
         });
     	$(".ui-dialog-titlebar").hide(); //remove dialog title bar
 	}
+
+	/** 
+	    Data received should have the structure as below:
+	    data.dspData = [
+	                    {
+	                        'label': "channel1",
+	                        'data': [array of [x, y]]
+	                    },
+	                    {
+	                        'label': "channel2",
+	                        'data': [array of [x, y]]
+	                    }
+	                ]
+	    data.peaks = [index of 1st peak, index of 2nd peak, ...]
+	    
+	    for fakePlot only:
+	    	data retrieved from server for n channels with 100 data each, ranged from (-100, 100)
+	    
+	*/						
+	function onDataReceived(data) { //setup plot after retrieving data
+	    extractDatasets(data); //JSON {'dspData': datasets, 'peaks': indice of peak points}         
+		addChoices(); //add channel radio buttons
+		addReferenceImg();
+		addFileUploadDiv();
+		addPlot();  //generate main plot div
+		//addOverview(); // generate overview plot div
+		plotAccordingToChoices(); //plot diagram on generated div and generate overview
+	
+	}
+	
 	    
 	function extractDatasets(data) {
 		datasets = data.dspData;		
