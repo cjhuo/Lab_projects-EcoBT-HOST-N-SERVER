@@ -50,7 +50,7 @@ ProfileList = [
 "FF21",             # RTC Set Time Characteristic Profile
 "FF22",              # RTC Get Time Characteristic Profile
 #"FEC1",              # ECG characteristic info
-#"FEC2",              # ECG characteristic status
+"FEC2",              # ECG characteristic status
 #"FEC3",              # ECG characteristic config 1
 #"FEC4",              # ECG characteristic config 2
 "FEC5",              # ECG characteristic start flag

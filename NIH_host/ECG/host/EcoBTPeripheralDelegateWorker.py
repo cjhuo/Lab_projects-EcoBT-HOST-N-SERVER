@@ -28,7 +28,7 @@ class EcoBTPeripheralDelegateWorker(EcoBTDelegateWorker):
                         self.address = data['value']
                 except Exception:
                     print "Data Invalid!!!", data
-                print "Peripheral delegate worker ", self.number, " got data from Queue: \n", data
+                #print "Peripheral delegate worker ", self.number, " got data from Queue: \n", data
                 if len(self._global_sockets) != 0:
                     #print data
                     data['address'] = self.address # add peripheral's MAC address as its name

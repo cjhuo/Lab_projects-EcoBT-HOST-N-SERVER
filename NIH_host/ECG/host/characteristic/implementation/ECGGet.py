@@ -25,6 +25,7 @@ class ECGGet(Characteristic):
         self.service.getter = self
 
     def process(self):
+
         # starting from a brand new recording, means ECGSet doesn't assign it an initial value, reading a remnant data                   
         if not hasattr(self.service, "record_cnt"):
             if not hasattr(self.service, "sendStopFromGetter") or self.service.sendStopFromGetter == False: 
@@ -118,10 +119,10 @@ class ECGGet(Characteristic):
                             }
                 self.peripheralWorker.delegateWorker.getQueue().put(progress)
             if self.service.record_cnt > 500: # time to stop reading from sd card after reading the first 10-second samples
-                NSLog("10 SAMPLES READING COMPLETE, STOPPING FROM READING SD CARD")
-                self.peripheralWorker.writeValueForCharacteristic(self.service.setter.createStopFlag(), self.service.setter)
                 # send data to peripheral delegate worker
                 if not hasattr(self.service, 'send'): # make sure it only send once!!!!!!   
+                    NSLog("10 SAMPLES READING COMPLETE, STOPPING FROM READING SD CARD")
+                    self.peripheralWorker.writeValueForCharacteristic(self.service.setter.createStopFlag(), self.service.setter)             
                     tmpDatasets = []
                     for i in range(len(self.service.datasets)):
                         data = [self.service.datasets[i][j] for j in range(len(self.service.datasets[i]))]
@@ -136,7 +137,7 @@ class ECGGet(Characteristic):
                            'data': tmpDatasets
                            }
                     #self.service.queue.put(val)
-                    print val
+                    #print val
                     self.peripheralWorker.delegateWorker.getQueue().put(val)
                     self.service.send = True
                   

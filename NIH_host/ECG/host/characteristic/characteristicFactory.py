@@ -6,7 +6,7 @@ Created on Feb 9, 2013
 from implementation import Characteristic, DeviceInfo, ACCXYZ, ACCEnable, \
 SIDsEnable, SIDsRate, SIDsStart,\
 SIDsTempRead, SIDsHumidRead, LEDEnable, LEDBlinkInterval,\
-RTCSet, RTCGet, ECGGet, ECGSet
+RTCSet, RTCGet, ECGGet, ECGSet, ECGStatus
 
 def createCharacteristic(UUID, instance, service, peripheralWorker):
     c = None
@@ -34,6 +34,8 @@ def createCharacteristic(UUID, instance, service, peripheralWorker):
         c = RTCSet.RTCSet()
     elif UUID == "FF22":
         c = RTCGet.RTCGet()  
+    elif UUID == "FEC2":
+        c = ECGStatus.ECGStatus()    
     elif UUID == "FEC5":
         c = ECGSet.ECGSet() 
     elif UUID == "FEC6" or UUID == "FEC7":
