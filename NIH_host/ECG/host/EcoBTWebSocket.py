@@ -19,7 +19,7 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
         
     def open(self):
         self.globalSockets.append(self)
-        self.handleMessage("sendState")
+        self.ecoBTApp.managerWorker.sendState()
         print "WebSocket opened"
 
     def on_close(self):
@@ -34,10 +34,8 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
         #self.ecoBTApp.managerWorker.delegateWorker.getQueue().put(message)
         self.handleMessage(message)
         
-    def handleMessage(self, message):      
-        if message == 'sendState': # ask for send state from central, happens when a new sockets connected to server
-            self.ecoBTApp.managerWorker.sendState()
-        elif message == 'stopScan':
+    def handleMessage(self, message):           
+        if message == 'stopScan':
             print 'No client connected, stop scanning'
             self.ecoBTApp.managerWorker.stopScan()
         elif type(message) == unicode: # messages send from client are unicode

@@ -34,42 +34,31 @@ $(function () {
 	                    ...
 	                ]    
 	*/
-
+    var datasets; //store datasets
 	function onDataReceived(data) { //setup plot after retrieving data
+		console.log(data);
 		if( data.from == 'node')
 			if(name.trim() == data.data.address.trim())
 				if(data.data.type == 'ecg'){
-					updateChart(data.data.data);
+					datasets = data.data.data;
+					addPlot();
 				}
-	}
-	function updateChart(data) {
-		//console.log(data);
-		//update chart
-		//console.log(plot.series[0]);
-		console.log(data);
-		plot.series[0].addPoint(parseInt(data.I)/8000, true, true);			
-		plot.series[1].addPoint(parseInt(data.II)/8000, true, true);
-		plot.series[2].addPoint(parseInt(data.III)/8000, true, true);
-		plot.series[3].addPoint(parseInt(data.aVR)/8000, true, true);
-		plot.series[4].addPoint(parseInt(data.aVL)/8000, true, true);		
-		plot.series[5].addPoint(parseInt(data.aVF)/8000, true, true);		
-		plot.series[6].addPoint(parseInt(data.V1)/8000, true, true);		
-		plot.series[7].addPoint(parseInt(data.V2)/8000, true, true);		
-		plot.series[8].addPoint(parseInt(data.V3)/8000, true, true);		
-		plot.series[9].addPoint(parseInt(data.V4)/8000, true, true);		
-		plot.series[10].addPoint(parseInt(data.V5)/8000, true, true);		
-		plot.series[11].addPoint(parseInt(data.V6)/8000, true, true);			
+				else if(data.data.type == 'ECG'){ //state info
+					if(data.data.value.type == 'state')
+						if(data.data.value.value == 0)
+							// ready to start real recording
+							addStartButton();
+				}
 	}
 	
 	var init = function() {
 		showSpinner();
-		addPlot();
 	}
 	
 
 	var diagram; //store DOM object of plot div
     var plot;  //store main plot object will be returned by
-    var options; //options settings for main plot
+    var chartOptions; //chartOptions settings for main plot
         
     var xGridInterval = 200; //0.2 second
     var yGridInterval = 500; //0.5 mV, assuming the unit of ECG output is micro volt
@@ -121,7 +110,8 @@ $(function () {
     chartOptions = {
             chart: {
                 renderTo: 'diagram',
-                /*zoomType: 'x',
+                zoomType: 'x',
+                /*
                 animation: {
                     duration: 1000
                 },*/
@@ -269,12 +259,11 @@ $(function () {
             yAxis: [],
             series: []
     };
-    
-    var total_points = 2500;
+    var resizer, innerResizer;
     function addPlot() { 
     	//generate one plot for each channel
 
-    	var resizer = $('<div id="resizer" />').css( {
+    	resizer = $('<div id="resizer" />').css( {
             width: '100%',
             minHeight: '400px',
             //border: '1px solid silver'
@@ -282,8 +271,9 @@ $(function () {
         });	
 		resizer.appendTo("body");
     	
-		var innerResizer = $('<div id="innerResizer" />').css( {
-			padding: '10px'
+		innerResizer = $('<div id="innerResizer" />').css( {
+			padding: '0px',
+			marginTop: '50px'
         });	
 		innerResizer.appendTo(resizer);
 		
@@ -299,40 +289,32 @@ $(function () {
 		
     	diagram.appendTo(innerResizer);
     	
-    	plotInit();
+    	plotEverything();
 		//plotEverything(); //plot diagram on generated div and generate overview
     }
     
-    var plotInit = function() {
-        var yTop = 65//65;
-        
+    function plotEverything() {
+        var yTop = 65;
+        chartOptions.series = [];
         //loop to fill in yAxis and data series
-        for(var i=0; i<ECG_CHANNELLABELS.length;i++) {
+        for(var i=0; i<datasets.length;i++) {
         	var yAxisOptions = $.extend(true, {}, yAxisOptionsTemplate); //!!!deep copy JSON object
         	yAxisOptions.title = {
-        			text: ECG_CHANNELLABELS[i],
-        			y: -20,
+        			text: datasets[i].label,
         			rotation: 0
-        	};
+        	};   	
         	yAxisOptions.top = yTop;
         	yTop += yAxisHeight; //!!!!adjust the distance to the top
         	
-        	chartOptions.yAxis.push(yAxisOptions);    
-        	
-        	//generate 0 for all 2500 samples at the beginning
-        	var initData = [];
-        	for(var j=0; j<total_points; j++){
-        		initData.push(0);
-        	}
+        	chartOptions.yAxis.push(yAxisOptions);        	
         	chartOptions.series.push({
-        		name: ECG_CHANNELLABELS[i],
-                data: initData,
+        		name: datasets[i].label,
+                data: datasets[i].data,
                 pointStart: Date.UTC(0, 0, 0, 0, 0, 0, 0),
                 yAxis: i, //use the index of dataset as the index of yAxis
-                pointInterval: 4 // should be 1000/frequency. in this case 1000/250 = 4
+                pointInterval: 5 // 5 millisecond<--wrong! should be 1000/frequency. in this case 1000/250 = 5
         	});
         }
-    	
         //format tooltip
         chartOptions.tooltip.formatter = function() {
         	var s = '';
@@ -346,6 +328,43 @@ $(function () {
     	plot = new Highcharts.StockChart(chartOptions, function() {
     		hideSpinner();
     	});      
+    }
+    var recButton;
+    function addStartButton() {
+    	if(recButton != null)    		
+    		recButton.remove();
+    	
+    	recButton = $('<button>START RECORDING</button>').css({
+    		float: 'left',
+    		fontSize: 'small',
+    		position: 'absolute',
+    		right: '0px',
+    		top: '0px'
+    	});   	
+
+    	recButton.button();
+    	recButton.click(addStopButton);
+    	recButton.appendTo(innerResizer);
+    	
+    	// trigger event by send message through socket, TBD
+    }
+    
+    function addStopButton() {
+    	if(recButton != null)    		
+    		recButton.remove();
+    	recButton = $('<button>STOP RECORDING</button>').css({
+    		float: 'left',
+    		fontSize: 'small',
+    		position: 'absolute',
+    		right: '0px',
+    		top: '0px'
+    	});   	
+
+    	recButton.button();
+    	recButton.click(addStartButton);
+    	recButton.appendTo(innerResizer);
+    	
+    	// trigger event by send message through socket, TBD
     }
     
 	var socket = null; //websocket object	

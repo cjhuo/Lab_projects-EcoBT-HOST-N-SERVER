@@ -103,9 +103,18 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
             if worker.peripheral.number == pNum: # found the ecg peripheral
                 NSLog("SENDING START RECORDING SIGNAL")
                 char = worker.findCharacteristicByUUID("FEC5")
+                char.service.sampleRecorded = False # create a flag to indicate the samples hasn't been recorded     
                 worker.writeValueForCharacteristic(char.createStartFlag(), char)
                 
-    
+    def readECGData(self, address):
+        for worker in self.peripheralWorkers:
+            if worker.peripheral.address == address: # found the ecg peripheral
+                NSLog("SENDING RECORDED SAMPLES TO CLIENT")
+                service = worker.findServiceByUUID("FEC0")
+                data = service.queue.get()
+                service.queue.task_done()
+                return data           
+        return "Not found"
 
     # CBCentralManager delegate methods
     def centralManagerDidUpdateState_(self, central):

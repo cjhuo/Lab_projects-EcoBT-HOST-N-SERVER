@@ -19,6 +19,7 @@ from config import *
 from EcoBTApp import EcoBTApp
 from Sockets import Sockets
 from EcoBTWebSocket import EcoBTWebSocket
+from webHandlers import ECGHandler
 
 from tornado.options import define, options
 define("port", default=8001, help="run on the given port", type=int)
@@ -29,7 +30,8 @@ class Application(tornado.web.Application):
         self.ecoBTApp = ecoBTApp
         handlers = [
             (r"/socket", EcoBTWebSocket, dict(globalSockets = self.globalSockets, 
-                                              ecoBTApp = self.ecoBTApp))
+                                              ecoBTApp = self.ecoBTApp)),
+            (r"/ecgHandler", ECGHandler, dict(ecoBTApp = self.ecoBTApp))
         ]
         settings = dict(
             debug=True

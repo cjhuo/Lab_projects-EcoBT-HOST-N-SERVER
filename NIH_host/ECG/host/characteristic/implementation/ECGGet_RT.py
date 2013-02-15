@@ -11,36 +11,28 @@ import array
 from Queue import Queue 
 
 from Characteristic import *
+from misc.PeriodicExecutor import PeriodicExecutor
 
 firstHalf = 'FEC6' # V6, I, II, V2
 secondHalf = 'FEC7' # V3, V4, V5, V1
-ECG_CHANNELLABELS = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6']
 
 class ECGGet(Characteristic):
     def __init__(self):
         Characteristic.__init__(self)
         self.privilege = 0
+        self.queue = Queue()
     
     def setRole(self):
         self.service.getter = self
 
     def process(self):
-        # starting from a brand new recording, means ECGSet doesn't assign it an initial value, reading a remnant data                   
+        # starting from a brand new recording, means ECGSet doesn't assign it an initial value, reading a remnant data
         if not hasattr(self.service, "record_cnt"):
             if not hasattr(self.service, "sendStopFromGetter") or self.service.sendStopFromGetter == False: 
                 NSLog("READING A REMNANT DATA, STOP NODE FROM READING SD CARD")
                 self.peripheralWorker.writeValueForCharacteristic(self.service.setter.createStopFlag(), self.service.setter)
                 self.service.sendStopFromGetter = True
             return 
-        
-        if self.service.record_cnt == 1:    # set sampleRecorded flag to True to prevent recording a sample again;
-                                            # initial array each every channel
-            self.service.sampleRecorded = True
-            self.service.queue = Queue()
-            self.service.datasets = []
-            for i in range(12):
-                self.service.datasets.append(list())    
-        
         value = self.instance._.value # continued from an unknown sequence number
         hex_str = binascii.hexlify(value)
         if self.UUID == "FEC6": # data1
@@ -86,19 +78,27 @@ class ECGGet(Characteristic):
             (self.service.V1, self.service.V2, self.service.V3, self.service.V4, self.service.V5, self.service.V6)
             output += "aVR: %8d aVL: %8d aVF: %8d LeadI: %8d LeadII: %8d LeadIII: %8d\n" % \
             (self.service.aVR, self.service.aVL, self.service.aVF, self.service.LeadI, self.service.LeadII, self.service.LeadIII)
-            self.service.datasets[0].append(self.service.LeadI/80000)
-            self.service.datasets[1].append(self.service.LeadII/80000)
-            self.service.datasets[2].append(self.service.LeadIII/80000)
-            self.service.datasets[3].append(self.service.V1/80000)
-            self.service.datasets[4].append(self.service.V2/80000)
-            self.service.datasets[5].append(self.service.V3/80000)
-            self.service.datasets[6].append(self.service.V4/80000)
-            self.service.datasets[7].append(self.service.V5/80000)
-            self.service.datasets[8].append(self.service.V6/80000)
-            self.service.datasets[9].append(self.service.aVR/80000)
-            self.service.datasets[10].append(self.service.aVL/80000)
-            self.service.datasets[11].append(self.service.aVF/80000)
-
+            self.queue.put({
+                             'V1': self.service.V1,
+                             'V2': self.service.V2,
+                             'V3': self.service.V3,
+                             'V4': self.service.V4,
+                             'V5': self.service.V5,
+                             'V6': self.service.V6,
+                             'aVR': self.service.aVR,
+                             'aVL': self.service.aVL,
+                             'aVF': self.service.aVF,
+                             'I': self.service.LeadI,
+                             'II': self.service.LeadII,
+                             'III': self.service.LeadIII,                 
+                            })
+            if self.service.record_cnt == 1:    # set sampleRecorded flag to True to prevent recording a sample again;
+                                                # start from begnning, start periodic executor
+                self.service.sampleRecorded = True
+                pe = PeriodicExecutor()
+                pe.setParams(1, self.sentOutDataToDelegateQueue, pe, self.queue)
+                pe.start()
+            
             if not hasattr(self.service, "fd"):
                 import os
                 path = os.path.join(os.path.dirname(__file__), "log.txt")
@@ -106,30 +106,13 @@ class ECGGet(Characteristic):
             if self.service.record_cnt % 10 == 1:
                 print output
             self.service.fd.write(output)
+
+                
             
             self.service.record_cnt = self.service.record_cnt + 1    
-            if self.service.record_cnt > 500: # time to stop reading from sd card after reading the first 10-second samples
+            if self.service.record_cnt > 10: # time to stop reading from sd card after reading the first 10-second samples
                 NSLog("10 SAMPLES READING COMPLETE, STOPPING FROM READING SD CARD")
                 self.peripheralWorker.writeValueForCharacteristic(self.service.setter.createStopFlag(), self.service.setter)
-                # send data to peripheral delegate worker
-                if not hasattr(self.service, 'send'): # make sure it only send once!!!!!!   
-                    tmpDatasets = []
-                    for i in range(len(self.service.datasets)):
-                        data = [self.service.datasets[i][j] for j in range(len(self.service.datasets[i]))]
-                        label = ECG_CHANNELLABELS[i]            
-                        #label = "channel " + str(i)
-                        tmpDatasets.append(dict())
-                        tmpDatasets[i]['data'] = data 
-                        tmpDatasets[i]['label'] = label
-                        
-                    val = {
-                           'type': 'ecg',
-                           'data': tmpDatasets
-                           }
-                    #self.service.queue.put(val)
-                    print val
-                    self.peripheralWorker.delegateWorker.getQueue().put(val)
-                    self.service.send = True
                   
         # TBD
         '''
@@ -139,3 +122,16 @@ class ECGGet(Characteristic):
                 }
         self.peripheralWorker.delegateWorker.getQueue().put(data)
         '''
+    def sentOutDataToDelegateQueue(self, pExecutor, queue):
+        if not queue.empty():
+            data = queue.get()
+            queue.task_done()
+            tmpData = {
+                        'type': 'ecg',
+                        'data': data
+                    }
+            self.peripheralWorker.delegateWorker.getQueue().put(tmpData)
+        else: # quiting
+            print "ECG Data Queue is empty, stop sending data to client"
+            pExecutor.setFlag.set()
+                

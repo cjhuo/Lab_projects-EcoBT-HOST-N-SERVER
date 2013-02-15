@@ -34,42 +34,43 @@ $(function () {
 	                    ...
 	                ]    
 	*/
-
+	var datasets; //store datasets
 	function onDataReceived(data) { //setup plot after retrieving data
+		console.log(data);
 		if( data.from == 'node')
 			if(name.trim() == data.data.address.trim())
 				if(data.data.type == 'ecg'){
-					updateChart(data.data.data);
+					extractDatasets(data.data.data);
+					addResizer();
+					addPlot();
 				}
 	}
-	function updateChart(data) {
-		//console.log(data);
-		//update chart
-		//console.log(plot.series[0]);
-		console.log(data);
-		plot.series[0].addPoint(parseInt(data.I)/8000, true, true);			
-		plot.series[1].addPoint(parseInt(data.II)/8000, true, true);
-		plot.series[2].addPoint(parseInt(data.III)/8000, true, true);
-		plot.series[3].addPoint(parseInt(data.aVR)/8000, true, true);
-		plot.series[4].addPoint(parseInt(data.aVL)/8000, true, true);		
-		plot.series[5].addPoint(parseInt(data.aVF)/8000, true, true);		
-		plot.series[6].addPoint(parseInt(data.V1)/8000, true, true);		
-		plot.series[7].addPoint(parseInt(data.V2)/8000, true, true);		
-		plot.series[8].addPoint(parseInt(data.V3)/8000, true, true);		
-		plot.series[9].addPoint(parseInt(data.V4)/8000, true, true);		
-		plot.series[10].addPoint(parseInt(data.V5)/8000, true, true);		
-		plot.series[11].addPoint(parseInt(data.V6)/8000, true, true);			
+	
+	/* issue ajax call and further process the data on sucess */
+	function getAndProcessData() { 
+		showSpinner();
+		$.ajax({
+			url: url,
+			cache: false,
+			type: 'POST',
+			dataType: 'json',
+			data: {"address":JSON.stringify(name.trim())},
+			success: onDataReceived
+		});
+	}
+	
+	function extractDatasets(data) {
+		datasets = data.data;
 	}
 	
 	var init = function() {
-		showSpinner();
-		addPlot();
+		getAndProcessData();
 	}
 	
 
 	var diagram; //store DOM object of plot div
     var plot;  //store main plot object will be returned by
-    var options; //options settings for main plot
+    var chartOptions; //chartOptions settings for main plot
         
     var xGridInterval = 200; //0.2 second
     var yGridInterval = 500; //0.5 mV, assuming the unit of ECG output is micro volt
@@ -270,11 +271,10 @@ $(function () {
             series: []
     };
     
-    var total_points = 2500;
-    function addPlot() { 
-    	//generate one plot for each channel
-
-    	var resizer = $('<div id="resizer" />').css( {
+    // plot related
+    var resizer, innerResizer;
+	function addResizer() {
+    	resizer = $('<div id="resizer" />').css( {
             width: '100%',
             minHeight: '400px',
             //border: '1px solid silver'
@@ -282,14 +282,26 @@ $(function () {
         });	
 		resizer.appendTo("body");
     	
-		var innerResizer = $('<div id="innerResizer" />').css( {
+		innerResizer = $('<div id="innerResizer" />').css( {
 			padding: '10px'
         });	
 		innerResizer.appendTo(resizer);
+	}
+	
+    function addPlot() { 
+    	/*//generate one plot for each channel
+    	var diagram = $('<div id="channel'+ index +'"/>').css( {
+            position: 'relative',
+            width: '500px',
+            height: '200px',
+            margin: 'auto',
+            padding: '2px'
+        });
+    	*/
 		
 		//calculate the diagram height
 		
-		var diagramHeight = 65 + yAxisHeight*ECG_CHANNELLABELS.length + 93; //!!!!!65 is the top padding of chart,
+		var diagramHeight = 65 + yAxisHeight*datasets.length + 93; //!!!!!65 is the top padding of chart,
 															//93 is bottom padding
 		
     	//plot all channels on one plot
@@ -297,42 +309,50 @@ $(function () {
             height: diagramHeight.toString() + 'px',
         });
 		
+
     	diagram.appendTo(innerResizer);
     	
-    	plotInit();
-		//plotEverything(); //plot diagram on generated div and generate overview
+    	//resizable
+    	/*
+		resizer.resizable({
+		    // On resize, set the chart size to that of the 
+		    // resizer minus padding. If your chart has a lot of data or other
+		    // content, the redrawing might be slow. In that case, we recommend 
+		    // that you use the 'stop' event instead of 'resize'.
+		    resize: function() {
+		    	plot.setSize(
+		            this.offsetWidth - 20, 
+		            this.offsetHeight - 20,
+		            false
+			       );
+			   }
+		});
+		*/
+		plotEverything(); //plot diagram on generated div and generate overview
     }
     
-    var plotInit = function() {
-        var yTop = 65//65;
-        
+    function plotEverything() {
+        var yTop = 65;
+        chartOptions.series = [];
         //loop to fill in yAxis and data series
-        for(var i=0; i<ECG_CHANNELLABELS.length;i++) {
+        for(var i=0; i<datasets.length;i++) {
         	var yAxisOptions = $.extend(true, {}, yAxisOptionsTemplate); //!!!deep copy JSON object
         	yAxisOptions.title = {
-        			text: ECG_CHANNELLABELS[i],
-        			y: -20,
+        			text: datasets[i].label,
         			rotation: 0
-        	};
+        	};   	
         	yAxisOptions.top = yTop;
         	yTop += yAxisHeight; //!!!!adjust the distance to the top
         	
-        	chartOptions.yAxis.push(yAxisOptions);    
-        	
-        	//generate 0 for all 2500 samples at the beginning
-        	var initData = [];
-        	for(var j=0; j<total_points; j++){
-        		initData.push(0);
-        	}
+        	chartOptions.yAxis.push(yAxisOptions);        	
         	chartOptions.series.push({
-        		name: ECG_CHANNELLABELS[i],
-                data: initData,
+        		name: datasets[i].label,
+                data: datasets[i].data,
                 pointStart: Date.UTC(0, 0, 0, 0, 0, 0, 0),
                 yAxis: i, //use the index of dataset as the index of yAxis
-                pointInterval: 4 // should be 1000/frequency. in this case 1000/250 = 4
+                pointInterval: 5 // 5 millisecond<--wrong! should be 1000/frequency. in this case 1000/250 = 5
         	});
         }
-    	
         //format tooltip
         chartOptions.tooltip.formatter = function() {
         	var s = '';
@@ -348,163 +368,6 @@ $(function () {
     	});      
     }
     
-	var socket = null; //websocket object	
-	var reconMsg = null; //reconnect div object
-	
-	/**
-	* use to store reconnect procedure, to make sure there is only 1 websocket to server generated
-	* not thread safe!!!TBD
-	*/
-	var reconn = null; 	
-	function showReconMsg(msg) {
-		if(reconMsg == null) {
-			reconMsg = $('<div id="reconnect" >' + msg + '</div>').css( {
-		        position: 'absolute',
-		        top:0,
-		        right:0,
-		        //width: '100%',
-		        //height: '50px',
-		        margin: 'auto'
-			});
-			reconMsg.appendTo("body");
-		}
-	}
-	
-	function hideReconMsg() {
-		if(reconMsg != null){
-			reconMsg.remove();
-			reconMsg = null;
-		}
-	}
-	
-	function establishConnection() {
-		/*
-		if(socket != null){
-			socket.close();
-			socket = null;
-		}
-		*/
-	    socket = new WebSocket(url);
-	    hideReconMsg();
-		showReconMsg('connecting to server...');
-	    socket.onopen = function(event) {
-			hideReconMsg();
-	    };
-	    socket.onmessage = function(event) {
-	    	onDataReceived($.parseJSON(event.data));
-	    };
-	    socket.onerror = function(event) {
-	    	alert('Error, readyState code is: ' + socket.readyState);
-	    	socket.close();
-	    	establishConnection();
-	    };
-	    
-	    socket.onclose = function(event) {
-	    	//alert(socket.readyState);
-		    //var t = setInterval(function() {//check if connection is lost, for the case when server is down
-				//if(socket.readyState == 2 || socket.readyState == 3){ //connection is closed or closing
-			
-	    	/**
-			 * try to reconnect when connection is closed or closing. If reconnection has been 
-			 * issued by other functions such as 'online' event handler then skip to prevent
-			 * duplication of socket. 'closing' connection will eventually be timed out and garbage collected,
-			 * so no worry of duplicated connection
-			 * 
-			 * */
-	    	if(socket.readyState == 2 || socket.readyState == 3){
-				hideReconMsg();
-				showReconMsg('connection reset by server, reconnecting in 5 secs...');
-				if(reconn == null){
-					reconn = setTimeout(function() {
-						establishConnection();
-						hideReconMsg();
-						reconn = null;
-						//alert('Network is back, readyState is: ' + socket.readyState);
-					}, 5000);
-				}
-				/*
-				else {
-					alert('reconnect issued!');
-				}
-				*/
-			}
-			/*
-			else if(socket.readyState == 1) {
-				clearInterval(t);
-				hideReconMsg();
-			}
-			*/			
-		    //}, 6000);
-	    };
-	}
-	
-	function update(){
-		if (navigator.onLine) { //navigator.onLine supports limited browsers, see https://developer.mozilla.org/en-US/docs/DOM/window.navigator.onLine
-			establishConnection();	
-		}
-		else {
-			showReconMsg('brower is offline, check wifi...');
-		}
-	}
-	
-	$(window).bind('load', function(e) {
-		init();
-		//animate();
-		update();
-		/*
-		setInterval(function(){
-			render();
-		}, 1000);
-		*/
-	});
-
-	$(window).bind('online', function(e) {
-		/*
-		if(socket != null)
-			alert('Network is back, readyState is: ' + socket.readyState);
-		*/
-		/*
-		if(socket != null){
-			socket.close();
-			//socket = null;
-		}
-		*/
-		hideReconMsg();
-		showReconMsg('connection is back, connecting server in 5 secs...');
-		if(reconn == null) {
-			reconn = setTimeout(function() {
-				establishConnection();
-				//alert('Network is back, readyState is: ' + socket.readyState);
-				hideReconMsg();
-				reconn = null;
-			}, 5000);
-		}
-	});
-	
-	$(window).bind('offline', function(e) {
-		/**
-		 * firing a close() cause a connection to close or to timeout on user browser's side after 
-		 * 300secs by default; WebSocket on tornado server will also be closed or timed out.
-		 * 
-		 * This is just for the purpose of setting socket.readyState to 'CLOSED' in order to garbage 
-		 * collect old socket and generate new socket next time when browser is online.
-		 * This is used for the case of lost connection when browser waked up from sleep and timed 
-		 * out at server side. if close() is not issued, when browser is back from sleep, readyState 
-		 * will still be 'OPEN'. Connection lost will only be detected unless after 300secs or 
-		 * (by sending to server something such as close(), send() I guess...).
-		 * 
-		 * The close is actually issued when browser is back from wake since there is no way close
-		 * request can be sent to server when offline 
-		 * 
-		 * This is only a workaround since there is no way whether the connection still exist even if
-		 * websocket.readyState on browser side is 'OPEN'. A short ping-pong mechanism might resolve 
-		 * the issue.
-		 * */
-		socket.close();
-		hideReconMsg();
-		showReconMsg('connection lost, check wifi...')
-	});	
-
 	var spinner; //spinner
     //show loading spinner, stopped when chart is fully loaded
 	var spinnerOpts = { //options settings for spinner
@@ -546,5 +409,5 @@ $(function () {
     
     //getAndProcessData();
     
-    //init();
+    init();
 });
