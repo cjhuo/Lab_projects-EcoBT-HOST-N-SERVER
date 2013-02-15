@@ -101,7 +101,11 @@ class ECGGet(Characteristic):
             if self.service.record_cnt % 10 == 1:
                 print output
             self.service.fd.write(output)
-            self.service.record_cnt = self.service.record_cnt + 1      
+            self.service.record_cnt = self.service.record_cnt + 1    
+            if self.service.record_cnt > 10: # time to stop reading from sd card after reading the first 10-second samples
+                NSLog("10 SAMPLES READING COMPLETE, STOPPING FROM READING SD CARD")
+                self.peripheralWorker.writeValueForCharacteristic(self.service.setter.createStopFlag(), self.service.setter)
+                  
         # TBD
         '''
         data = {

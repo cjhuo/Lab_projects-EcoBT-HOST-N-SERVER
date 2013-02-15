@@ -305,7 +305,7 @@ $(function () {
     				group[0].attr('fill', "");
     			}).mouseup(function(e) {
     				startECG(peripheral.number);
-    				window.open(ecgUrl, '_self', false);
+    				window.open(ecgUrl, '_self', false)
     			}); 
         	}
         },
