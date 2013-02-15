@@ -108,6 +108,15 @@ class ECGGet(Characteristic):
             self.service.fd.write(output)
             
             self.service.record_cnt = self.service.record_cnt + 1    
+            if self.service.record_cnt % 5 == 1 and self.service.record_cnt <= 501:
+                progress = {
+                            'type': 'ECG',
+                            'value': {
+                                     'type': 'progress',
+                                     'value': self.service.record_cnt/5
+                                     }
+                            }
+                self.peripheralWorker.delegateWorker.getQueue().put(progress)
             if self.service.record_cnt > 500: # time to stop reading from sd card after reading the first 10-second samples
                 NSLog("10 SAMPLES READING COMPLETE, STOPPING FROM READING SD CARD")
                 self.peripheralWorker.writeValueForCharacteristic(self.service.setter.createStopFlag(), self.service.setter)

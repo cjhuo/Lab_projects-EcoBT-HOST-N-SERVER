@@ -41,18 +41,24 @@ $(function () {
 			if(name.trim() == data.data.address.trim())
 				if(data.data.type == 'ecg'){
 					datasets = data.data.data;
+					removeProgressBar();
 					addPlot();
 				}
 				else if(data.data.type == 'ECG'){ //state info
-					if(data.data.value.type == 'state')
+					if(data.data.value.type == 'state'){
 						if(data.data.value.value == 0)
 							// ready to start real recording
 							addStartButton();
+					}
+					else if(data.data.value.type == 'progress'){
+						updateProgress(data.data.value.value);
+					}
 				}
 	}
 	
 	var init = function() {
 		showSpinner();
+		showProgressBar();
 	}
 	
 
@@ -339,7 +345,7 @@ $(function () {
     		fontSize: 'small',
     		position: 'absolute',
     		right: '0px',
-    		top: '0px'
+    		top: '10px'
     	});   	
 
     	recButton.button();
@@ -357,7 +363,7 @@ $(function () {
     		fontSize: 'small',
     		position: 'absolute',
     		right: '0px',
-    		top: '0px'
+    		top: '10px'
     	});   	
 
     	recButton.button();
@@ -561,6 +567,38 @@ $(function () {
     function hideSpinner(){
 		spinTarget.hide();
 		spinner.stop();
+    }
+    var progressBar;
+    var progressLabel;
+    function showProgressBar() {
+    	progressLabel = $("<div id='progressLabel'>Upload Starting in 10 seconds...</div>").css({
+    		float: 'left',
+        	marginLeft: '50%',
+        	marginTop: '5px',
+        	fontWeight: 'bold',
+        	textShadow: '1px 1px 0 #fff',
+    	});
+    	progressBar = $("<div id='progress'></div>");
+    	progressLabel.appendTo(progressBar);
+    	progressBar.progressbar({
+    	      value: false,
+    	      change: function() {
+    	          progressLabel.text( progressBar.progressbar( "value" ) + "%" );
+    	        },
+    	        complete: function() {
+    	          progressLabel.text( "Complete!" );
+    	        }
+        });
+    	progressBar.appendTo("body");
+    }
+    
+    function removeProgressBar() {
+    	progressBar.remove();
+    	progressLabel.remove()
+    }
+    
+    function updateProgress(percent){
+    	progressBar.progressbar( "value", percent );
     }
     
     //getAndProcessData();
