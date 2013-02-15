@@ -21,22 +21,12 @@ class EcoBTCentralManagerDelegateWorker(EcoBTDelegateWorker):
             self._queue.task_done()               
             #process data
             if(data != 'stop'):
-                #print type(data)
-                if type(data) == unicode:
-                    if data == 'start': # manager startScan signal
-                        self.ecoBTWorker.startScan()  
-                        # self.ecoBTApp.managerWorker.sendState() 
-                    elif data == 'peripheralList':
-                        self.ecoBTWorker.sendPeripheralList()
-                    elif data.startswith("startECG"):
-                        pNum = data[8:]
-                        print pNum
-                        self.ecoBTWorker.startECG(int(pNum))                                   
-                elif(len(self._global_sockets) != 0):
+                #print type(data)               
+                if(len(self._global_sockets) != 0):
                     #print data
                     packet = {'from': 'central', 'data': data}
-                    print packet
-                    print len(self._global_sockets.sockets)
+                    print "Sending out message from Central to client(s): ", packet
+                    print "Number of Clients: ", len(self._global_sockets.sockets)
                     for socket in self._global_sockets.sockets:
                         socket.write_message(packet) 
             else: # stop signal received

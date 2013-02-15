@@ -26,9 +26,10 @@ define("port", default=8001, help="run on the given port", type=int)
 class Application(tornado.web.Application):
     def __init__(self, ecoBTApp):
         self.globalSockets = Sockets()
-        self.EcoBTApp = ecoBTApp
+        self.ecoBTApp = ecoBTApp
         handlers = [
-            (r"/socket", EcoBTWebSocket, dict(globalSockets = self.globalSockets, ecoBTApp = self.EcoBTApp))
+            (r"/socket", EcoBTWebSocket, dict(globalSockets = self.globalSockets, 
+                                              ecoBTApp = self.ecoBTApp))
         ]
         settings = dict(
             debug=True

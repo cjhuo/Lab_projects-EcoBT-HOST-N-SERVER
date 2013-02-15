@@ -310,8 +310,8 @@ $(function () {
 		    			if(value.type == 'humidity'){
 		    				url = "/temperature?name="+value.name;
 		    			}
-		    			service.click(function(){					
-							window.open(url);
+		    			service.click(function(){	
+		    				window.open(url, '_self', false);
 						});
 		    			peripheral.services.push(s);
 	        		}

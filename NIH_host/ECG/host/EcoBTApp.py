@@ -10,6 +10,7 @@ from threading import Event
 from Sockets import Sockets
 
 
+
 class EcoBTApp(object):
 
     def __init__(self, enableKeyboardInterrupt):
@@ -17,42 +18,41 @@ class EcoBTApp(object):
         self.managerWorker = EcoBTCentralManagerWorker.alloc().init()  
         self.enableKeyboardInterrupt = enableKeyboardInterrupt 
         #self.managerWorker.setSockets(sockets)
-
+        
+    def setSockets(self, sockets):
+        self.managerWorker.setSockets(sockets)
         
     def start(self):
         # initialize NSAutoreleasePool
         self.pool = NSAutoreleasePool.alloc().init()
         if self.enableKeyboardInterrupt != False:
             self.handleKeyboardInterrupt()
-            
         self.running = Event()
         self.runLoop = NSRunLoop.currentRunLoop()
-
+        
         # run NSRunLoop infinitely
         while (not self.running.isSet()) and self.runLoop.runMode_beforeDate_(NSDefaultRunLoopMode, NSDate.distantFuture()):
-            pass # do nothing 
+            # do nothing
+            pass
         
         # clean up       
         self.managerWorker.stop()
         NSLog("Program Terminated")
         del self.pool
-        
+                               
     def handleKeyboardInterrupt(self):
         # handle keyboard interrupt. Hit "Enter" to exit the program
         stdIn = NSFileHandle.fileHandleWithStandardInput().retain()
         
         # magic letters 'v@:@': void return, instance method, has 1 object argument.
-        s = objc.selector(self.handler_,signature='v@:@') 
+        s = objc.selector(self.keyboardHandler_,signature='v@:@') 
         NSNotificationCenter.defaultCenter().addObserver_selector_name_object_\
                         (self, s, NSFileHandleReadCompletionNotification, stdIn)
 
 
         stdIn.readInBackgroundAndNotify()
-        
-    def setSockets(self, sockets):
-        self.managerWorker.setSockets(sockets)
        
-    def handler_(self, notification): # handlder must has a function name ended by a single "_"        
+    def keyboardHandler_(self, notification): # handlder must has a function name ended by a single "_"        
         NSLog("Keyboard Interrupt Captured")
         data = notification.userInfo().objectForKey_(NSFileHandleNotificationDataItem)
         string = NSString.alloc().initWithData_encoding_(data, NSUTF8StringEncoding).autorelease()

@@ -13,6 +13,8 @@ from IOBluetooth import *
 from objc import *
 from PyObjCTools import AppHelper
 
+from Queue import Queue 
+
 from EcoBTWorker import EcoBTWorker
 from EcoBTCentralManagerDelegateWorker import EcoBTCentralManagerDelegateWorker
 from EcoBTPeripheralWorker import EcoBTPeripheralWorker
@@ -75,7 +77,7 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
         
     def stopScan(self):
         NSLog("stop scan")
-        self.manager.stopScan()
+        self.manager.stopScan()         
         
     def sendState(self):
         data = {'type': 'state',
@@ -99,8 +101,10 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
     def startECG(self, pNum):
         for worker in self.peripheralWorkers:
             if worker.peripheral.number == pNum: # found the ecg peripheral
+                NSLog("SENDING START RECORDING SIGNAL")
                 char = worker.findCharacteristicByUUID("FEC5")
                 worker.writeValueForCharacteristic(char.createStartFlag(), char)
+                
     
 
     # CBCentralManager delegate methods

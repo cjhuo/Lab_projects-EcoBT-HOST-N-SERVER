@@ -305,7 +305,7 @@ $(function () {
     				group[0].attr('fill', "");
     			}).mouseup(function(e) {
     				startECG(peripheral.number);
-    				window.open(ecgUrl);
+    				window.open(ecgUrl, '_self', false);
     			}); 
         	}
         },
@@ -379,7 +379,7 @@ $(function () {
 		    				monitorUrl = "/temperature?name="+value.address;
 		    			}
 		    			service.click(function(){					
-							window.location = monitorUrl;
+							window.open(monitorUrl, '_self', false);
 							return false;
 						});
 		    			peripheral.services.push(s);

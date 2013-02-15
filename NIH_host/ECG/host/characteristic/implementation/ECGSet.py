@@ -38,9 +38,10 @@ class ECGSet(Characteristic):
         value = self.instance._.value
         (start,) = struct.unpack("@B", value)
         #val = binascii.hexlify(start)
-        print start
+        print 'FEC5 value: ', start
         
         if start == stopFlag and self.recorded == False:
+            
             # send UI a 'ready' signal
             data = {'type': 'ECG',
                     'value': {'type': 'state',
@@ -54,15 +55,17 @@ class ECGSet(Characteristic):
                 NSLog("START ECG RECORD")
                 self.peripheralWorker.writeValueForCharacteristic(self.createStartFlag(), self)
             '''
-        if start == startFlag:
+        elif start == startFlag:
             # stop recording first
             # read ecg from sd card then
             NSLog("STOP RECORDING IN 10 SECONDS")
             self.service.record_cnt = 1
             #de = DelayExecutor(10, self.peripheralWorker.writeValueForCharacteristic, # memory leak reported from objc
             #               self.createStopFlag(), self.createReadFromCardFlag(), self.instance)
-            time.sleep(1)
+            time.sleep(10)
+            NSLog("SENDING STOP RECORDING SIGNAL")
             self.peripheralWorker.writeValueForCharacteristic(self.createStopFlag(), self)
+            NSLog("SENDING START READ SIGNAL")
             self.peripheralWorker.writeValueForCharacteristic(self.createReadFromCardFlag(), self)
             self.recorded = True # set to true so that it won't be recorded automatically again, waiting for UI to send command
            
