@@ -8,13 +8,14 @@ from Foundation import *
 import binascii
 import struct
 import array
-from Queue import Queue 
+#from Queue import Queue 
 
 from Characteristic import *
 
 firstHalf = 'FEC6' # V6, I, II, V2
 secondHalf = 'FEC7' # V3, V4, V5, V1
 ECG_CHANNELLABELS = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6']
+NUM_OF_SAMPLES = 2500
 
 class ECGGet(Characteristic):
     def __init__(self):
@@ -34,10 +35,10 @@ class ECGGet(Characteristic):
                 self.service.sendStopFromGetter = True
             return 
         
-        if self.service.record_cnt == 1:    # set sampleRecorded flag to True to prevent recording a sample again;
+        if self.service.record_cnt == 1:    
                                             # initial array each every channel
-            self.service.sampleRecorded = True
-            self.service.queue = Queue()
+            
+            #self.service.queue = Queue()
             self.service.datasets = []
             for i in range(12):
                 self.service.datasets.append(list())    
@@ -87,18 +88,18 @@ class ECGGet(Characteristic):
             (self.service.V1, self.service.V2, self.service.V3, self.service.V4, self.service.V5, self.service.V6)
             output += "aVR: %8d aVL: %8d aVF: %8d LeadI: %8d LeadII: %8d LeadIII: %8d\n" % \
             (self.service.aVR, self.service.aVL, self.service.aVF, self.service.LeadI, self.service.LeadII, self.service.LeadIII)
-            self.service.datasets[0].append(self.service.LeadI/80000)
-            self.service.datasets[1].append(self.service.LeadII/80000)
-            self.service.datasets[2].append(self.service.LeadIII/80000)
-            self.service.datasets[3].append(self.service.V1/80000)
-            self.service.datasets[4].append(self.service.V2/80000)
-            self.service.datasets[5].append(self.service.V3/80000)
-            self.service.datasets[6].append(self.service.V4/80000)
-            self.service.datasets[7].append(self.service.V5/80000)
-            self.service.datasets[8].append(self.service.V6/80000)
-            self.service.datasets[9].append(self.service.aVR/80000)
-            self.service.datasets[10].append(self.service.aVL/80000)
-            self.service.datasets[11].append(self.service.aVF/80000)
+            self.service.datasets[0].append(((self.service.LeadI*2.86)/10000)/6)
+            self.service.datasets[1].append(((self.service.LeadII*2.86)/10000)/6)
+            self.service.datasets[2].append((self.service.LeadIII*2.86/10000)/6)
+            self.service.datasets[3].append((self.service.V1*2.86/10000)/6)
+            self.service.datasets[4].append((self.service.V2*2.86/10000)/6)
+            self.service.datasets[5].append((self.service.V3*2.86/10000)/6)
+            self.service.datasets[6].append((self.service.V4*2.86/10000)/6)
+            self.service.datasets[7].append((self.service.V5*2.86/10000)/6)
+            self.service.datasets[8].append((self.service.V6*2.86/10000)/6)
+            self.service.datasets[9].append((self.service.aVR*2.86/10000)/6)
+            self.service.datasets[10].append((self.service.aVL*2.86/10000)/6)
+            self.service.datasets[11].append((self.service.aVF*2.86/10000)/6)
 
             if not hasattr(self.service, "fd"):
                 import os
@@ -107,20 +108,20 @@ class ECGGet(Characteristic):
             if self.service.record_cnt % 10 == 1:
                 print output
             self.service.fd.write(output)
-            
             self.service.record_cnt = self.service.record_cnt + 1    
-            if self.service.record_cnt % 5 == 1 and self.service.record_cnt <= 501:
+            if self.service.record_cnt % (NUM_OF_SAMPLES/100) == 1 and self.service.record_cnt <= (NUM_OF_SAMPLES+1):
                 progress = {
                             'type': 'ECG',
                             'value': {
                                      'type': 'progress',
-                                     'value': self.service.record_cnt/5
+                                     'value': self.service.record_cnt/(NUM_OF_SAMPLES/100)
                                      }
                             }
                 self.peripheralWorker.delegateWorker.getQueue().put(progress)
-            if self.service.record_cnt > 500: # time to stop reading from sd card after reading the first 10-second samples
+            if self.service.record_cnt > NUM_OF_SAMPLES: # time to stop reading from sd card after reading the first 10-second samples
                 # send data to peripheral delegate worker
-                if not hasattr(self.service, 'send'): # make sure it only send once!!!!!!   
+                if self.service.sampleRecorded == False: # make sure it only send once!!!!!!   
+                    self.service.sampleRecorded = True # set sampleRecorded flag to True to prevent recording a sample again;
                     NSLog("10 SAMPLES READING COMPLETE, STOPPING FROM READING SD CARD")
                     self.peripheralWorker.writeValueForCharacteristic(self.service.setter.createStopFlag(), self.service.setter)             
                     tmpDatasets = []
@@ -139,7 +140,9 @@ class ECGGet(Characteristic):
                     #self.service.queue.put(val)
                     #print val
                     self.peripheralWorker.delegateWorker.getQueue().put(val)
-                    self.service.send = True
+                    #self.service.send = True
+                else: # not sending samples to clients
+                    pass
                   
         # TBD
         '''

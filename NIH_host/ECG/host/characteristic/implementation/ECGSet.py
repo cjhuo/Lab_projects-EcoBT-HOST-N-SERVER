@@ -62,13 +62,15 @@ class ECGSet(Characteristic):
             elif not self.service.sampleRecorded: # has not recorded 10 second samples  
                 # stop recording first
                 # read ecg from sd card then
-                NSLog("STOP RECORDING IN 10 SECONDS")
+                NSLog("STOP RECORDING IN 12 SECONDS")
                 self.service.record_cnt = 1          
                 #de = DelayExecutor(10, self.peripheralWorker.writeValueForCharacteristic, # memory leak reported from objc
                 #               self.createStopFlag(), self.createReadFromCardFlag(), self.instance)
-                time.sleep(10)
+                time.sleep(12)
                 NSLog("SENDING STOP RECORDING SIGNAL")
+                
                 self.peripheralWorker.writeValueForCharacteristic(self.createStopFlag(), self)
+                time.sleep(5)
                 NSLog("SENDING START READ SIGNAL")
                 self.peripheralWorker.writeValueForCharacteristic(self.createReadFromCardFlag(), self)
                 #self.recorded = True # set to true so that it won't be recorded automatically again, waiting for UI to send command

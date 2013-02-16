@@ -306,11 +306,12 @@ $(function () {
     			}).mouseup(function(e) {
     				startECG(peripheral.number);
     				window.open(ecgUrl, '_self', false)
+    				this.unmouseup();
     			}); 
         	}
         },
         startECG = function(number) {
-        	socket.send("startECG"+number);
+        	socket.send("startTestECG"+number);
         },
         updateMac = function(data, p) {
 			p.address = data.address;

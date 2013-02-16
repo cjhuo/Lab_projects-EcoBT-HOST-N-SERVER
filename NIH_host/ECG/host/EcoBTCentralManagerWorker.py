@@ -14,6 +14,7 @@ from objc import *
 from PyObjCTools import AppHelper
 
 from Queue import Queue 
+import time
 
 from EcoBTWorker import EcoBTWorker
 from EcoBTCentralManagerDelegateWorker import EcoBTCentralManagerDelegateWorker
@@ -98,12 +99,14 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
             data['value'].append(p)
         self.delegateWorker.getQueue().put(data)
         
-    def startECG(self, pNum):
+    def startTestECG(self, pNum):
         for worker in self.peripheralWorkers:
             if worker.peripheral.number == pNum: # found the ecg peripheral
                 NSLog("SENDING START RECORDING SIGNAL")
                 char = worker.findCharacteristicByUUID("FEC5")
-                char.service.sampleRecorded = False # create a flag to indicate the samples hasn't been recorded     
+                char.service.sampleRecorded = False # create a flag to indicate the samples hasn't been recorded   
+                worker.writeValueForCharacteristic(char.createStopFlag(), char)
+                time.sleep(5)
                 worker.writeValueForCharacteristic(char.createStartFlag(), char)
                 
     def readECGData(self, address):
@@ -203,6 +206,7 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
             w.delegateWorker.start()
             
             # for test
+            NSLog("DISCOVERING SERVICES FOR NODE %@", w.peripheral.address)
             w.discoverServices()
         else: 
             NSLog("error, peripheral hasn't been added to watch list")

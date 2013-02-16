@@ -15,6 +15,7 @@
 $(function () {
 	var url = $('#serverAddr').val(); 	//push url, need to change this to server's url, 
 	var name =  $('#name').text();
+	var frequency = 250;
     var ECG_CHANNELLABELS = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6'];
 	
     /**
@@ -41,6 +42,7 @@ $(function () {
 			if(name.trim() == data.data.address.trim())
 				if(data.data.type == 'ecg'){
 					datasets = data.data.data;
+					console.log(datasets.length);
 					removeProgressBar();
 					addPlot();
 				}
@@ -67,7 +69,7 @@ $(function () {
     var chartOptions; //chartOptions settings for main plot
         
     var xGridInterval = 200; //0.2 second
-    var yGridInterval = 500; //0.5 mV, assuming the unit of ECG output is micro volt
+    var yGridInterval = 0.5; // 0.5mV, assuming the unit of ECG output is micro volt
     var yAxisHeight = 100;
     
     var yAxisOptionsTemplate = {
@@ -109,14 +111,14 @@ $(function () {
         	},
         	offset: 0,
         	height: yAxisHeight,
-        	min: -1000,
-        	max: 1000
+
         };
     
     chartOptions = {
             chart: {
                 renderTo: 'diagram',
                 zoomType: 'x',
+                
                 /*
                 animation: {
                     duration: 1000
@@ -234,7 +236,7 @@ $(function () {
                 }
             },
             xAxis: {
-            	reversed: true,
+            	reversed: false,
             	lineColor: 'rgb(245, 149, 154)',
             	gridLineColor: 'rgb(245, 149, 154)',
             	gridLineWidth: 0.5,
@@ -311,14 +313,14 @@ $(function () {
         	};   	
         	yAxisOptions.top = yTop;
         	yTop += yAxisHeight; //!!!!adjust the distance to the top
-        	
+        	tmp = 1000/frequency;
         	chartOptions.yAxis.push(yAxisOptions);        	
         	chartOptions.series.push({
         		name: datasets[i].label,
                 data: datasets[i].data,
                 pointStart: Date.UTC(0, 0, 0, 0, 0, 0, 0),
                 yAxis: i, //use the index of dataset as the index of yAxis
-                pointInterval: 5 // 5 millisecond<--wrong! should be 1000/frequency. in this case 1000/250 = 5
+                pointInterval: tmp // 5 millisecond<--wrong! should be 1000/frequency. in this case 1000/250 = 4
         	});
         }
         //format tooltip
@@ -493,7 +495,7 @@ $(function () {
 			socket.close();
 			//socket = null;
 		}
-		*/
+		*/ 
 		hideReconMsg();
 		showReconMsg('connection is back, connecting server in 5 secs...');
 		if(reconn == null) {
@@ -571,7 +573,7 @@ $(function () {
     var progressBar;
     var progressLabel;
     function showProgressBar() {
-    	progressLabel = $("<div id='progressLabel'>Upload Starting in 10 seconds...</div>").css({
+    	progressLabel = $("<div id='progressLabel'>Upload Starting in 20 seconds...</div>").css({
     		float: 'left',
         	marginLeft: '50%',
         	marginTop: '5px',
