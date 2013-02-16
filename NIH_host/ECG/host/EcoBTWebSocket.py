@@ -47,5 +47,13 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
                 self.ecoBTApp.managerWorker.sendPeripheralList()
             elif message.startswith("startTestECG"):
                 pNum = message[12:]
+                print "Sending out Start Test Recording Signal to Node: ", pNum
+                self.ecoBTApp.managerWorker.startTestECG(pNum)      
+            elif message.startswith("startECG"):
+                pNum = message[8:]
+                print "Sending out Start Real Recording Signal to Node: ", pNum
+                self.ecoBTApp.managerWorker.startECG(pNum)   
+            elif message.startswith("stopECG"):
+                pNum = message[7:]
                 print "Sending out Start Signal to Node: ", pNum
-                self.ecoBTApp.managerWorker.startTestECG(int(pNum))           
+                self.ecoBTApp.managerWorker.stopECG(pNum)                        

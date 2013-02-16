@@ -91,15 +91,16 @@ class ECGGet(Characteristic):
             self.service.datasets[0].append(((self.service.LeadI*2.86)/10000)/6)
             self.service.datasets[1].append(((self.service.LeadII*2.86)/10000)/6)
             self.service.datasets[2].append((self.service.LeadIII*2.86/10000)/6)
-            self.service.datasets[3].append((self.service.V1*2.86/10000)/6)
-            self.service.datasets[4].append((self.service.V2*2.86/10000)/6)
-            self.service.datasets[5].append((self.service.V3*2.86/10000)/6)
-            self.service.datasets[6].append((self.service.V4*2.86/10000)/6)
-            self.service.datasets[7].append((self.service.V5*2.86/10000)/6)
-            self.service.datasets[8].append((self.service.V6*2.86/10000)/6)
-            self.service.datasets[9].append((self.service.aVR*2.86/10000)/6)
-            self.service.datasets[10].append((self.service.aVL*2.86/10000)/6)
-            self.service.datasets[11].append((self.service.aVF*2.86/10000)/6)
+            self.service.datasets[3].append((self.service.aVR*2.86/10000)/6)
+            self.service.datasets[4].append((self.service.aVL*2.86/10000)/6)
+            self.service.datasets[5].append((self.service.aVF*2.86/10000)/6)            
+            self.service.datasets[6].append((self.service.V1*2.86/10000)/6)
+            self.service.datasets[7].append((self.service.V2*2.86/10000)/6)
+            self.service.datasets[8].append((self.service.V3*2.86/10000)/6)
+            self.service.datasets[9].append((self.service.V4*2.86/10000)/6)
+            self.service.datasets[10].append((self.service.V5*2.86/10000)/6)
+            self.service.datasets[11].append((self.service.V6*2.86/10000)/6)
+
 
             if not hasattr(self.service, "fd"):
                 import os
@@ -132,6 +133,8 @@ class ECGGet(Characteristic):
                         tmpDatasets.append(dict())
                         tmpDatasets[i]['data'] = data 
                         tmpDatasets[i]['label'] = label
+                        tmpDatasets[i]['min'] = min(data)
+                        tmpDatasets[i]['max'] = max(data)
                         
                     val = {
                            'type': 'ecg',

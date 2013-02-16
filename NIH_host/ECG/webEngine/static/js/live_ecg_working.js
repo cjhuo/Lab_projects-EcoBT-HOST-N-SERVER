@@ -44,13 +44,22 @@ $(function () {
 					datasets = data.data.data;
 					console.log(datasets.length);
 					removeProgressBar();
+					addResizer();
+					addStartButton();
+					addStopButton();
+					stopButton.hide();
+					addRedoButton();
 					addPlot();
 				}
 				else if(data.data.type == 'ECG'){ //state info
 					if(data.data.value.type == 'state'){
-						if(data.data.value.value == 0)
+						if(data.data.value.value == 0){
 							// ready to start real recording
-							addStartButton();
+							startButton.button("enable");
+							redoButton.button("enable");
+						}
+
+							
 					}
 					else if(data.data.value.type == 'progress'){
 						updateProgress(data.data.value.value);
@@ -96,6 +105,7 @@ $(function () {
         		text: "AAA"
         	},
         	*/
+	        /*
 	    	plotLines: [{
 	    		value: 0,
 	    		width: 1,
@@ -103,15 +113,15 @@ $(function () {
 	    			text: '0',
 	    			align: 'left',
 	    			y: 0,
-	    			x: -10
+	    			x: 0
 	    		}
 	    	}],
+	    	*/
         	labels: {
-        		enabled: true,
+        		enabled: false,
         	},
         	offset: 0,
         	height: yAxisHeight,
-
         };
     
     chartOptions = {
@@ -268,9 +278,7 @@ $(function () {
             series: []
     };
     var resizer, innerResizer;
-    function addPlot() { 
-    	//generate one plot for each channel
-
+    function addResizer() {
     	resizer = $('<div id="resizer" />').css( {
             width: '100%',
             minHeight: '400px',
@@ -281,9 +289,14 @@ $(function () {
     	
 		innerResizer = $('<div id="innerResizer" />').css( {
 			padding: '0px',
-			marginTop: '50px'
+			marginTop: '30px'
         });	
 		innerResizer.appendTo(resizer);
+    }
+    function addPlot() { 
+    	//generate one plot for each channel
+
+
 		
 		//calculate the diagram height
 		
@@ -311,6 +324,15 @@ $(function () {
         			text: datasets[i].label,
         			rotation: 0
         	};   	
+        	//yAxisOptions.min = datasets[i].min-0.5;
+        	//yAxisOptions.max = datasets[i].max+0.5;
+        	//add checker to handler rambled value from any channel, 
+        	if((datasets[i].max-datasets[i].min) > 5) //greater than 10 blocks, only add 10 blocks based on max
+        		yAxisOptions.max = datasets[i].max + 0.5
+        		yAxisOptions.min = datasets[i].max - 4.5
+
+        	console.log("min of ", datasets[i].label, " is ", datasets[i].min);
+        	console.log("max of ", datasets[i].label, " is ", datasets[i].max);
         	yAxisOptions.top = yTop;
         	yTop += yAxisHeight; //!!!!adjust the distance to the top
         	tmp = 1000/frequency;
@@ -337,42 +359,82 @@ $(function () {
     		hideSpinner();
     	});      
     }
-    var recButton;
-    function addStartButton() {
-    	if(recButton != null)    		
-    		recButton.remove();
-    	
-    	recButton = $('<button>START RECORDING</button>').css({
-    		float: 'left',
+    var redoButton;
+    function addRedoButton() {
+    	redoButton = $('<button>REDO TEST RECORDING</button>').css({
+    		float: 'right',
     		fontSize: 'small',
-    		position: 'absolute',
-    		right: '0px',
-    		top: '10px'
+    		position: 'relative',
+    		//right: '0px',
+    		top: '0px'
     	});   	
-
-    	recButton.button();
-    	recButton.click(addStopButton);
-    	recButton.appendTo(innerResizer);
-    	
-    	// trigger event by send message through socket, TBD
+    	redoButton.button();
+    	redoButton.button("disable");
+    	redoButton.click(redoTest);
+    	redoButton.appendTo(innerResizer);
     }
-    
-    function addStopButton() {
-    	if(recButton != null)    		
-    		recButton.remove();
-    	recButton = $('<button>STOP RECORDING</button>').css({
-    		float: 'left',
+    function redoTest() {
+    	startTestECG();
+		//this.remove();
+		location.href = location.href; //reload
+    }
+    function startTestECG() {
+    	socket.send("startTestECG"+name.trim());
+    }
+    var startButton, stopButton;
+    function addStartButton() {
+    	startButton = $('<button>START RECORDING</button>').css({
+    		float: 'right',
     		fontSize: 'small',
-    		position: 'absolute',
-    		right: '0px',
-    		top: '10px'
+    		position: 'relative',
+    		//right: '0px',
+    		top: '0px'
     	});   	
-
-    	recButton.button();
-    	recButton.click(addStartButton);
-    	recButton.appendTo(innerResizer);
-    	
-    	// trigger event by send message through socket, TBD
+    	startButton.button();
+    	startButton.button("disable");
+    	startButton.click(startECG);
+    	startButton.appendTo(innerResizer);
+    }
+    function startECG() {
+    	socket.send("startECG"+name.trim());
+    	startButton.hide();
+    	redoButton.hide();
+    	stopButton.show();
+    	showSpinner();
+    }
+    function stopECG() {
+    	socket.send("stopECG"+name.trim());
+    	stopButton.hide();
+    	hideSpinner();
+    	showCompleteDialog();
+    	//startButton.show();
+    }
+    function showCompleteDialog(){
+    	$( "<div id='complete'>RECORDING COMPLETE, PLEASE DETACH SENSOR</div>" ).dialog({
+	      resizable: false,
+	      height: 300,
+	      width: 300,
+	      modal: true,
+	      buttons: {
+	        "OK": function() {
+	          open('/administration', '_self', true);
+    	     }
+    	  }
+    	});
+    	$(".ui-dialog-titlebar").hide();
+    }
+    function addStopButton() {
+    	stopButton = $('<button>STOP RECORDING</button>').css({
+			float: 'right',
+			fontSize: 'small',
+			position: 'relative',
+			//right: '0px',
+			top: '0px'
+		});   	
+		stopButton.button();
+		stopButton.button("enable");
+		stopButton.click(stopECG);
+		stopButton.appendTo(innerResizer);
     }
     
 	var socket = null; //websocket object	
@@ -573,7 +635,7 @@ $(function () {
     var progressBar;
     var progressLabel;
     function showProgressBar() {
-    	progressLabel = $("<div id='progressLabel'>Upload Starting in 20 seconds...</div>").css({
+    	progressLabel = $("<div id='progressLabel'>Upload starting in about 20 seconds...</div>").css({
     		float: 'left',
         	marginLeft: '50%',
         	marginTop: '5px',

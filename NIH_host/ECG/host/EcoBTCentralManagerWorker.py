@@ -99,16 +99,33 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
             data['value'].append(p)
         self.delegateWorker.getQueue().put(data)
         
-    def startTestECG(self, pNum):
+    def startTestECG(self, address): #address could be the pNum or address
         for worker in self.peripheralWorkers:
-            if worker.peripheral.number == pNum: # found the ecg peripheral
-                NSLog("SENDING START RECORDING SIGNAL")
+            if worker.peripheral.address == address: # found the ecg peripheral
+                NSLog("SENDING START TEST RECORDING SIGNAL FROM CMANAGER")
                 char = worker.findCharacteristicByUUID("FEC5")
                 char.service.sampleRecorded = False # create a flag to indicate the samples hasn't been recorded   
                 worker.writeValueForCharacteristic(char.createStopFlag(), char)
-                time.sleep(5)
+                time.sleep(3)
                 worker.writeValueForCharacteristic(char.createStartFlag(), char)
                 
+    def startECG(self, address):
+        for worker in self.peripheralWorkers:
+            if worker.peripheral.address == address: # found the ecg peripheral
+                NSLog("SENDING START REAL RECORDING SIGNAL FROM CMANAGER")
+                char = worker.findCharacteristicByUUID("FEC5")
+                # not creating a flag to indicate the samples hasn't been recorded   
+                worker.writeValueForCharacteristic(char.createStopFlag(), char)
+                time.sleep(3)
+                worker.writeValueForCharacteristic(char.createStartFlag(), char)
+
+    def stopECG(self, address):
+        for worker in self.peripheralWorkers:
+            if worker.peripheral.address == address: # found the ecg peripheral
+                NSLog("SENDING STOP REAL RECORDING SIGNAL FROM CMANAGER")
+                char = worker.findCharacteristicByUUID("FEC5")
+                worker.writeValueForCharacteristic(char.createStopFlag(), char)
+                                
     def readECGData(self, address):
         for worker in self.peripheralWorkers:
             if worker.peripheral.address == address: # found the ecg peripheral

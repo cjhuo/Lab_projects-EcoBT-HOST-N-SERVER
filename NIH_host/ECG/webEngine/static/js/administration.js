@@ -211,7 +211,10 @@ $(function () {
         				}     				
         			}
         			if(foundInCentral == false) { // didn't find in central list, disable it
+        				
         				toggleNode(peripheralList[i], false);
+        				//remove it
+        				removeNode(i);
         			}
         		}
         		var foundInLocal;
@@ -261,7 +264,10 @@ $(function () {
 					'instance': peripheral,
 					'connection': conn,
 					'enabled': true,
-					'services': []
+					'services': [],
+					'text': text,
+					'readyInstance': null,
+					'addrInstance': null
 			};
 			if(value.address != null){
 				updateMac(value, p);
@@ -293,6 +299,7 @@ $(function () {
         			fill: 'black', 
         			"stroke-width": 2,
         			"font-weight":900});
+    			peripheral.readyInstance = text;
     			var group = r.set();
     			group.push(peripheral.instance);
     			group.push(text);
@@ -303,14 +310,16 @@ $(function () {
     				group[0].attr('fill', "green");
     			}).mouseout(function(e) {
     				group[0].attr('fill', "");
-    			}).mouseup(function(e) {
-    				startECG(peripheral.number);
-    				window.open(ecgUrl, '_self', false)
-    				this.unmouseup();
+    			}).dblclick(function(e) {
+    				group[0].attr('fill', "red");
+    				startTestECG(peripheral.address);
+    				this.undblclick();
+    				//this.remove();
+    				window.open(ecgUrl, '_self', false);
     			}); 
         	}
         },
-        startECG = function(number) {
+        startTestECG = function(number) {
         	socket.send("startTestECG"+number);
         },
         updateMac = function(data, p) {
@@ -321,7 +330,8 @@ $(function () {
     			opacity: 1, 
     			fill: 'black', 
     			"stroke-width": 2,
-    			"font-weight":900});	
+    			"font-weight":900});
+			p.addrInstance = text;
         },
         addServiceNode = function(value) {
         	// find relative peripheral
@@ -366,7 +376,8 @@ $(function () {
 		    			var s = { 'name': value.address,
 		    					'instance': service,
 		    					'connection': conn,
-		    					'type': value.type
+		    					'type': value.type,
+		    					'text': text
 		    					//'enabled': true,
 		    			};
 		    			var monitorUrl;
@@ -387,7 +398,23 @@ $(function () {
 	        		}
         		}
         	}
-        };
+        },
+        removeNode = function(i) {
+        	$.each(peripheralList[i].services, function(key,val) {
+        		val.connection.line.remove();
+        		val.text.remove();
+        		val.instance.remove();
+        	});
+        	if(peripheralList[i].addrInstance != null)
+        		peripheralList[i].addrInstance.remove()
+        	if(peripheralList[i].readyInstance != null)
+        		peripheralList[i].readyInstance.remove()        		
+    		peripheralList[i].connection.line.remove();
+    		peripheralList[i].text.remove();
+    		peripheralList[i].instance.remove();
+    		peripheralList.splice(i, 1);        	
+        }
+
         
     Raphael.fn.connection = function (obj1, obj2, line, bg) {
 	    if (obj1.line && obj1.from && obj1.to) {
