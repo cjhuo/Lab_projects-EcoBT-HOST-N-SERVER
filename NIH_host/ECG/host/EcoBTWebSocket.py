@@ -56,7 +56,7 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
                 self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findECGService().startTestECG()
                 self.ecoBTApp.managerWorker.stopScan() 
                 self.ecoBTApp.managerWorker.state = 4
-                self.ecoBTApp.managerWorker.sendState()
+                #self.ecoBTApp.managerWorker.sendState()
                 # cancel all other connection
                 self.ecoBTApp.managerWorker.cancelAllConnectionExcept(\
                                 self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).peripheral)

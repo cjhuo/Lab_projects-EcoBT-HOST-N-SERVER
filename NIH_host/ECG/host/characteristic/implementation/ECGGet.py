@@ -118,8 +118,8 @@ class ECGGet(Characteristic):
         if not hasattr(self.service, "record_cnt"):
             if not hasattr(self.service, "sendStopFromGetter") or self.service.sendStopFromGetter == False:
                 NSLog("READING A REMNANT DATA, STOP NODE FROM READING SD CARD")
-                self.peripheralWorker.writeValueForCharacteristic(self.service.setter.createStopFlag(), self.service.setter)
                 self.service.state = 3
+                self.peripheralWorker.writeValueForCharacteristic(self.service.setter.createStopFlag(), self.service.setter)
                 self.service.sendStopFromGetter = True
             return
 
@@ -249,8 +249,8 @@ class ECGGet(Characteristic):
             if self.service.sampleRecorded == False: # make sure it only send once!!!!!!
                 self.service.sampleRecorded = True # set sampleRecorded flag to True to prevent recording a sample again;
                 NSLog("10 SAMPLES READING COMPLETE, STOPPING FROM READING SD CARD")
-                self.peripheralWorker.writeValueForCharacteristic(self.service.setter.createStopFlag(), self.service.setter)
                 self.service.state = 3
+                self.peripheralWorker.writeValueForCharacteristic(self.service.setter.createStopFlag(), self.service.setter)
                 tmpDatasets = []
                 for i in range(len(self.service.datasets)):
                     data = [self.service.datasets[i][j] for j in range(len(self.service.datasets[i]))]

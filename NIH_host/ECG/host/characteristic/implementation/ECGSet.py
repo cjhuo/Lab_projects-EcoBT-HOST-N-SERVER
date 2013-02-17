@@ -41,7 +41,7 @@ class ECGSet(Characteristic):
     def setRole(self):
         self.service.setter = self
         self.service.sampleRecorded = False # create a flag to indicate the samples hasn't been recorded
-        self.service.startState = 0 # 0: just initialized; 1: has checked any status
+        #self.service.startState = 0 # 0: just initialized; 1: has checked any status
         self.service.state = 0
         
     def process(self):
@@ -50,60 +50,74 @@ class ECGSet(Characteristic):
         (start,) = struct.unpack("@B", value)
         #val = binascii.hexlify(start)
         print 'FEC5 value: ', start
-        
+
         if start == stopFlag: # idle, ready to record   
             # if there is a job in queue, processQueue
-            if len(self.service.delayQueue) != 0:
-                self.processQueue()       
-            else:
-                # send UI a 'ready' signal
-                data = {'type': 'ECG',
-                        'value': {'type': 'state',
-                                  'value': 0 # stopped == ready signal
-                                  }
-                        }
-                self.peripheralWorker.peripheral.type = 'ECG'
-                self.peripheralWorker.delegateWorker.getQueue().put(data)
-                self.service.state = 4
-                '''
-                if not hasattr(self.service, 'record_cnt'):
-                    NSLog("START ECG RECORD")
-                    self.peripheralWorker.writeValueForCharacteristic(self.createStartFlag(), self)
-                '''
+            if self.service.state == 0 or self.service.state == 3:
+                if len(self.service.delayQueue) != 0:
+                    self.processQueue()       
+                else:
+                    # send UI a 'ready' signal
+                    data = {'type': 'ECG',
+                            'value': {'type': 'state',
+                                      'value': 0 # stopped == ready signal
+                                      }
+                            }
+                    self.peripheralWorker.peripheral.type = 'ECG'
+                    self.peripheralWorker.delegateWorker.getQueue().put(data)
+                    self.service.state = 4
+                    '''
+                    if not hasattr(self.service, 'record_cnt'):
+                        NSLog("START ECG RECORD")
+                        self.peripheralWorker.writeValueForCharacteristic(self.createStartFlag(), self)
+                    '''
+            else: 
+                NSLog("OUT OF SEQUENCE!!!")
+        elif self.service.state == 0: # need reseting
+            NSLog("RESETING...")
+            self.service.state = 3       
+            self.peripheralWorker.writeValueForCharacteristic(self.createStopFlag(), self)
+            return     
         elif start == startFlag:
-            # check if the node's beginning state is start, if yes, then invalid, stop it, toggle beginning state
-            if self.service.state == 0:
-                NSLog("RESETTING NODE TO READY")
-                self.peripheralWorker.writeValueForCharacteristic(self.createStopFlag(), self)
-                self.service.state = 3
-            elif not self.service.sampleRecorded: # has not recorded 10 second samples  
-                # stop recording first
-                # read ecg from sd card then
-                NSLog("STOP RECORDING IN 12 SECONDS")
-                self.service.record_cnt = 1          
-                #de = DelayExecutor(10, self.peripheralWorker.writeValueForCharacteristic, # memory leak reported from objc
-                #               self.createStopFlag(), self.createReadFromCardFlag(), self.instance)
-                time.sleep(12)
-                NSLog("SENDING STOP RECORDING SIGNAL")      
-                self.peripheralWorker.writeValueForCharacteristic(self.createStopFlag(), self) 
-                self.service.state = 3
-                NSLog("PUTTING READ RECORDING SIGNAL TO DELAY QUEUE")
-                self.service.PushToDelayQueue('ReadStart')                
-                #self.recorded = True # set to true so that it won't be recorded automatically again, waiting for UI to send command
-            elif self.service.sampleRecorded == True: # sample recorded, start real recording!!!!
-                NSLog("START REAL RECORDING")
-                self.service.record_cnt = 1        
-                self.service.state = 2
-        elif start == readFromCardFlag or start == 62 or start == 63:
-            if self.service.state == 0:
-                NSLog("RESETTING NODE TO READY")
-                self.peripheralWorker.writeValueForCharacteristic(self.createStopFlag(), self)
-                self.service.startState = 1
+            if self.service.state == 1:
+                # check if the node's beginning state is start, if yes, then invalid, stop it, toggle beginning state
+                if self.service.state == 0:
+                    NSLog("RESETTING NODE TO READY")
+                    self.service.state = 3
+                    self.peripheralWorker.writeValueForCharacteristic(self.createStopFlag(), self)
+                elif not self.service.sampleRecorded: # has not recorded 10 second samples  
+                    # stop recording first
+                    # read ecg from sd card then
+                    NSLog("STOP RECORDING IN 12 SECONDS")
+                    self.service.record_cnt = 1          
+                    #de = DelayExecutor(10, self.peripheralWorker.writeValueForCharacteristic, # memory leak reported from objc
+                    #               self.createStopFlag(), self.createReadFromCardFlag(), self.instance)
+                    time.sleep(12)
+                    NSLog("SENDING STOP RECORDING SIGNAL")      
+                    self.service.state = 3
+                    NSLog("PUTTING READ RECORDING SIGNAL TO DELAY QUEUE")
+                    self.service.PushToDelayQueue('ReadStart')                
+                    self.peripheralWorker.writeValueForCharacteristic(self.createStopFlag(), self) 
+                    #self.recorded = True # set to true so that it won't be recorded automatically again, waiting for UI to send command
+                elif self.service.sampleRecorded == True: # sample recorded, start real recording!!!!
+                    NSLog("START REAL RECORDING")
+                    self.service.record_cnt = 1        
+                    self.service.state = 2
             else:
-                NSLog("START READING FROM CARD, RECEIVING...")   
-                self.service.state = 6
-                # start reading data, expect to see 'FEC6' and 'FEC7'
-                # do nothing further, maybe can throw a message to UI said I am reading?    
+                NSLog("OUT OF SEQUENCE!!!")
+        elif start == readFromCardFlag or start == 62 or start == 63:
+            if self.service.state == 5:
+                if self.service.state == 0:
+                    NSLog("RESETTING NODE TO READY")
+                    self.service.state = 3
+                    self.peripheralWorker.writeValueForCharacteristic(self.createStopFlag(), self)
+                else:
+                    self.service.state = 6
+                    NSLog("START READING FROM CARD, RECEIVING...")   
+                    # start reading data, expect to see 'FEC6' and 'FEC7'
+                    # do nothing further, maybe can throw a message to UI said I am reading? 
+            else:
+                NSLog("OUT OF SEQUENCE!!!")   
         else:
             # stop and restart
             NSLog("INVALID STATUS FOUND...")
@@ -131,25 +145,25 @@ class ECGSet(Characteristic):
         job = self.service.delayQueue.pop(0)
         if job == 'WriteStart':
             NSLog("SENDING DELAYED START RECORDING SIGNAL")
-            self.peripheralWorker.writeValueForCharacteristic(self.createStartFlag(), self)
             self.service.state = 1
+            self.peripheralWorker.writeValueForCharacteristic(self.createStartFlag(), self)
         if job == 'ReadStart':
             NSLog("SENDING DELAYED READ RECORDING SIGNAL")
-            self.peripheralWorker.writeValueForCharacteristic(self.createReadFromCardFlag(), self)
             self.service.state = 5
+            self.peripheralWorker.writeValueForCharacteristic(self.createReadFromCardFlag(), self)
 
     def startECG(self):
         # not creating a flag to indicate the samples hasn't been recorded 
         if self.service.state == 0 or self.service.state == 4:  
             NSLog("SENDING START REAL RECORDING SIGNAL")
+            self.service.state = 1
             self.peripheralWorker.writeValueForCharacteristic(self.createStartFlag(), self)
-            self.service.state = 5
         else:
             NSLog("PUTTING START REAL RECORDING SIGNAL TO DELAY QUEUE")
-            self.peripheralWorker.writeValueForCharacteristic(self.createStopFlag(), self)
             self.service.state = 3 # stop signal sent
-            #self.peripheralWorker.writeValueForCharacteristic(self.createStartFlag(), self)
             self.service.PushToDelayQueue('WriteStart')
+            self.peripheralWorker.writeValueForCharacteristic(self.createStopFlag(), self)
+            #self.peripheralWorker.writeValueForCharacteristic(self.createStartFlag(), self)
 
     def stopECG(self):
         if self.service.state != 0 or self.service.state != 4:
@@ -166,16 +180,16 @@ class ECGSet(Characteristic):
     '''
         
     def startTestECG(self): #address could be the pNum or address    
+        self.service.sampleRecorded = False # create/reset a flag to indicate the samples hasn't been recorded   
         if self.service.state == 0 or self.service.state == 4:  
             NSLog("SENDING START TEST RECORDING SIGNAL")
-            self.peripheralWorker.writeValueForCharacteristic(self.createStartFlag(), self)
-            self.service.state = 5    
+            self.service.state = 1  
+            self.peripheralWorker.writeValueForCharacteristic(self.createStartFlag(), self)          
         else:  
             NSLog("PUTTING START TEST RECORDING SIGNAL TO DELAY QUEUE")
+            self.service.state = 3   
+            self.service.PushToDelayQueue('WriteStart')   
             self.peripheralWorker.writeValueForCharacteristic(self.createStopFlag(), self)
-            self.service.PushToDelayQueue('WriteStart')
-            self.service.state = 3                       
-        self.service.sampleRecorded = False # create/reset a flag to indicate the samples hasn't been recorded   
     
 
 
