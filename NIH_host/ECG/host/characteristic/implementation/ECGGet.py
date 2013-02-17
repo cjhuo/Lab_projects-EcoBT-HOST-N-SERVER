@@ -119,6 +119,7 @@ class ECGGet(Characteristic):
             if not hasattr(self.service, "sendStopFromGetter") or self.service.sendStopFromGetter == False:
                 NSLog("READING A REMNANT DATA, STOP NODE FROM READING SD CARD")
                 self.peripheralWorker.writeValueForCharacteristic(self.service.setter.createStopFlag(), self.service.setter)
+                self.service.state = 3
                 self.service.sendStopFromGetter = True
             return
 
@@ -227,6 +228,7 @@ class ECGGet(Characteristic):
 #                self.service.fd = open(path, 'w')
         for i in range(12):
             self.service.datasets[i].append(self.service.read_buffer[key].get_by_idx(i))
+            # should the self.service.read_buffer[key] be reset after append???
 
         if self.service.record_cnt % 10 == 1:
             print self.service.record_cnt
@@ -248,6 +250,7 @@ class ECGGet(Characteristic):
                 self.service.sampleRecorded = True # set sampleRecorded flag to True to prevent recording a sample again;
                 NSLog("10 SAMPLES READING COMPLETE, STOPPING FROM READING SD CARD")
                 self.peripheralWorker.writeValueForCharacteristic(self.service.setter.createStopFlag(), self.service.setter)
+                self.service.state = 3
                 tmpDatasets = []
                 for i in range(len(self.service.datasets)):
                     data = [self.service.datasets[i][j] for j in range(len(self.service.datasets[i]))]

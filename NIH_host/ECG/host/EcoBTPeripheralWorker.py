@@ -31,7 +31,7 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
         self.services = []
         self.delegateWorker = EcoBTPeripheralDelegateWorker()
         NSLog("Initialize Peripheral Worker")
-        return self   
+        return self
     
     def setPeripheral(self, peripheral):
         self.peripheral = peripheral
