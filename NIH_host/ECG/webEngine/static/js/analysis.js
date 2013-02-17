@@ -46,9 +46,10 @@ $(function () {
     //borrowed from http://www.davita-shop.co.uk/ecg-instruments.html    
     var refImgUrl = "static/css/images/ecg.png"; 
     
-    var xGridInterval = 1200; //0.2 second = 200ms, pointInterval was multiplied by 6, so GridInterval is also multiplied by 6
+    var frequency = 250;
+    var xGridInterval = 200; //0.2 second = 200ms, pointInterval was multiplied by 6, so GridInterval is also multiplied by 6
     var yGridInterval = 500; //0.5 mV
-    var xPointInterval = 25;
+    var xPointInterval = 1000/frequency;
     
     var hOptions = { // //options settings for histogram plot
         chart: {
@@ -251,7 +252,7 @@ $(function () {
             	minorGridLineColor: 'rgb(245, 149, 154)',
             	minorGridLineWidth: 0.2,
             	
-            	minorTickInterval: 'auto', //a fifth of the tickInterval by default
+            	minorTickInterval: xGridInterval/5, //a fifth of the tickInterval by default
     	        minorTickWidth: 1,
     	        minorTickLength: 0,
     	        minorTickPosition: 'inside',
@@ -278,7 +279,7 @@ $(function () {
             	minorGridLineColor: 'rgb(245, 149, 154)',
             	minorGridLineWidth: 0.2,
             	
-            	minorTickInterval: 'auto',
+            	minorTickInterval: yGridInterval/5,
     	        minorTickWidth: 2,
     	        minorTickLength: 0,
     	        minorTickPosition: 'inside',
@@ -305,10 +306,13 @@ $(function () {
                 crosshairs: true,
                 formatter: function() {
                     return '<b>'+ this.series.name +'</b><br/>'+
-                    this.x/25 +': '+ this.y; //pointInterval is 25
+                    this.x/(1000/frequency) +': '+ this.y;
                 }
             },
             plotOptions: {
+            	dataGrouping: {
+            		enabled: false
+            	},  
                 line: {
                 	animation: false,
                 	color: 'black',	

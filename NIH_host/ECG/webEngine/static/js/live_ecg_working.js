@@ -90,7 +90,7 @@ $(function () {
         	minorGridLineColor: 'rgb(245, 149, 154)',
         	minorGridLineWidth: 0.2,
         	
-        	minorTickInterval: 'auto',
+        	minorTickInterval: yGridInterval/5,
 	        //minorTickWidth: 2,
 	        minorTickLength: 0,
 	        //minorTickPosition: 'inside',
@@ -121,9 +121,14 @@ $(function () {
 	    	*/
         	labels: {
         		enabled: true,
+        		formatter: function() {
+        			return "";
+        		}
         	},
         	offset: 0,
         	height: yAxisHeight,
+	    	startOnTick: true,
+	    	endOnTick: true	
         };
     
     chartOptions = {
@@ -181,7 +186,13 @@ $(function () {
             		type: 'millisecond',
             		count: 2500,
             		text: '2.5s'
-            	}, {
+            	},
+            	{
+            		type: 'millisecond',
+            		count: 5000,
+            		text: '5s'
+            	},
+            	{
             		type: 'all',
             		text: 'All'
             	}],
@@ -195,6 +206,9 @@ $(function () {
                 */
             },
             plotOptions: {
+            	dataGrouping: {
+            		enabled: false
+            	},            	
                 line: {
                 	allowPointSelect: true,
                 	animation: false,
@@ -260,6 +274,7 @@ $(function () {
     	        minorTickLength: 0,
     	        minorTickPosition: 'inside',
     	        minorTickColor: 'red',
+    	        minorTickInterval: xGridInterval/5,
     	
     	        //tickPixelInterval: 30,
     	        tickInterval: xGridInterval, //0.2 second
@@ -330,28 +345,32 @@ $(function () {
         	//yAxisOptions.max = datasets[i].max+0.5;
         	//add checker to handler rambled value from any channel, 
         	if((datasets[i].max-datasets[i].min) > 5) {//greater than 10 blocks, only add 10 blocks based on max
-        		yAxisOptions.max = Math.round(datasets[i].max);
-        		yAxisOptions.range = 2;
-        		//yAxisOptions.min = Math.floor(datasets[i].max - 2);
+        		yAxisOptions.max = Math.ceil(datasets[i].max);
+        		yAxisOptions.range = 4;
+        		//yAxisOptions.min = Math.floor(datasets[i].max);
+        	}
+        	else if((datasets[i].max-datasets[i].min) < 0.01){ //min and max are too close
+        		yAxisOptions.max = Math.ceil(datasets[i].max) + 0.5;
+        		//yAxisOptions.range = 4;
+        		yAxisOptions.min = Math.floor(datasets[i].min) - 0.5;
         	}
         	else{
-        		yAxisOptions.max = Math.round(datasets[i].max);
-        		yAxisOptions.range = 2;
-        		//yAxisOptions.min = Math.ceil(datasets[i].min);
+        		yAxisOptions.max = Math.ceil(datasets[i].max);
+        		//yAxisOptions.range = 4;
+        		yAxisOptions.min = Math.floor(datasets[i].min);
         	}
 
         	console.log("min of ", datasets[i].label, " is ", datasets[i].min);
         	console.log("max of ", datasets[i].label, " is ", datasets[i].max);
         	yAxisOptions.top = yTop;
         	yTop += yAxisHeight; //!!!!adjust the distance to the top
-        	tmp = 1000/frequency;
-        	chartOptions.yAxis.push(yAxisOptions);        	
+        	chartOptions.yAxis.push(yAxisOptions);
         	chartOptions.series.push({
         		name: datasets[i].label,
                 data: datasets[i].data,
                 pointStart: Date.UTC(0, 0, 0, 0, 0, 0, 0),
                 yAxis: i, //use the index of dataset as the index of yAxis
-                pointInterval: tmp // 5 millisecond<--wrong! should be 1000/frequency. in this case 1000/250 = 4
+                pointInterval: 1000/frequency // 5 millisecond<--wrong! should be 1000/frequency. in this case 1000/250 = 4
         	});
         }
         //format tooltip
@@ -644,10 +663,9 @@ $(function () {
     var progressBar;
     var progressLabel;
     function showProgressBar() {
-    	progressLabel = $("<div id='progressLabel'>Upload starting in about 20 seconds...</div>").css({
+    	progressLabel = $("<div id='progressLabel'>Recording...</div>").css({
     		float: 'left',
-        	marginLeft: '50%',
-        	marginTop: '5px',
+        	marginLeft: '45%',
         	fontWeight: 'bold',
         	textShadow: '1px 1px 0 #fff',
     	});
@@ -656,7 +674,8 @@ $(function () {
     	progressBar.progressbar({
     	      value: false,
     	      change: function() {
-    	          progressLabel.text( progressBar.progressbar( "value" ) + "%" );
+    	          progressLabel.text( progressBar.progressbar( "value" ) + "%" ).css({
+    	          });
     	        },
     	        complete: function() {
     	          progressLabel.text( "Complete!" );

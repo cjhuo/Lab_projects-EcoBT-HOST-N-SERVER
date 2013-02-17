@@ -24,6 +24,7 @@ $(function () {
     var spinTarget; //store DOM object used to show loading spinner
     var spinner; //spinner
     
+    var frequency = 250;
     var xGridInterval = 200; //0.2 second
     var yGridInterval = 500; //0.5 mV, assuming the unit of ECG output is microvolt
     var yAxisHeight = 100;
@@ -35,7 +36,7 @@ $(function () {
         	minorGridLineColor: 'rgb(245, 149, 154)',
         	minorGridLineWidth: 0.2,
         	
-        	minorTickInterval: 'auto',
+        	minorTickInterval: yGridInterval/5,
 	        //minorTickWidth: 2,
 	        minorTickLength: 0,
 	        //minorTickPosition: 'inside',
@@ -139,6 +140,9 @@ $(function () {
             },
             plotOptions: {
                 line: {
+                	dataGrouping: {
+                		enabled: false
+                	},
                 	allowPointSelect: true,
                 	animation: false,
                 	color: 'black',	
@@ -207,7 +211,7 @@ $(function () {
             	minorGridLineColor: 'rgb(245, 149, 154)',
             	minorGridLineWidth: 0.2,
             	
-            	minorTickInterval: 'auto', //5 minor tick by default, exactlly what we want
+            	minorTickInterval: xGridInterval/5, //5 minor tick by default, exactlly what we want
     	        minorTickWidth: 1,
     	        minorTickLength: 0,
     	        minorTickPosition: 'inside',
@@ -345,6 +349,7 @@ $(function () {
     }
     */
 	function onDataReceived(data) { //setup plot after retrieving data
+		console.log(data);
 	    extractDatasets(data); //JSON {'dspData': datasets, 'peaks': indice of peak points}
 	    addResizer();
 		addFileUploadDiv();
@@ -467,7 +472,7 @@ $(function () {
                 data: datasets[i].data,
                 pointStart: Date.UTC(0, 0, 0, 0, 0, 0, 0),
                 yAxis: i, //use the index of dataset as the index of yAxis
-                pointInterval: 5 // 5 millisecond<--wrong! should be 1000/frequency. in this case 1000/250 = 5
+                pointInterval: 1000/frequency // 5 millisecond<--wrong! should be 1000/frequency. in this case 1000/250 = 5
         	});
         }
         //format tooltip

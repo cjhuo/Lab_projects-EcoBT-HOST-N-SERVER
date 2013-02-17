@@ -61,8 +61,10 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
         
     def readValueForCharacteristic(self, characteristic):
         if isinstance(characteristic, Characteristic.Characteristic):
+            NSLog("READING CHARACTERISTIC VALUE FROM %@", characteristic.UUID)
             self.peripheral.instance.readValueForCharacteristic_(characteristic.instance)
         else:
+            NSLog("READING CHARACTERISTIC VALUE FROM %@", characteristic._.UUID)
             self.peripheral.instance.readValueForCharacteristic_(characteristic)
         
     def setNotifyValueForCharacteristic(self, flag, characteristic):
@@ -73,17 +75,15 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
             
     def writeValueForCharacteristic(self, value, characteristic):
         if isinstance(characteristic, Characteristic.Characteristic):
+            NSLog("WRITING CHARACTERISTIC %@ TO VALUE %@", characteristic.UUID, value)
             self.peripheral.instance.writeValue_forCharacteristic_type_(
                                                                value, characteristic.instance,
                                                                CBCharacteristicWriteWithResponse)
-            NSLog("READING CHARACTERISTIC VALUE FROM %@", characteristic.UUID)
         else:
+            NSLog("WRITING CHARACTERISTIC %@ TO VALUE %@", characteristic._.UUID, value)
             self.peripheral.instance.writeValue_forCharacteristic_type_(
                                                                value, characteristic,
                                                                CBCharacteristicWriteWithResponse)
-        # read every time after write value    
-        
-        self.readValueForCharacteristic(characteristic)
             
     def findServiceByUUID(self, UUID):
         for s in self.services:
@@ -126,6 +126,9 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
         # does not raise exception now to ignore discovery of profiles 'Generic Access Profile' and 'Generic Attribute Profile'
         # raise Exception # didn't find any UUID
         return None
+    
+    def findECGService(self):
+        return self.findCharacteristicByUUID("FEC5")
   
     '''  
     # for the purpose of test, enable some certain characteristic(s) at the starting point
@@ -205,7 +208,7 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
         char = self.findCharacteristicByUUID(self.checkUUID(characteristic._.UUID))
         
         # value sent out, start to read in new value
-        # self.readValueForCharacteristic(char)
+        self.readValueForCharacteristic(char)
         '''
         if char != None:
             # process the received data and put into queue

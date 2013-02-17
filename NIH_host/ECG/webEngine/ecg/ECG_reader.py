@@ -1,6 +1,3 @@
-#from multiprocessing import Pool
-
-__author__ = 'leetop'
 
 import dicom
 import struct

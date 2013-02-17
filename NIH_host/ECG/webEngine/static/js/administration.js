@@ -155,6 +155,13 @@ $(function () {
         		toggleScan(true)
         		socket.send("peripheralList"); //request server to send list of connected peripheral
         	}
+        	else if(value == 4){
+        		drawUp();
+        		toggleScan(false);
+        		socket.send("start");
+        		toggleScan(true);
+        		socket.send("peripheralList");
+        	}
         },
         cmInterv, 
         toggleScan = function(value) {
@@ -320,8 +327,8 @@ $(function () {
     			}); 
         	}
         },
-        startTestECG = function(number) {
-        	socket.send("startTestECG"+number);
+        startTestECG = function(address) {
+        	socket.send("startTestECG"+address);
         },
         updateMac = function(data, p) {
 			p.address = data.address;
@@ -347,7 +354,7 @@ $(function () {
         			var added = false;
         			$.each(peripheral.services, function(key, val){
         				if(val.type == value.type){
-        					added = true
+        					added = true;
         				}
         			});
         			if(added != true){
@@ -407,9 +414,9 @@ $(function () {
         		val.instance.remove();
         	});
         	if(peripheralList[i].addrInstance != null)
-        		peripheralList[i].addrInstance.remove()
+        		peripheralList[i].addrInstance.remove();
         	if(peripheralList[i].readyInstance != null)
-        		peripheralList[i].readyInstance.remove()        		
+        		peripheralList[i].readyInstance.remove();        		
     		peripheralList[i].connection.line.remove();
     		peripheralList[i].text.remove();
     		peripheralList[i].instance.remove();

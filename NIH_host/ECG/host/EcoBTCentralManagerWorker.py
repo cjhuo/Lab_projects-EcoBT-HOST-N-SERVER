@@ -37,6 +37,7 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
         1: if up but not startScan, 
         2: up and startScan, 
         3: has node connected, still scanning
+        4: stopScan, but has peripheral connected
         '''
         self.state = 0
         # initialize manager with delegate
@@ -76,6 +77,10 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
         for worker in self.peripheralWorkers:
             if worker.peripheral.address != peripheral.address:
                 self.cancelPeripheralConnection(worker.peripheral)
+                
+    def cancelAllConnection(self):
+        for worker in self.peripheralWorkers:
+            self.cancelPeripheralConnection(worker.peripheral)
             
         
     def findPeripheralWorkerByAddress(self, address):
@@ -85,6 +90,7 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
         return None
 
     def startScan(self):
+        NSLog("STARTING SCAN")
         options = NSDictionary.dictionaryWithObject_forKey_(
             NSNumber.numberWithBool_(YES),
             CBCentralManagerScanOptionAllowDuplicatesKey
@@ -96,7 +102,7 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
         
     def stopScan(self):
         NSLog("stop scan")
-        self.manager.stopScan()         
+        self.manager.stopScan()
         
     def sendState(self):
         data = {'type': 'state',
@@ -116,50 +122,6 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
                  }
             data['value'].append(p)
         self.delegateWorker.getQueue().put(data)
-        
-    def startTestECG(self, address): #address could be the pNum or address
-        worker = self.findPeripheralWorkerByAddress(address)
-        if worker != None:
-            NSLog("SENDING START TEST RECORDING SIGNAL FROM CMANAGER")
-            char = worker.findCharacteristicByUUID("FEC5")
-            char.service.sampleRecorded = False # create a flag to indicate the samples hasn't been recorded   
-            worker.writeValueForCharacteristic(char.createStopFlag(), char)
-            time.sleep(3)
-            worker.writeValueForCharacteristic(char.createStartFlag(), char)
-            # stopScan()
-            self.stopScan()
-            self.state = 1
-            
-            # cancel all other connection
-            self.cancelAllConnectionExcept(worker.peripheral)
-                
-    def startECG(self, address):
-        worker = self.findPeripheralWorkerByAddress(address)
-        if worker != None:
-            NSLog("SENDING START REAL RECORDING SIGNAL FROM CMANAGER")
-            char = worker.findCharacteristicByUUID("FEC5")
-            # not creating a flag to indicate the samples hasn't been recorded   
-            worker.writeValueForCharacteristic(char.createStopFlag(), char)
-            time.sleep(3)
-            worker.writeValueForCharacteristic(char.createStartFlag(), char)
-
-
-    def stopECG(self, address):
-        for worker in self.peripheralWorkers:
-            if worker.peripheral.address == address: # found the ecg peripheral
-                NSLog("SENDING STOP REAL RECORDING SIGNAL FROM CMANAGER")
-                char = worker.findCharacteristicByUUID("FEC5")
-                worker.writeValueForCharacteristic(char.createStopFlag(), char)
-                                
-    def readECGData(self, address):
-        for worker in self.peripheralWorkers:
-            if worker.peripheral.address == address: # found the ecg peripheral
-                NSLog("SENDING RECORDED SAMPLES TO CLIENT")
-                service = worker.findServiceByUUID("FEC0")
-                data = service.queue.get()
-                service.queue.task_done()
-                return data           
-        return "Not found"
 
     # CBCentralManager delegate methods
     def centralManagerDidUpdateState_(self, central):
@@ -210,7 +172,7 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
         self.state = 3
         self.sendState()
         # check if the peripheral has already been added to the list
-        found = self.findWorkerForPeripheral(peripheral)       
+        found = self.findWorkerForPeripheralInstance(peripheral)       
         if found == False:
             # initializae peripheral worker when peripheral is added to the list
             worker = EcoBTPeripheralWorker.alloc().init()
@@ -241,7 +203,7 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
             
         #delegate.sockets = self.sockets     
         NSLog("number of peripherals: %@", len(self.peripheralWorkers))
-        w = self.findWorkerForPeripheral(peripheral)
+        w = self.findWorkerForPeripheralInstance(peripheral)
         if w != False:
             # start peripheral's delegate worker only when it's connected
             w.peripheral.instance.setDelegate_(w)
@@ -263,7 +225,7 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
                                                       central,
                                                       peripheral,
                                                       error):
-        worker = self.findWorkerForPeripheral(peripheral)
+        worker = self.findWorkerForPeripheralInstance(peripheral)
         # dispose worker and remove peripheral
         if worker != False:
             worker.stop()
@@ -284,9 +246,9 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
         NSLog("Fail to Connect")
 
     
-    def findWorkerForPeripheral(self, peripheral):
+    def findWorkerForPeripheralInstance(self, peripheralInstance):
         for w in self.peripheralWorkers:
-            if w.peripheral.instance == peripheral:
+            if w.peripheral.instance == peripheralInstance:
                 return w           
         return False # not found
 

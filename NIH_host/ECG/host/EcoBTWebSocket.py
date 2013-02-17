@@ -18,9 +18,10 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
         self.ecoBTApp = ecoBTApp               
         
     def open(self):
-        self.globalSockets.append(self)
-        self.ecoBTApp.managerWorker.sendState()
-        print "WebSocket opened"
+        if len(self.globalSockets) == 0: # allow only 1 socket to connect
+            self.globalSockets.append(self)
+            self.ecoBTApp.managerWorker.sendState()
+            print "WebSocket opened"
 
     def on_close(self):
         self.globalSockets.remove(self)
@@ -40,20 +41,28 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
             self.ecoBTApp.managerWorker.stopScan()
         elif type(message) == unicode: # messages send from client are unicode
             print 'Got message from a client: ', message
-            if message == 'start': # manager startScan signal
-                self.ecoBTApp.managerWorker.startScan()  
+            if message == 'start': # manager startScan signal             
+                self.ecoBTApp.managerWorker.startScan()
+                if self.ecoBTApp.managerWorker.state == 1:
+                    self.ecoBTApp.managerWorker.state = 2
+                elif self.ecoBTApp.managerWorker.state == 4:
+                    self.ecoBTApp.managerWorker.state = 3
+                self.ecoBTApp.managerWorker.sendState()
                 # self.ecoBTApp.managerWorker.sendState() 
             elif message == 'peripheralList':
                 self.ecoBTApp.managerWorker.sendPeripheralList()
             elif message.startswith("startTestECG"):
-                pNum = message[12:]
-                print "Sending out Start Test Recording Signal to Node: ", pNum
-                self.ecoBTApp.managerWorker.startTestECG(pNum)      
+                address = message[12:]
+                self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findECGService().startTestECG()
+                self.ecoBTApp.managerWorker.stopScan() 
+                self.ecoBTApp.managerWorker.state = 4
+                self.ecoBTApp.managerWorker.sendState()
+                # cancel all other connection
+                self.ecoBTApp.managerWorker.cancelAllConnectionExcept(\
+                                self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).peripheral)
             elif message.startswith("startECG"):
-                pNum = message[8:]
-                print "Sending out Start Real Recording Signal to Node: ", pNum
-                self.ecoBTApp.managerWorker.startECG(pNum)   
+                address = message[8:]
+                self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findECGService().startECG()       
             elif message.startswith("stopECG"):
-                pNum = message[7:]
-                print "Sending out Start Signal to Node: ", pNum
-                self.ecoBTApp.managerWorker.stopECG(pNum)                        
+                address = message[7:]
+                self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findECGService().stopECG()                     
