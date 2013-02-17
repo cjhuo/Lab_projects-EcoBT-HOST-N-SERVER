@@ -96,12 +96,12 @@ class ECGSet(Characteristic):
                     self.service.record_cnt = 1          
                     #de = DelayExecutor(10, self.peripheralWorker.writeValueForCharacteristic, # memory leak reported from objc
                     #               self.createStopFlag(), self.createReadFromCardFlag(), self.instance)                
-                    NSLog("SENDING STOP RECORDING SIGNAL")      
-                    self.service.state = 3
                     NSLog("PUTTING READ RECORDING SIGNAL TO DELAY QUEUE")
                     self.service.PushToDelayQueue('ReadStart') 
                     # place of sleep in critical!!! has to be right before sending stop       
                     time.sleep(12)        
+                    NSLog("SENDING STOP RECORDING SIGNAL")      
+                    self.service.state = 3
                     self.peripheralWorker.writeValueForCharacteristic(self.createStopFlag(), self) 
                     #self.recorded = True # set to true so that it won't be recorded automatically again, waiting for UI to send command
                 elif self.service.sampleRecorded == True: # sample recorded, start real recording!!!!
