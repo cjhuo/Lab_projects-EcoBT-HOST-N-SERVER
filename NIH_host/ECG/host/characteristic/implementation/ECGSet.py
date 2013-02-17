@@ -53,7 +53,7 @@ class ECGSet(Characteristic):
 
         if start == stopFlag: # idle, ready to record   
             # if there is a job in queue, processQueue
-            if self.service.state == 0 or self.service.state == 3:
+            if self.service.state == 0 or self.service.state == 3 or self.service.state == 4:
                 if len(self.service.delayQueue) != 0:
                     self.processQueue()       
                 else:
@@ -83,7 +83,7 @@ class ECGSet(Characteristic):
             self.peripheralWorker.writeValueForCharacteristic(self.createStopFlag(), self)
             return     
         elif start == startFlag:
-            if self.service.state == 1:
+            if self.service.state == 1 or self.service.state == 2:
                 # check if the node's beginning state is start, if yes, then invalid, stop it, toggle beginning state
                 if self.service.state == 0:
                     NSLog("RESETTING NODE TO READY")
@@ -112,16 +112,11 @@ class ECGSet(Characteristic):
                 NSLog("OUT OF SEQUENCE!!!")
                 self.tryToSaveStateByResend()
         elif start == readFromCardFlag or start == 62 or start == 63:
-            if self.service.state == 5:
-                if self.service.state == 0:
-                    NSLog("RESETTING NODE TO READY")
-                    self.service.state = 3
-                    self.peripheralWorker.writeValueForCharacteristic(self.createStopFlag(), self)
-                else:
-                    self.service.state = 6
-                    NSLog("START READING FROM CARD, RECEIVING...")   
-                    # start reading data, expect to see 'FEC6' and 'FEC7'
-                    # do nothing further, maybe can throw a message to UI said I am reading? 
+            if self.service.state == 5 or self.service.state == 6:
+                self.service.state = 6
+                NSLog("START READING FROM CARD, RECEIVING...")   
+                # start reading data, expect to see 'FEC6' and 'FEC7'
+                # do nothing further, maybe can throw a message to UI said I am reading? 
             else:
                 NSLog("OUT OF SEQUENCE!!!")   
                 self.tryToSaveStateByResend()
