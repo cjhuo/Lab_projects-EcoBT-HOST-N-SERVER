@@ -16,4 +16,10 @@ class Sockets(object):
     
     def __len__(self):
         return len(self.sockets)
+    
+    def contains(self, socket):
+        for s in self.sockets:
+            if s is socket:
+                return True
+        return False
         

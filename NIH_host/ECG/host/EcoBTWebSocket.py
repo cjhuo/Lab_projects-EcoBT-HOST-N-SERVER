@@ -22,14 +22,18 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
             self.globalSockets.append(self)
             self.ecoBTApp.managerWorker.sendState()
             print "WebSocket opened"
+        else:
+            self.close()
 
     def on_close(self):
-        self.globalSockets.remove(self)
+        if self.globalSockets.contains(self):
+            self.globalSockets.remove(self)
+            print "WebSocket closed"
         '''
         if len(self.globalSockets) == 0: # time to ask host to stopScan
             self.handleMessage("stopScan")
         '''
-        print "WebSocket closed"
+        
         
     def on_message(self, message):
         #self.ecoBTApp.managerWorker.delegateWorker.getQueue().put(message)
