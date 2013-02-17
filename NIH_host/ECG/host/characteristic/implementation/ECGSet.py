@@ -73,6 +73,7 @@ class ECGSet(Characteristic):
                     '''
             else: 
                 NSLog("OUT OF SEQUENCE!!!")
+                self.tryToSaveStateByResend()
         elif self.service.state == 0: # need reseting
             NSLog("RESETING...")
             self.service.state = 3       
@@ -105,6 +106,7 @@ class ECGSet(Characteristic):
                     self.service.state = 2
             else:
                 NSLog("OUT OF SEQUENCE!!!")
+                self.tryToSaveStateByResend()
         elif start == readFromCardFlag or start == 62 or start == 63:
             if self.service.state == 5:
                 if self.service.state == 0:
@@ -118,6 +120,7 @@ class ECGSet(Characteristic):
                     # do nothing further, maybe can throw a message to UI said I am reading? 
             else:
                 NSLog("OUT OF SEQUENCE!!!")   
+                self.tryToSaveStateByResend()
         else:
             # stop and restart
             NSLog("INVALID STATUS FOUND...")
@@ -141,6 +144,19 @@ class ECGSet(Characteristic):
         val_data = NSData.dataWithBytes_length_(data, len(data))     
         return val_data
     
+    def tryToSaveStateByResend(self):
+        NSLog("TRYING TO RESEND SIGNAL TO SAVE THE STATE MACHINE IN 5 SECS...")
+        time.sleep(5)
+        if self.service.state == 1:
+            self.peripheralWorker.writeValueForCharacteristic(self.createStartFlag(), self)
+        elif self.service.state == 3:
+            self.peripheralWorker.writeValueForCharacteristic(self.createStopFlag(), self)
+        elif self.service.state == 5:
+            self.peripheralWorker.writeValueForCharacteristic(self.createReadFromCardFlag(), self)
+        # read again
+        self.peripheralWorker.readValueForCharacteristic(self)
+
+            
     def processQueue(self):
         job = self.service.delayQueue.pop(0)
         if job == 'WriteStart':
@@ -168,6 +184,7 @@ class ECGSet(Characteristic):
     def stopECG(self):
         if self.service.state != 0 or self.service.state != 4:
             NSLog("SENDING STOP REAL RECORDING SIGNAL")
+            self.service.state = 3
             self.peripheralWorker.writeValueForCharacteristic(self.createStopFlag(), self)
         
     '''                            
