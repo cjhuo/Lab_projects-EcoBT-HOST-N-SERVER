@@ -228,6 +228,7 @@ class ECGGet(Characteristic):
 #                self.service.fd = open(path, 'w')
         for i in range(12):
             self.service.datasets[i].append(self.service.read_buffer[key].get_by_idx(i))
+            self.service.read_buffer[key].set_by_idx(i, None)
             # should the self.service.read_buffer[key] be reset after append???
 
         if self.service.record_cnt % 10 == 1:

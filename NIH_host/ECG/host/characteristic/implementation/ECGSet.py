@@ -169,6 +169,8 @@ class ECGSet(Characteristic):
             self.peripheralWorker.writeValueForCharacteristic(self.createReadFromCardFlag(), self)
 
     def startECG(self):
+        # clear delay Queue
+        self.service.delayQueue = []
         # not creating a flag to indicate the samples hasn't been recorded 
         if self.service.state == 0 or self.service.state == 4:  
             NSLog("SENDING START REAL RECORDING SIGNAL")
@@ -182,6 +184,8 @@ class ECGSet(Characteristic):
             #self.peripheralWorker.writeValueForCharacteristic(self.createStartFlag(), self)
 
     def stopECG(self):
+        # clear delay Queue
+        self.service.delayQueue = []        
         if self.service.state != 0 or self.service.state != 4:
             NSLog("SENDING STOP REAL RECORDING SIGNAL")
             self.service.state = 3
@@ -196,7 +200,9 @@ class ECGSet(Characteristic):
         return data           
     '''
         
-    def startTestECG(self): #address could be the pNum or address    
+    def startTestECG(self): #address could be the pNum or address  
+        # clear delay Queue
+        self.service.delayQueue = []
         self.service.sampleRecorded = False # create/reset a flag to indicate the samples hasn't been recorded   
         if self.service.state == 0 or self.service.state == 4:  
             NSLog("SENDING START TEST RECORDING SIGNAL")
