@@ -76,10 +76,14 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
             self.peripheral.instance.writeValue_forCharacteristic_type_(
                                                                value, characteristic.instance,
                                                                CBCharacteristicWriteWithResponse)
+            NSLog("READING CHARACTERISTIC VALUE FROM %@", characteristic.UUID)
         else:
             self.peripheral.instance.writeValue_forCharacteristic_type_(
                                                                value, characteristic,
                                                                CBCharacteristicWriteWithResponse)
+        # read every time after write value    
+        
+        self.readValueForCharacteristic(characteristic)
             
     def findServiceByUUID(self, UUID):
         for s in self.services:
@@ -96,16 +100,14 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
         #raise Exception
         return None
     
-    def appendService(self, service):
-        uuid = self.checkUUID(service._.UUID)
+    def appendService(self, serviceInstance):
+        uuid = self.checkUUID(serviceInstance._.UUID)
         if uuid != None:
-            s = Service()
-            s.setUUID(uuid)
-            s.instance = service
+            s = Service(uuid, serviceInstance)
             self.services.append(s) # append to service list for tracking from UI   
         else:
             # found a service profile not listed in IOBluetooth.py
-            NSLog("FOUND AN UNKNOWN SERVICE %@", service._.UUID)
+            NSLog("FOUND AN UNKNOWN SERVICE %@", serviceInstance._.UUID)
         
     def appendCharacteristicForService(self, characteristic, service, peripheral):
         c = characteristicFactory.createCharacteristic(self.checkUUID(characteristic._.UUID), characteristic, service, self)
@@ -203,7 +205,7 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
         char = self.findCharacteristicByUUID(self.checkUUID(characteristic._.UUID))
         
         # value sent out, start to read in new value
-        self.readValueForCharacteristic(char)
+        # self.readValueForCharacteristic(char)
         '''
         if char != None:
             # process the received data and put into queue

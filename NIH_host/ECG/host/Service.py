@@ -5,9 +5,9 @@ Created on Feb 9, 2013
 '''
 
 class Service(object):
-    def __init__(self):
-        self.UUID = None
-        self.instance = None
+    def __init__(self, UUID, instance):
+        self.UUID = UUID
+        self.instance = instance
         self.characteristics = []
         
     def setUUID(self, UUID):

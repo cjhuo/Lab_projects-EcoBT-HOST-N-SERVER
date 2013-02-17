@@ -63,8 +63,26 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
             NSNumber.numberWithBool_(YES),
             CBConnectPeripheralOptionNotifyOnDisconnectionKey
         )
-        self.manager.connectPeripheral_options_(peripheral, options)
+        self.manager.connectPeripheral_options_(peripheral, options)     
+            
+    def cancelPeripheralConnection(self, peripheral):
+        if type(peripheral) == Peripheral:
+            self.manager.cancelPeripheralConnection_(peripheral.instance)
+            NSLog("DISCONNECTING FROM PERIPHERAL %@", peripheral.address)
+        else:
+            self.manager.cancelPeripheralConnection_(peripheral)
+            
+    def cancelAllConnectionExcept(self, peripheral):
+        for worker in self.peripheralWorkers:
+            if worker.peripheral.address != peripheral.address:
+                self.cancelPeripheralConnection(worker.peripheral)
+            
         
+    def findPeripheralWorkerByAddress(self, address):
+        for worker in self.peripheralWorkers:
+            if worker.peripheral.address == address:
+                return worker
+        return None
 
     def startScan(self):
         options = NSDictionary.dictionaryWithObject_forKey_(
@@ -100,24 +118,31 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
         self.delegateWorker.getQueue().put(data)
         
     def startTestECG(self, address): #address could be the pNum or address
-        for worker in self.peripheralWorkers:
-            if worker.peripheral.address == address: # found the ecg peripheral
-                NSLog("SENDING START TEST RECORDING SIGNAL FROM CMANAGER")
-                char = worker.findCharacteristicByUUID("FEC5")
-                char.service.sampleRecorded = False # create a flag to indicate the samples hasn't been recorded   
-                worker.writeValueForCharacteristic(char.createStopFlag(), char)
-                time.sleep(3)
-                worker.writeValueForCharacteristic(char.createStartFlag(), char)
+        worker = self.findPeripheralWorkerByAddress(address)
+        if worker != None:
+            NSLog("SENDING START TEST RECORDING SIGNAL FROM CMANAGER")
+            char = worker.findCharacteristicByUUID("FEC5")
+            char.service.sampleRecorded = False # create a flag to indicate the samples hasn't been recorded   
+            worker.writeValueForCharacteristic(char.createStopFlag(), char)
+            time.sleep(3)
+            worker.writeValueForCharacteristic(char.createStartFlag(), char)
+            # stopScan()
+            self.stopScan()
+            self.state = 1
+            
+            # cancel all other connection
+            self.cancelAllConnectionExcept(worker.peripheral)
                 
     def startECG(self, address):
-        for worker in self.peripheralWorkers:
-            if worker.peripheral.address == address: # found the ecg peripheral
-                NSLog("SENDING START REAL RECORDING SIGNAL FROM CMANAGER")
-                char = worker.findCharacteristicByUUID("FEC5")
-                # not creating a flag to indicate the samples hasn't been recorded   
-                worker.writeValueForCharacteristic(char.createStopFlag(), char)
-                time.sleep(3)
-                worker.writeValueForCharacteristic(char.createStartFlag(), char)
+        worker = self.findPeripheralWorkerByAddress(address)
+        if worker != None:
+            NSLog("SENDING START REAL RECORDING SIGNAL FROM CMANAGER")
+            char = worker.findCharacteristicByUUID("FEC5")
+            # not creating a flag to indicate the samples hasn't been recorded   
+            worker.writeValueForCharacteristic(char.createStopFlag(), char)
+            time.sleep(3)
+            worker.writeValueForCharacteristic(char.createStartFlag(), char)
+
 
     def stopECG(self, address):
         for worker in self.peripheralWorkers:

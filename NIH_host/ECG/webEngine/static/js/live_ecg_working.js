@@ -55,8 +55,10 @@ $(function () {
 					if(data.data.value.type == 'state'){
 						if(data.data.value.value == 0){
 							// ready to start real recording
-							startButton.button("enable");
-							redoButton.button("enable");
+							if(startButton != null && redoButton != null){
+								startButton.button("enable");
+								redoButton.button("enable");
+							}
 						}
 
 							
@@ -118,7 +120,7 @@ $(function () {
 	    	}],
 	    	*/
         	labels: {
-        		enabled: false,
+        		enabled: true,
         	},
         	offset: 0,
         	height: yAxisHeight,
@@ -327,9 +329,16 @@ $(function () {
         	//yAxisOptions.min = datasets[i].min-0.5;
         	//yAxisOptions.max = datasets[i].max+0.5;
         	//add checker to handler rambled value from any channel, 
-        	if((datasets[i].max-datasets[i].min) > 5) //greater than 10 blocks, only add 10 blocks based on max
-        		yAxisOptions.max = datasets[i].max + 0.5
-        		yAxisOptions.min = datasets[i].max - 4.5
+        	if((datasets[i].max-datasets[i].min) > 5) {//greater than 10 blocks, only add 10 blocks based on max
+        		yAxisOptions.max = Math.round(datasets[i].max);
+        		yAxisOptions.range = 2;
+        		//yAxisOptions.min = Math.floor(datasets[i].max - 2);
+        	}
+        	else{
+        		yAxisOptions.max = Math.round(datasets[i].max);
+        		yAxisOptions.range = 2;
+        		//yAxisOptions.min = Math.ceil(datasets[i].min);
+        	}
 
         	console.log("min of ", datasets[i].label, " is ", datasets[i].min);
         	console.log("max of ", datasets[i].label, " is ", datasets[i].max);
@@ -652,6 +661,9 @@ $(function () {
     	        complete: function() {
     	          progressLabel.text( "Complete!" );
     	        }
+        }).css({
+        	width: '90%',
+        	margin: 'auto'
         });
     	progressBar.appendTo("body");
     }

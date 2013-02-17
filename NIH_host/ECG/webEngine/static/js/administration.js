@@ -312,6 +312,7 @@ $(function () {
     				group[0].attr('fill', "");
     			}).dblclick(function(e) {
     				group[0].attr('fill', "red");
+    				showSpinner();
     				startTestECG(peripheral.address);
     				this.undblclick();
     				//this.remove();

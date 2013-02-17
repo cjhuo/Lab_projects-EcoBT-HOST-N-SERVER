@@ -11,7 +11,7 @@ RTCSet, RTCGet, ECGGet, ECGSet, ECGStatus
 def createCharacteristic(UUID, instance, service, peripheralWorker):
     c = None
     if UUID == "2A23":
-        c = DeviceInfo.DeviceInfo()
+        c = DeviceInfo.DeviceInfo() 
     elif UUID == "FFA6":
         c = ACCXYZ.ACCXYZ()
     elif UUID == "FFA1":
