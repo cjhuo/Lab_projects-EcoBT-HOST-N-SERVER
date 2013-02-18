@@ -7,12 +7,14 @@ import tornado.web
 
 import json
 
+from BaseHandler import BaseHandler
+
 
 #fake the labels for each channels for demo purpose, 
 #eventually label information should be passed from ecg module
 ECG_CHANNELLABELS = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6']
 
-class DSPHandler(tornado.web.RequestHandler):
+class DSPHandler(BaseHandler):
     def initialize(self, ecg):
         self.ecg = ecg
              
@@ -47,7 +49,7 @@ class DSPHandler(tornado.web.RequestHandler):
         return datasets
     '''
 from ecg.ECG_reader import ECG_reader
-class ECGAllInOneHandler(tornado.web.RequestHandler):
+class ECGAllInOneHandler(BaseHandler):
     def initialize(self):
         self.ecg = ECG_reader()
 
@@ -90,7 +92,7 @@ class ECGAllInOneHandler(tornado.web.RequestHandler):
         return val        
     
     
-class ECGHandler(tornado.web.RequestHandler):
+class ECGHandler(BaseHandler):
     def initialize(self, ecg):
         self.ecg = ecg
     

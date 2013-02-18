@@ -3,10 +3,9 @@ Created on Feb 11, 2013
 
 @author: cjhuo
 '''
-
+import sys
+sys.dont_write_bytecode = True
 if __name__ == "__main__":
-    import sys
-    sys.dont_write_bytecode = True
     sys.path.append("./host")
     sys.path.append("./webEngine")
     import host.main as m1
