@@ -44,11 +44,11 @@ $(function () {
 					datasets = data.data.data;
 					console.log(datasets.length);
 					removeProgressBar();
-					addResizer();
+					//addResizer();
 					addStartButton();
 					addStopButton();
 					stopButton.hide();
-					addRedoButton();
+					//addRedoButton();
 					plotEverything();
 				}
 				else if(data.data.type == 'ECG'){ //state info
@@ -72,6 +72,9 @@ $(function () {
 	var init = function() {
 		showSpinner();
 		showProgressBar();
+		addResizer();
+		addRedoButton();
+		redoButton.button("enable");
 	}
 	
 
