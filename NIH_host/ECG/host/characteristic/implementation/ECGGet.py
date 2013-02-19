@@ -47,7 +47,7 @@ class ECGReading:
         if key and (key in self.reading):
             if type(value) is IntType:
                 if convert and key != 'status':
-                    self.reading[key] = int(value * 2.86 / 6 / 10000)  # uint: milliVolt
+                    self.reading[key] = int(value * 2.86 / 6 / 10)  # uint: microVolt
                 else:
                     self.reading[key] = value
         else:

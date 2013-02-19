@@ -49,7 +49,7 @@ $(function () {
 					addStopButton();
 					stopButton.hide();
 					addRedoButton();
-					addPlot();
+					plotEverything();
 				}
 				else if(data.data.type == 'ECG'){ //state info
 					if(data.data.value.type == 'state'){
@@ -80,8 +80,9 @@ $(function () {
     var chartOptions; //chartOptions settings for main plot
         
     var xGridInterval = 200; //0.2 second
-    var yGridInterval = 0.5; // 0.5mV, assuming the unit of ECG output is micro volt
-    var yAxisHeight = 100;
+    var yGridInterval = 500; // 0.5mV, assuming the unit of ECG output is micro volt
+    var yAxisHeight = 200;
+    var yTickHeight = 20;
     
     var yAxisOptionsTemplate = {
         	lineColor: 'rgb(245, 149, 154)',
@@ -120,13 +121,10 @@ $(function () {
 	    	}],
 	    	*/
         	labels: {
-        		enabled: true,
-        		formatter: function() {
-        			return "";
-        		}
+        		enabled: false,
         	},
         	offset: 0,
-        	height: yAxisHeight,
+        	//height: yAxisHeight,
 	    	startOnTick: true,
 	    	endOnTick: true	
         };
@@ -141,6 +139,13 @@ $(function () {
                     duration: 1000
                 },*/
                 type: 'line',
+                /**
+                 * When using multiple axis, the ticks of two or more opposite axes will automatically 
+                 * be aligned by adding ticks to the axis or axes with the least ticks. This can be prevented
+                 *  by setting alignTicks to false. If the grid lines look messy, it's a good idea to hide them 
+                 *  for the secondary axis by setting gridLineWidth to 0. Defaults to true.
+                 */
+                alignTicks: false
             },
             credits: {
             	href: "http://cps.eng.uci.edu:8000/analysis",
@@ -196,7 +201,7 @@ $(function () {
             		type: 'all',
             		text: 'All'
             	}],
-            	selected: 1
+            	selected: 2
             },
             subtitle: {
             	/*
@@ -205,11 +210,12 @@ $(function () {
                       'Drag your finger over the plot to zoom in'
                 */
             },
-            plotOptions: {
-            	dataGrouping: {
-            		enabled: false
-            	},            	
+            plotOptions: {         	
                 line: {
+                	dataGrouping: {
+                		enabled: false //has to do data grouping when unit is millivolt, otherwise, shape looks so wired
+                						// does not need grouping when unit is microvolot
+                	},   
                 	allowPointSelect: true,
                 	animation: false,
                 	color: 'black',	
@@ -238,7 +244,7 @@ $(function () {
                     enableMouseTracking: true
                 },
                 series: {
-                	allowPointSelect: true,  
+                	//allowPointSelect: true,  
                     marker: {
                     	radius: 0.1,
                         states: {
@@ -310,31 +316,12 @@ $(function () {
         });	
 		innerResizer.appendTo(resizer);
     }
-    function addPlot() { 
-    	//generate one plot for each channel
-
-
-		
-		//calculate the diagram height
-		
-		var diagramHeight = 65 + yAxisHeight*ECG_CHANNELLABELS.length + 93; //!!!!!65 is the top padding of chart,
-															//93 is bottom padding
-		
-    	//plot all channels on one plot
-    	diagram = $('<div id="diagram" ></div>').css( {
-            height: diagramHeight.toString() + 'px',
-        });
-		
-    	diagram.appendTo(innerResizer);
-    	
-    	plotEverything();
-		//plotEverything(); //plot diagram on generated div and generate overview
-    }
     
     function plotEverything() {
         var yTop = 65;
         chartOptions.series = [];
         //loop to fill in yAxis and data series
+        var diagramHeight = 65 //calculate the diagram height!!!!!65 is the top padding of chart,
         for(var i=0; i<datasets.length;i++) {
         	var yAxisOptions = $.extend(true, {}, yAxisOptionsTemplate); //!!!deep copy JSON object
         	yAxisOptions.title = {
@@ -344,26 +331,28 @@ $(function () {
         	//yAxisOptions.min = datasets[i].min-0.5;
         	//yAxisOptions.max = datasets[i].max+0.5;
         	//add checker to handler rambled value from any channel, 
-        	if((datasets[i].max-datasets[i].min) > 5) {//greater than 10 blocks, only add 10 blocks based on max
-        		yAxisOptions.max = Math.ceil(datasets[i].max);
-        		yAxisOptions.range = 4;
-        		//yAxisOptions.min = Math.floor(datasets[i].max);
+        	if((datasets[i].max-datasets[i].min) > (10*yGridInterval)) {//greater than 10 blocks, only add 10 blocks based on max
+        		yAxisOptions.min = datasets[i].min;
+        		yAxisOptions.max = datasets[i].min + 7 * yGridInterval;  //draw 8 times of yGridInterval
+        		yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));
         	}
-        	else if((datasets[i].max-datasets[i].min) < 0.01){ //min and max are too close
-        		yAxisOptions.max = Math.ceil(datasets[i].max) + 0.5;
-        		//yAxisOptions.range = 4;
-        		yAxisOptions.min = Math.floor(datasets[i].min) - 0.5;
+        	else if((datasets[i].max-datasets[i].min) < (yGridInterval/100)){ //min and max are too close
+        		yAxisOptions.max = datasets[i].max;
+        		yAxisOptions.min = datasets[i].max - yGridInterval;
+        		yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));
         	}
         	else{
-        		yAxisOptions.max = Math.ceil(datasets[i].max);
-        		//yAxisOptions.range = 4;
-        		yAxisOptions.min = Math.floor(datasets[i].min);
+        		yAxisOptions.max = datasets[i].max;
+        		yAxisOptions.min = datasets[i].min;
+        		yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));
         	}
-
+        	
         	console.log("min of ", datasets[i].label, " is ", datasets[i].min);
         	console.log("max of ", datasets[i].label, " is ", datasets[i].max);
+        	console.log("height of ", datasets[i].label, " is ", yAxisOptions.height);
         	yAxisOptions.top = yTop;
-        	yTop += yAxisHeight; //!!!!adjust the distance to the top
+        	yTop += yAxisOptions.height; //!!!!adjust the distance to the top
+        	diagramHeight += yAxisOptions.height;
         	chartOptions.yAxis.push(yAxisOptions);
         	chartOptions.series.push({
         		name: datasets[i].label,
@@ -382,6 +371,15 @@ $(function () {
         	});
             return s;
         };
+        
+		diagramHeight += 93; //93 is bottom padding
+		
+    	//plot all channels on one plot
+    	diagram = $('<div id="diagram" ></div>').css( {
+            height: diagramHeight.toString() + 'px',
+        });
+		
+    	diagram.appendTo(innerResizer);
 
     	plot = new Highcharts.StockChart(chartOptions, function() {
     		hideSpinner();

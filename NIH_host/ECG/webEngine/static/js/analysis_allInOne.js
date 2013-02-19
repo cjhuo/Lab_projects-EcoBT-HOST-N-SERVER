@@ -28,6 +28,7 @@ $(function () {
     var xGridInterval = 200; //0.2 second
     var yGridInterval = 500; //0.5 mV, assuming the unit of ECG output is microvolt
     var yAxisHeight = 100;
+    var yTickHeight = 20;
     
     var yAxisOptionsTemplate = {
         	lineColor: 'rgb(245, 149, 154)',
@@ -62,7 +63,7 @@ $(function () {
         	max: 2000
         };
     
-    options = {
+    chartOptions = {
             chart: {
                 renderTo: 'diagram',
                 /*zoomType: 'x',
@@ -70,7 +71,8 @@ $(function () {
                     duration: 1000
                 },*/
                 type: 'line',
-                zoomType: 'x'
+                zoomType: 'x',
+                alignTicks: false
             },
             credits: {
             	href: "http://cps.eng.uci.edu:8000/analysis",
@@ -353,7 +355,7 @@ $(function () {
 	    extractDatasets(data); //JSON {'dspData': datasets, 'peaks': indice of peak points}
 	    addResizer();
 		addFileUploadDiv();
-		addPlot();  //generate main plot div
+		plotEverything();  //generate main plot div
 		//addOverview(); // generate overview plot div	
 	}
 
@@ -409,74 +411,56 @@ $(function () {
         });
     	fileInput.appendTo(innerResizer);
     }
-
-    function addPlot() { 
-    	/*//generate one plot for each channel
-    	var diagram = $('<div id="channel'+ index +'"/>').css( {
-            position: 'relative',
-            width: '500px',
-            height: '200px',
-            margin: 'auto',
-            padding: '2px'
-        });
-    	*/
-		
-		//calculate the diagram height
-		
-		var diagramHeight = 65 + yAxisHeight*datasets.length + 93; //!!!!!65 is the top padding of chart,
-															//93 is bottom padding
-		
-    	//plot all channels on one plot
-    	diagram = $('<div id="diagram" ></div>').css( {
-            height: diagramHeight.toString() + 'px',
-        });
-		
-
-    	diagram.appendTo(innerResizer);
-    	
-    	//resizable
-    	/*
-		resizer.resizable({
-		    // On resize, set the chart size to that of the 
-		    // resizer minus padding. If your chart has a lot of data or other
-		    // content, the redrawing might be slow. In that case, we recommend 
-		    // that you use the 'stop' event instead of 'resize'.
-		    resize: function() {
-		    	plot.setSize(
-		            this.offsetWidth - 20, 
-		            this.offsetHeight - 20,
-		            false
-			       );
-			   }
-		});
-		*/
-		plotEverything(); //plot diagram on generated div and generate overview
-    }
     
     function plotEverything() {
         var yTop = 65;
-        options.series = [];
+        chartOptions.series = [];
         //loop to fill in yAxis and data series
+        var diagramHeight = 65 //calculate the diagram height!!!!!65 is the top padding of chart,
         for(var i=0; i<datasets.length;i++) {
         	var yAxisOptions = $.extend(true, {}, yAxisOptionsTemplate); //!!!deep copy JSON object
         	yAxisOptions.title = {
         			text: datasets[i].label,
         			rotation: 0
         	};   	
-        	yAxisOptions.top = yTop;
-        	yTop += yAxisHeight; //!!!!adjust the distance to the top
+        	//yAxisOptions.min = datasets[i].min-0.5;
+        	//yAxisOptions.max = datasets[i].max+0.5;
+        	//add checker to handler rambled value from any channel, 
+        	var min = Math.min.apply(null, datasets[i].data);
+        	var max = Math.max.apply(null, datasets[i].data);
+        	if((max-min) > (10*yGridInterval)) {//greater than 10 blocks, only add 10 blocks based on max
+        		yAxisOptions.min = min;
+        		yAxisOptions.max = min + 7 * yGridInterval;  //draw 8 times of yGridInterval
+        		yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));
+        	}
+        	else if((max-min) < (yGridInterval/100)){ //min and max are too close
+        		yAxisOptions.max = max;
+        		yAxisOptions.min = max - yGridInterval;
+        		yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));
+        	}
+        	else{
+        		yAxisOptions.max = max;
+        		yAxisOptions.min = min;
+        		yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));
+        	}
         	
-        	options.yAxis.push(yAxisOptions);        	
-        	options.series.push({
+        	console.log("min of ", datasets[i].label, " is ", min);
+        	console.log("max of ", datasets[i].label, " is ", max);
+        	console.log("height of ", datasets[i].label, " is ", yAxisOptions.height);
+        	yAxisOptions.top = yTop;
+        	yTop += yAxisOptions.height; //!!!!adjust the distance to the top
+        	diagramHeight += yAxisOptions.height;
+        	chartOptions.yAxis.push(yAxisOptions);
+        	chartOptions.series.push({
         		name: datasets[i].label,
                 data: datasets[i].data,
                 pointStart: Date.UTC(0, 0, 0, 0, 0, 0, 0),
                 yAxis: i, //use the index of dataset as the index of yAxis
-                pointInterval: 1000/frequency // 5 millisecond<--wrong! should be 1000/frequency. in this case 1000/250 = 5
+                pointInterval: 1000/frequency // 5 millisecond<--wrong! should be 1000/frequency. in this case 1000/250 = 4
         	});
         }
         //format tooltip
-        options.tooltip.formatter = function() {
+        chartOptions.tooltip.formatter = function() {
         	var s = '';
         	$.each(this.points, function(key, val) {
         		s += '<b>'+ val.series.name +'</b>'+
@@ -484,11 +468,19 @@ $(function () {
         	});
             return s;
         };
+        
+		diagramHeight += 93; //93 is bottom padding
+		
+    	//plot all channels on one plot
+    	diagram = $('<div id="diagram" ></div>').css( {
+            height: diagramHeight.toString() + 'px',
+        });
+		
+    	diagram.appendTo(innerResizer);
 
-    	plot = new Highcharts.StockChart(options, function() {
-    		spinner.stop();
-    		spinTarget.hide();
-    	});      
+    	plot = new Highcharts.StockChart(chartOptions, function() {
+    		hideSpinner();
+    	});     
     }
     
     /* show loading spinner, stopped when chart is fully loaded */
