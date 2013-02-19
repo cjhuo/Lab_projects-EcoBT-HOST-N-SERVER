@@ -17,5 +17,5 @@ LiveECGServerAddr = 'ws://localhost:8001/socket'
 
 # setup for ecoBT host
 # turn off keyboard interrupt detection for server mode in order not to get too many 'Enter' signal..
-enableKeyboardInterrupt = False 
+enableKeyboardInterrupt = True 
 hostPort = 8001
