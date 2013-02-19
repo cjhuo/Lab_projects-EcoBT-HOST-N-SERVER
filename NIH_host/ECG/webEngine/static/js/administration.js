@@ -276,6 +276,7 @@ $(function () {
 					'readyInstance': null,
 					'addrInstance': null
 			};
+			peripheral.drag(move, dragger, up);
 			if(value.address != null){
 				updateMac(value, p);
 			}
@@ -310,6 +311,7 @@ $(function () {
     			var group = r.set();
     			group.push(peripheral.instance);
     			group.push(text);
+    			//group.peripheral = peripheral;
     			var ecgUrl = "/liveECG?name="+data.address;
     			group.attr({
     			    cursor: 'pointer',
@@ -325,7 +327,47 @@ $(function () {
     				//this.remove();
     				window.open(ecgUrl, '_self', false);
     			}); 
+    			
         	}
+        },
+        dragger = function (x, y, event) {
+        	for(var i=peripheralList.length; i--;){
+        		if(peripheralList[i].instance == this){
+        			this.p = peripheralList[i];
+        		}
+        	}
+        	this.xIns = this.p.instance.attr("x");
+        	this.yIns = this.p.instance.attr("y");
+        	this.xTxt = this.p.text.attr("x");
+        	this.yTxt = this.p.text.attr("y");
+        	if(this.p.addrInstance != null){
+        		this.xAdd = this.p.addrInstance.attr("x");
+        		this.yAdd = this.p.addrInstance.attr("y");
+        	}
+        	if(this.p.readyInstance != null){
+        		this.xRdy = this.p.readyInstance.attr("x");
+        		this.yRdy = this.p.readyInstance.attr("y");
+        	}
+            this.p.instance.animate({"fill-opacity": .2}, 500);
+        },
+        move = function (dx, dy) {
+        	var att = {x: this.xIns + dx, y: this.yIns + dy};
+        	var attTxt = {x: this.xTxt + dx, y: this.yTxt + dy};
+            this.p.instance.attr(att);
+            this.p.text.attr(attTxt);
+        	if(this.xAdd != null){
+        		var attAdd = {x: this.xAdd + dx, y: this.yAdd + dy};
+        		this.p.addrInstance.attr(attAdd);
+        	}
+        	if(this.xRdy != null) {
+        		var attRdy = {x: this.xRdy + dx, y: this.yRdy + dy};
+        		this.p.readyInstance.attr(attRdy);
+        	}
+            r.connection(this.p.connection);
+            r.safari();
+        },
+        up = function () {
+            this.p.instance.animate({"fill-opacity": 0}, 500);
         },
         startTestECG = function(address) {
         	socket.send("startTestECG"+address);
