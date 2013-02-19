@@ -216,7 +216,7 @@ $(function () {
             plotOptions: {         	
                 line: {
                 	dataGrouping: {
-                		enabled: true //has to do data grouping when unit is millivolt, otherwise, shape looks so wired
+                		enabled: false //has to do data grouping when unit is millivolt, otherwise, shape looks so wired
                 						// does not need grouping when unit is microvolot
                 	},   
                 	allowPointSelect: true,
