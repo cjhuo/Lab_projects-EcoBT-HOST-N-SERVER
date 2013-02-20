@@ -114,6 +114,7 @@ class ECGGet(Characteristic):
                 self.service.read_buffer[idx] = ECGReading()
 
     def process(self):
+        self.service.setter.lock.acquire()
         # starting from a brand new recording, means ECGSet doesn't assign it an initial value, reading a remnant data
         if not hasattr(self.service, "record_cnt"):
             if not hasattr(self.service, "sendStopFromGetter") or self.service.sendStopFromGetter == False:
@@ -219,6 +220,7 @@ class ECGGet(Characteristic):
 
             if self.service.read_buffer[key].isValid():
                 self.handle_reading(key)
+        self.service.setter.lock.release()
 
 
     def handle_reading(self, key):

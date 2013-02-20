@@ -12,6 +12,7 @@ import array
 import binascii
 import struct
 import time
+import threading
 
 
 from Characteristic import *
@@ -43,8 +44,10 @@ class ECGSet(Characteristic):
         self.service.sampleRecorded = False # create a flag to indicate the samples hasn't been recorded
         #self.service.startState = 0 # 0: just initialized; 1: has checked any status
         self.service.state = 0
+        self.lock = threading.Condition();
         
     def process(self):
+        self.lock.acquire()
         #print self.instance._.value
         value = self.instance._.value
         (start,) = struct.unpack("@B", value)
@@ -99,9 +102,9 @@ class ECGSet(Characteristic):
                     NSLog("PUTTING READ RECORDING SIGNAL TO DELAY QUEUE")
                     self.service.PushToDelayQueue('ReadStart') 
                     # place of sleep in critical!!! has to be right before sending stop       
-                    time.sleep(12)        
-                    NSLog("SENDING STOP RECORDING SIGNAL")      
                     self.service.state = 3
+                    time.sleep(12) 
+                    NSLog("SENDING STOP RECORDING SIGNAL")             
                     self.peripheralWorker.writeValueForCharacteristic(self.createStopFlag(), self) 
                     #self.recorded = True # set to true so that it won't be recorded automatically again, waiting for UI to send command
                 elif self.service.sampleRecorded == True: # sample recorded, start real recording!!!!
@@ -127,6 +130,7 @@ class ECGSet(Characteristic):
             
         print "ECG service's state: ", self.service.state
         print stateRef
+        self.lock.release()
         # TBD
         
     def createStartFlag(self):
@@ -166,6 +170,7 @@ class ECGSet(Characteristic):
             self.peripheralWorker.writeValueForCharacteristic(self.createReadFromCardFlag(), self)
 
     def startECG(self):
+        self.lock.acquire()
         # clear delay Queue
         self.service.delayQueue = []
         # not creating a flag to indicate the samples hasn't been recorded 
@@ -173,20 +178,26 @@ class ECGSet(Characteristic):
             NSLog("SENDING START REAL RECORDING SIGNAL")
             self.service.state = 1
             self.peripheralWorker.writeValueForCharacteristic(self.createStartFlag(), self)
+        elif self.service.state == 3:
+            NSLog("PUTTING START REAL RECORDING SIGNAL TO DELAY QUEUE")
+            self.service.PushToDelayQueue('WriteStart')            
         else:
             NSLog("PUTTING START REAL RECORDING SIGNAL TO DELAY QUEUE")
             self.service.state = 3 # stop signal sent
             self.service.PushToDelayQueue('WriteStart')
             self.peripheralWorker.writeValueForCharacteristic(self.createStopFlag(), self)
             #self.peripheralWorker.writeValueForCharacteristic(self.createStartFlag(), self)
+        self.lock.release()
 
     def stopECG(self):
+        self.lock.acquire()
         # clear delay Queue
         self.service.delayQueue = []        
         if self.service.state != 0 or self.service.state != 4:
             NSLog("SENDING STOP REAL RECORDING SIGNAL")
             self.service.state = 3
             self.peripheralWorker.writeValueForCharacteristic(self.createStopFlag(), self)
+        self.lock.acquire()
         
     '''                            
     def readECGData(self):
@@ -198,6 +209,7 @@ class ECGSet(Characteristic):
     '''
         
     def startTestECG(self): #address could be the pNum or address  
+        self.lock.acquire()
         # clear delay Queue
         self.service.delayQueue = []
         self.service.sampleRecorded = False # create/reset a flag to indicate the samples hasn't been recorded   
@@ -205,11 +217,15 @@ class ECGSet(Characteristic):
             NSLog("SENDING START TEST RECORDING SIGNAL")
             self.service.state = 1  
             self.peripheralWorker.writeValueForCharacteristic(self.createStartFlag(), self)          
+        elif self.service.state == 3:
+            NSLog("PUTTING START TEST RECORDING SIGNAL TO DELAY QUEUE")
+            self.service.PushToDelayQueue('WriteStart')            
         else:  
             NSLog("PUTTING START TEST RECORDING SIGNAL TO DELAY QUEUE")
             self.service.state = 3   
             self.service.PushToDelayQueue('WriteStart')   
             self.peripheralWorker.writeValueForCharacteristic(self.createStopFlag(), self)
+        self.lock.release()
     
 
 
