@@ -5,6 +5,7 @@ import dicom
 import struct
 import numpy as np
 import SDCard_reader
+import os.path
 
 from dicom.tag import Tag
 
@@ -130,6 +131,6 @@ if __name__ == "__main__":
     ecg_data = reader.read_data()
     date = "%04d%02d%02d" % (ecg_data['start_time'].year, ecg_data['start_time'].month, ecg_data['start_time'].day)
     time = "%02d%02d%02d" % (ecg_data['start_time'].hour, ecg_data['start_time'].minute, ecg_data['start_time'].second)
-    outfile = "%s_%s.dcm" % (date, time)
+    outfile = "%s/%s_%s.dcm" % (os.path.dirname(filename), date, time)
 
     packDICOM(ecg_data, outfile)
