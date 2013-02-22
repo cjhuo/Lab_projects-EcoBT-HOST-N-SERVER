@@ -269,8 +269,8 @@ $(function () {
     	        	enabled: false,
     	        	//step: 2
     	        },
-    	        startOnTick: true,
-    	        endOnTick: true
+    	        startOnTick: false,
+    	        endOnTick: false
             },
             yAxis: {
             	lineColor: 'rgb(245, 149, 154)',
@@ -302,11 +302,14 @@ $(function () {
 
             },
             tooltip: {
-                enabled: true,
+                enabled: disable,
                 crosshairs: true,
                 formatter: function() {
                     return '<b>'+ this.series.name +'</b><br/>'+
                     this.x/(1000/frequency) +': '+ this.y;
+                },
+                positioner: function () {
+                	return { x: 800, y: 50 };
                 }
             },
             plotOptions: {
