@@ -51,11 +51,11 @@ class ECG_reader():
         self.ecg = ECG.Ecg(self.wavech,info)
         
     def getTestData(self):
-        #get only first 2400 samples for each channels
-        if self.NumofsamplesPerChannel > 2400:
+        #get only first 2500 samples for each channels
+        if self.NumofsamplesPerChannel > 2500:
             wavedata = [
                         [
-                            self.wavech[channel_number][i] for i in range(2400)
+                            self.wavech[channel_number][i] for i in range(2500)
                         ] for channel_number in range( self.NumofChannels )
                     ] 
         else: 

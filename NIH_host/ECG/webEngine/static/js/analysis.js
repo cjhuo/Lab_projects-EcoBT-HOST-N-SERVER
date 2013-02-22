@@ -86,7 +86,7 @@ $(function () {
                     s = ''+
                         this.point.name +': '+ this.percentage.toFixed(1) +' %';
                 } else {
-                    s = null;
+                    s = this.series.name +': '+ this.y;
                 }
                 return s;
             },
@@ -156,7 +156,7 @@ $(function () {
     	$.each(data.data, function(key, val) {    		
     		hOptions.series.push({
     			type: 'column',
-    			name: (val[0].toFixed(4) + '~' + val[1].toFixed(4)).toString(),
+    			name: (val[0].toFixed(5) + '~' + val[1].toFixed(5)).toString(),
     			data: [val[2]],
     			dataLabels:{
     				enabled: true
