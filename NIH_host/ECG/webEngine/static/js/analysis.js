@@ -302,7 +302,7 @@ $(function () {
 
             },
             tooltip: {
-                enabled: disable,
+                enabled: false,
                 crosshairs: true,
                 formatter: function() {
                     return '<b>'+ this.series.name +'</b><br/>'+
