@@ -1,0 +1,54 @@
+<!doctype html><title>Minimal tQuery Page</title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/jquery-1.8.2.js") }}"></script>
+
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/highstock/highstock.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/highstock/highcharts-more.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/highstock/modules/exporting.js") }}"></script>
+
+<body>
+<div id="container" style="width: 1000px; height: 500px; margin: 0 auto"></div>
+<script>
+
+$(function () {
+    $.getJSON('http://www.highcharts.com/samples/data/jsonp.php?filename=range.json&callback=?', function(data) {
+    
+        window.chart = new Highcharts.StockChart({
+        
+            chart: {
+                renderTo: 'container',
+                type: 'arearange'
+            },
+            
+            rangeSelector: {
+                selected: 0
+            },
+            
+            credits: {
+            	href: "http://cps.eng.uci.edu",
+            	text: "CECS Lab UI sample data from www.highcharts.com"
+            },
+            
+            title: {
+                text: 'Temperature variation by day'
+            },
+        
+            tooltip: {
+                valueSuffix: '°C'
+            },
+            
+            series: [{
+                name: 'Temperatures',
+                data: data
+            }]
+        
+        });
+    });
+});
+    
+</script>
+
+</body>
+
+
+
