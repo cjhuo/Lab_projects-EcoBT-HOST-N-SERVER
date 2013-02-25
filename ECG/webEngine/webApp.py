@@ -2,10 +2,10 @@ import os.path
 
 import tornado.web
 
-from handlers.fake.fakePlotHandler import *
-from handlers.ECGHandler import *
-from handlers.pageRenderingHandlers import *
-from handlers.AuthHandlers import AuthHandler
+from webHandlers.fake.fakePlotHandler import *
+from webHandlers.ECGHandler import *
+from webHandlers.pageRenderingHandlers import *
+from webHandlers.AuthHandlers import AuthHandler
 
 from db.Models import DataSource, Device, DataLog
 from ecg.ECG_reader import ECG_reader

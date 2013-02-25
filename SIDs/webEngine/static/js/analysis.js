@@ -15,8 +15,7 @@
 $(function () {
 	
 	//ajax call urls
-	var dataurl = 'dsp'; 
-	var submitUrl = 'dsp'; 
+	var submitUrl = 'ecgHandler'; 
 	var fileHandlerUrl = 'ecgHandler'
 	
 	var datasets; //store datasets
@@ -814,7 +813,7 @@ $(function () {
     			};
 		plotAccordingToChoices();
 		$.ajax({
-			type: 'POST',
+			type: 'GET',
 			url: submitUrl,
 			dataType: 'json',
 			cache: false,

@@ -149,6 +149,21 @@ class LiveECGHandler(BaseHandler):
             nodeName = name,
         )  
 
+class LiveSIDsHandler(BaseHandler):
+    def get(self):  
+        try:
+            name = self.get_argument("name") # node's name, e.g., MAC addres
+        except Exception:
+            name = None   
+        self.render(
+            "live/sids.html",
+            page_title="Live SIDs Viewer",
+            header_text="Live SIDs Viewer",
+            footer_text="",
+            serverAddr = LiveSIDsServerAddr,
+            nodeName = name,
+        )  
+
 class AdministrationHandler(BaseHandler):
     def get(self):     
         self.render(

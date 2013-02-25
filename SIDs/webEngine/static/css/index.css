@@ -1,0 +1,75 @@
+
+* { margin:0;
+	padding:0;
+}
+
+html {height: 100%;}
+
+body{
+	position: relative;
+	/*width: 100%;*/
+	min-width:1000px;
+	/*height: 100%;*/
+	/*min-height: 768px;*/	
+	background-color: #BCBCBC;
+	<!--background: -webkit-gradient(linear, left top, left bottom, from(#ccc), to(#fff));-->
+
+}
+
+.navbox {
+	position: relative;
+	float: left;
+	width:150px
+	min-width:150px;
+}
+
+ul.nav {
+	list-style: none;
+	display: block;
+	width: 150px;
+	position: relative;
+	top: 0px;
+	left: 5px;
+	padding: 60px 0 60px 0;
+	background: url('images/shad2.png') no-repeat;
+	-webkit-background-size: 50% 100%;
+}
+
+li {
+	margin: 5px 0 0 0;
+}
+
+ul.nav li a {
+	-webkit-transition: all 0.3s ease-out;
+	background: #cbcbcb url('images/border.png') no-repeat;
+	color: #174867;
+	padding: 7px 15px 7px 15px;
+	-webkit-border-top-right-radius: 10px;
+ 	-webkit-border-bottom-right-radius: 10px;
+	width: 100px;
+	display: block;
+	text-decoration: none;
+	-webkit-box-shadow: 2px 2px 4px #888;
+}
+
+ul.nav li a:hover {
+	background: #ebebeb url('images/border.png') no-repeat;
+	color: #67a5cd;
+	padding: 7px 15px 7px 30px;
+}
+
+iframe {
+	width: 85%;
+	height: 2200px;
+	position: relative;
+	float: right;
+	margin: 0px 0px 0px 0px;
+	
+}
+
+p {
+	position: relative;
+	margin:0px 10px 10px 10px;
+}
+
+
