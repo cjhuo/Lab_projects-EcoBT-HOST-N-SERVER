@@ -448,6 +448,11 @@ $(function () {
     	
     	popUpDiv.dialog({
             //height: 200,
+    		position: {
+    			my: "top",
+    			at: "bottom",
+    			of: $("#spinner")[0]
+    		},
     		width: 500,
             modal: true,
             resizable: false,
