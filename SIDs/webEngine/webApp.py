@@ -23,7 +23,6 @@ class Application(tornado.web.Application):
         
         self.handlers = [
                 (r'/', MainHandler),          
-                (r'/uploads/(.*)', tornado.web.StaticFileHandler, {"path": os.path.join(os.path.dirname(__file__), "Uploads")}),
                 (r'/soundMonitor', SoundMonitorHandler),
                 (r'/ecgHandler', ECGHandler, dict(ecg = self.ecg)),
                 (r'/ecgAllInOne', ECGAllInOneHandler),
@@ -39,7 +38,7 @@ class Application(tornado.web.Application):
                 (r'/plot', PlotHandler),
                 (r'/analysis', AnalysisHandler),
                 (r'/point', PointHandler, dict(ds = self.ds)),
-                (r'/dsp', DSPHandler, dict(ecg = self.ecg)),
+                #(r'/dsp', DSPHandler, dict(ecg = self.ecg)),
                 (r"/fakeSocket", ClientSocket, dict(ds = self.ds)),
                 (r"/login", AuthHandler),
                 (r"/logout", LogOutHandler),

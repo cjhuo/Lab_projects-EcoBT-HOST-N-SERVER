@@ -10,7 +10,7 @@ import multiprocessing
 from functools import partial
 
 import os
-filePath = os.path.join(os.path.dirname(__file__), os.pardir, "Uploads/MIICWwIBAAKBgQCMs1QxLEFE.dcm")
+filePath = os.path.join(os.path.dirname(__file__), os.pardir, "static/Uploads/MIICWwIBAAKBgQCMs1QxLEFE.dcm")
 
 class ECG_reader():
     def __init__(self):

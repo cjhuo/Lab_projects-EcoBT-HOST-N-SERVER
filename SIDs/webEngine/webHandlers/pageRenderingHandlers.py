@@ -19,10 +19,10 @@ class MainHandler(BaseHandler):
             return
         username = tornado.escape.xhtml_escape(self.current_user["name"])
         self.render(
-            "index.html",
-            page_title="ECG Demo",
-            header_text="ECG Demo",
-            footer_text="ECG Demo",
+            "index_sids.html",
+            page_title="SIDs Demo",
+            header_text="SIDs Demo",
+            footer_text="SIDs Demo",
             username = username
         )
         

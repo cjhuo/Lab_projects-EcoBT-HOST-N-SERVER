@@ -19,7 +19,7 @@ class MainHandler(BaseHandler):
             return
         username = tornado.escape.xhtml_escape(self.current_user["name"])
         self.render(
-            "index.html",
+            "index_ecg.html",
             page_title="ECG Demo",
             header_text="ECG Demo",
             footer_text="ECG Demo",
@@ -148,7 +148,7 @@ class LiveECGHandler(BaseHandler):
             serverAddr = LiveECGServerAddr,
             nodeName = name,
         )  
-        
+
 class LiveSIDsHandler(BaseHandler):
     def get(self):  
         try:
