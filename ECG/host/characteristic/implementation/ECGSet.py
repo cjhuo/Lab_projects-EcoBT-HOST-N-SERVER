@@ -80,19 +80,16 @@ class ECGSet(Characteristic):
                 #    self.processQueue()
                 NSLog("OUT OF SEQUENCE!!!")
                 self.tryToSaveStateByResend()
+        # check if the node's beginning state is start, if yes, then invalid, stop it, toggle beginning state
         elif self.service.state == 0: # need reseting
             NSLog("RESETING...")
             self.service.state = 3       
             self.peripheralWorker.writeValueForCharacteristic(self.createStopFlag(), self)
+            self.lock.release()
             return     
         elif start == startFlag:
             if self.service.state == 1 or self.service.state == 2:
-                # check if the node's beginning state is start, if yes, then invalid, stop it, toggle beginning state
-                if self.service.state == 0:
-                    NSLog("RESETTING NODE TO READY")
-                    self.service.state = 3
-                    self.peripheralWorker.writeValueForCharacteristic(self.createStopFlag(), self)
-                elif not self.service.sampleRecorded: # has not recorded 10 second samples  
+                if not self.service.sampleRecorded: # has not recorded 10 second samples  
                     # stop recording first
                     # read ecg from sd card then
                     NSLog("STOP RECORDING IN 12 SECONDS")
