@@ -20,50 +20,21 @@ def get_step_size( template ):
 # First coarse searching, and then specific searching
 def get_matched_template_index( original_data, template, step_size ):
 
-    #crosscorrs = list(
-    #    scipy.stats.pearsonr( template, original_data[i:i+template.size] )[0]
-    #    for i in range( 0, original_data.size - template.size, step_size )
-    #)
-    #arr_crosscorrs = numpy.array( crosscorrs )
-    #
-    #filtered_index = numpy.argwhere( arr_crosscorrs > threshold )
-    #startingpoint, endpoint = filtered_index[0][0], filtered_index[-1][0]
-    #
-    #crosscorrs = list(
-    #    scipy.stats.pearsonr( template, original_data[i:i+template.size] )[0]
-    #    for i in range( startingpoint, endpoint )
-    #)
-    #
-    #return numpy.array( crosscorrs ).argmax()
-
-
-    checkflag  = False
     maxcorr    = -1
-
     x1 = []
-    x2 = []
 
     for i in range( 0, len(original_data) - len(template), step_size ) :
         crosscorr, pvalue = scipy.stats.pearsonr( template, original_data[i:i+len(template)] )
-        if not checkflag:
-            if crosscorr > threshold:
-                checkflag = True
-                x1.append( i )
-        if checkflag:
-            if crosscorr < threshold:
-                checkflag = False
-                x2.append( i )
+        if crosscorr > threshold :
+            x1.append(i)
 
-    startingpoint = 0 if not x1 else min( x1 )
-    endpoint      = len(original_data) - len(template) if not x2 else max( x2 )
+    for i in x1 :
+        for j in range(max(0, i - step_size), min(i+step_size,len(original_data) - len(template))) :
+            crosscorr, pvalue = scipy.stats.pearsonr( template, original_data[j:j+len(template)] )
 
-    for i in range(startingpoint,endpoint):
-        crosscorr, pvalue = scipy.stats.pearsonr( template, original_data[i:i+len(template)] )
-
-        if crosscorr > maxcorr:
-            maxcorr  = crosscorr
-            maxindex = i
-        else: pass
+            if crosscorr > maxcorr:
+                maxcorr  = crosscorr
+                maxindex = j
 
     return maxindex
 

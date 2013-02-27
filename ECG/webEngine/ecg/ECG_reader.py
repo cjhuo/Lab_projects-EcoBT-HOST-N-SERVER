@@ -74,11 +74,11 @@ class ECG_reader():
         index_range = range( 1, len( self.peakdata ) - 2 )
         
         # Searching similar point from manually selected Q point
-        new_func = partial( CAPS.SearchingSimilarPoint, qpoint, self.peakdata, self.wavech[1] )
+        new_func = partial( CAPS.SearchingSimilarPoint, qpoint, self.peakdata, self.wavech[0] )
         Qpoint = multiprocessing.pool.Pool().map( new_func, index_range )
     
         # Searching similar point from manually selected T point
-        new_func = partial( CAPS.SearchingSimilarPoint, tpoint, self.peakdata, self.wavech[1] )
+        new_func = partial( CAPS.SearchingSimilarPoint, tpoint, self.peakdata, self.wavech[0] )
         Tpoint = multiprocessing.pool.Pool().map( new_func, index_range )
     
         # Calculate the Qtc value
