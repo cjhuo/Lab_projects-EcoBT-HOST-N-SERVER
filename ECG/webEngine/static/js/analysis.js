@@ -301,14 +301,14 @@ $(function () {
 
             },
             tooltip: {
-                enabled: false,
+                enabled: true,
                 crosshairs: true,
                 formatter: function() {
                     return '<b>'+ this.series.name +'</b><br/>'+
                     this.x/(1000/frequency) +': '+ this.y;
                 },
                 positioner: function () {
-                	return { x: 800, y: 50 };
+                	return { x: 500, y: 50 };
                 }
             },
             plotOptions: {
