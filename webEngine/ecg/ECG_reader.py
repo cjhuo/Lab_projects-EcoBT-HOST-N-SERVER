@@ -72,19 +72,18 @@ class ECG_reader():
     
         # ECG R peak detection
         index_range = range( 1, len( self.peakdata ) - 2 )
-    
+        
         # Searching similar point from manually selected Q point
-        new_func = partial( CAPS.SearchingSimilarPoint, qpoint, self.peakdata, self.wavech[0] )
+        new_func = partial( CAPS.SearchingSimilarPoint, qpoint, self.peakdata, self.wavech[1] )
         Qpoint = multiprocessing.pool.Pool().map( new_func, index_range )
     
         # Searching similar point from manually selected T point
-    
-        new_func = partial( CAPS.SearchingSimilarPoint, tpoint, self.peakdata, self.wavech[0] )
+        new_func = partial( CAPS.SearchingSimilarPoint, tpoint, self.peakdata, self.wavech[1] )
         Tpoint = multiprocessing.pool.Pool().map( new_func, index_range )
     
         # Calculate the Qtc value
-        Qtcs = Qtc.CalculateQtc(self.peakdata, Qpoint, Tpoint, int(samplingrate))
-    
+        Qtcs = Qtc.CalculateQtc(self.peakdata, Qpoint, Tpoint, int(self.samplingrate))
+
         # Make histogram
         histo = Histogram.histo(Qtcs,bin)
         histodata = histo.Histogram(Qtcs, bin)

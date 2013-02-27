@@ -95,7 +95,7 @@ $(function () {
                 allowPointSelect: true,
                 cursor: 'pointer',
                 dataLabels: {
-                    enabled: true,
+                    enabled: false,
                     color: '#000000',
                     connectorColor: '#000000',
                     formatter: function() {
@@ -106,22 +106,25 @@ $(function () {
                 	enabled: false
                 },
                 showInLegend: false,
-                center: [100, 100],
+                center: [100, 50],
                 	size: 100,    
             },
             column: {
                 dataLabels: {
-                    enabled: true,
+                    enabled: false,
                     formatter: function() {
-                        return '<b>'+ this.series.name +'</b>: '+ this.y;
+                    	if(this.y != 0)
+                    		return '<b>'+ this.series.name +'</b>: '+ this.y;
+                    	else
+                    		return '';
                     }
                 },
                 showInLegend: true,
-                /*
-                pointPadding: 0,
-                groupPadding: 0,
-                borderWidth: 0
-                */
+                
+                //pointPadding: 0,
+                //groupPadding: 0,
+                //borderWidth: 0
+                
             }
         },
         series: []
@@ -138,10 +141,10 @@ $(function () {
     	}
     	histogram = $('<div id="histogram" ></div>').css( {    		
             position: 'relative',
-            width: '100%',
+            //width: '100%',
             height: '400px',
-            margin: 'auto',
-            padding: '2px'
+            margin: '5px',
+            //padding: '2px'
         });
     	histogram.appendTo("body");
     	//var tmpDataColumn = [];
