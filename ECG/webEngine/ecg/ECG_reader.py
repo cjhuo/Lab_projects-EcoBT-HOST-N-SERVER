@@ -34,13 +34,16 @@ class ECG_reader():
         self.name = ds[0x10,0x10].value
         self.NumofsamplesPerChannel = ds[0x5400,0x100][0][0x3a,0x10].value
         self.NumofChannels = ds[0x5400,0x100][0][0x3a,0x5].value
+        self.sensitivity = float(ds[0x5400,0x100][0][0x3a,0x200][0][0x3a,0x210].value)
+        
     
         fmt="<"+str(self.NumofsamplesPerChannel*self.NumofChannels)+"h"
         wavedata = list(struct.unpack(fmt,ds.WaveformSequence[0].WaveformData))
         
+        # original unit in dicom is 0.1 milliVolt, converted unit in self.wavech is microVolt
         self.wavech = [
                     [
-                        elem for index, elem in enumerate( wavedata ) if index % self.NumofChannels == channel_number
+                        elem*self.sensitivity*1000 for index, elem in enumerate( wavedata ) if index % self.NumofChannels == channel_number
                     ] for channel_number in range( self.NumofChannels )
                 ]    
         print 'there is ', len(self.wavech), ' channels in the test dicom'

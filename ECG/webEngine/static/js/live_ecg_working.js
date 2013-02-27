@@ -314,7 +314,7 @@ $(function () {
     	
 		innerResizer = $('<div id="innerResizer" />').css( {
 			padding: '0px 10px 0px 0px',
-			marginTop: '30px'
+			//marginTop: '30px'
         });	
 		innerResizer.appendTo(resizer);
     }
@@ -681,7 +681,7 @@ $(function () {
     	          progressLabel.text( "Complete!" );
     	        }
         }).css({
-        	width: '90%',
+        	width: '98%',
         	margin: 'auto'
         });
     	progressBar.appendTo("body");

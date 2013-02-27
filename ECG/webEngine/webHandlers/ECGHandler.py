@@ -10,7 +10,7 @@ import json
 from BaseHandler import BaseHandler
 from ecg.ECG_reader import ECG_reader
 
-
+uploadPath = "static/Uploads/"
 #fake the labels for each channels for demo purpose, 
 #eventually label information should be passed from ecg module
 ECG_CHANNELLABELS = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6']
@@ -25,7 +25,7 @@ class ECGAllInOneHandler(BaseHandler):
                 f = self.request.files['uploaded_files'][0]
                 orig_fname = f['filename']
                 import os
-                path = os.path.join(os.path.dirname(__file__), os.pardir, "Uploads/")
+                path = os.path.join(os.path.dirname(__file__), os.pardir, uploadPath)
                 ofd = open(path + orig_fname, 'w')
                 ofd.write(f['body'])
                 ofd.close()
@@ -68,7 +68,7 @@ class ECGHandler(BaseHandler):
                 f = self.request.files['uploaded_files'][0]
                 orig_fname = f['filename']
                 import os
-                path = os.path.join(os.path.dirname(__file__), os.pardir, "Uploads/")
+                path = os.path.join(os.path.dirname(__file__), os.pardir, uploadPath)
                 ofd = open(path + orig_fname, 'w')
                 ofd.write(f['body'])
                 ofd.close()
