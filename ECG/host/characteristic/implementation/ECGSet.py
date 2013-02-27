@@ -145,8 +145,8 @@ class ECGSet(Characteristic):
         return val_data
     
     def tryToSaveStateByResend(self):
-        NSLog("TRYING TO RESEND SIGNAL TO SAVE THE STATE MACHINE IN 5 SECS...")
-        time.sleep(5)
+        NSLog("TRYING TO RESEND SIGNAL TO SAVE THE STATE MACHINE...")
+        #time.sleep(5)
         if self.service.state == 1:
             self.peripheralWorker.writeValueForCharacteristic(self.createStartFlag(), self)
         elif self.service.state == 3:

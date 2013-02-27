@@ -726,6 +726,11 @@ $(function () {
     	var popUpDiv = $('<div id="popUpBox"><div>');
     	popUpDiv.html('<p>Please choose the type for the point: </p>');
     	popUpDiv.dialog({
+    		position: {
+    			my: "top",
+    			at: "bottom",
+    			of: $("#diagram")[0]
+    		},
             height: 200,
             modal: true,
             resizable: false,

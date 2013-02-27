@@ -40,7 +40,7 @@ class ECG_reader():
         fmt="<"+str(self.NumofsamplesPerChannel*self.NumofChannels)+"h"
         wavedata = list(struct.unpack(fmt,ds.WaveformSequence[0].WaveformData))
         
-        # original unit in dicom is 0.1 milliVolt, converted unit in self.wavech is microVolt
+        # original unit in dicom is milliVolt, converted unit in self.wavech is microVolt, assuming channel sensitivity's unit is mV
         self.wavech = [
                     [
                         elem*self.sensitivity*1000 for index, elem in enumerate( wavedata ) if index % self.NumofChannels == channel_number
