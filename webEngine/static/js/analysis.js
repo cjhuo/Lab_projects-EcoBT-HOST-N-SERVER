@@ -15,8 +15,7 @@
 $(function () {
 	
 	//ajax call urls
-	var dataurl = 'dsp'; 
-	var submitUrl = 'dsp'; 
+	var submitUrl = 'ecgHandler'; 
 	var fileHandlerUrl = 'ecgHandler'
 	
 	var datasets; //store datasets
@@ -86,7 +85,7 @@ $(function () {
                     s = ''+
                         this.point.name +': '+ this.percentage.toFixed(1) +' %';
                 } else {
-                    s = null;
+                    s = this.series.name +': '+ this.y;
                 }
                 return s;
             },
@@ -156,7 +155,7 @@ $(function () {
     	$.each(data.data, function(key, val) {    		
     		hOptions.series.push({
     			type: 'column',
-    			name: (val[0].toFixed(4) + '~' + val[1].toFixed(4)).toString(),
+    			name: (val[0].toFixed(5) + '~' + val[1].toFixed(5)).toString(),
     			data: [val[2]],
     			dataLabels:{
     				enabled: true
@@ -269,8 +268,8 @@ $(function () {
     	        	enabled: false,
     	        	//step: 2
     	        },
-    	        startOnTick: true,
-    	        endOnTick: true
+    	        startOnTick: false,
+    	        endOnTick: false
             },
             yAxis: {
             	lineColor: 'rgb(245, 149, 154)',
@@ -302,11 +301,14 @@ $(function () {
 
             },
             tooltip: {
-                enabled: true,
+                enabled: false,
                 crosshairs: true,
                 formatter: function() {
                     return '<b>'+ this.series.name +'</b><br/>'+
                     this.x/(1000/frequency) +': '+ this.y;
+                },
+                positioner: function () {
+                	return { x: 800, y: 50 };
                 }
             },
             plotOptions: {
@@ -446,6 +448,11 @@ $(function () {
     	
     	popUpDiv.dialog({
             //height: 200,
+    		position: {
+    			my: "top",
+    			at: "bottom",
+    			of: $("#spinner")[0]
+    		},
     		width: 500,
             modal: true,
             resizable: false,
@@ -503,11 +510,12 @@ $(function () {
     		
     	//plot all channels on one plot
     	diagram = $('<div id="diagram" ></div>').css( {
-            //position: 'relative',
-            width: '100%',
+            position: 'relative',
+            //width: '100%',
             height: '220px',
-            //margin: 'auto',
-            padding: '2px'
+            margin: '5px',
+            //marginRight: '10px',
+            //padding: '2px'
         });
     	diagram.appendTo("body");
     }
@@ -811,7 +819,7 @@ $(function () {
     			};
 		plotAccordingToChoices();
 		$.ajax({
-			type: 'POST',
+			type: 'GET',
 			url: submitUrl,
 			dataType: 'json',
 			cache: false,

@@ -40,6 +40,10 @@ $(function () {
 				enableECGButtonEvent(data.data);
 				//ready to scan
 			}
+			else if(data.data.type == 'SIDs'){
+				enableSIDsButtonEvent(data.data);
+				//ready to scan
+			}
 			/*
 			else{
 				addServiceNode(data.data);
@@ -284,10 +288,57 @@ $(function () {
 			if(value.type == 'ECG'){
 				enableECGButtonEvent(value);
 			}
+			if(value.type == 'SIDs'){
+				enableSIDsButtonEvent(value);
+			}
 			
 			toggleNode(p, true);
         },
         enableECGButtonEvent = function(data) {
+        	// find relative peripheral
+        	var peripheral;
+        	$.each(peripheralList, function(key, val){
+        		if(val.number == data.number){
+        			peripheral = val;
+        		}
+        	})
+        	
+        	if(peripheral != null){
+        		if(peripheral.readyInstance == null){
+	        		peripheral.instance.attr({cursor: "pointer"});
+	        		
+	        		// draw ready text
+	    			x = peripheral.instance.attr("x") + 10;
+	    			y = peripheral.instance.attr("y") + 30;
+	    			var text = r.text(x+20, y-10, "START").attr({
+	        			opacity: 1, 
+	        			fill: 'black', 
+	        			"stroke-width": 2,
+	        			"font-weight":900});
+	    			peripheral.readyInstance = text;
+	    			var group = r.set();
+	    			group.push(peripheral.instance);
+	    			group.push(text);
+	    			//group.peripheral = peripheral;
+	    			var ecgUrl = "/liveECG?name="+data.address;
+	    			group.attr({
+	    			    cursor: 'pointer',
+	    			}).mouseover(function(e) {
+	    				group[0].attr('fill', "green");
+	    			}).mouseout(function(e) {
+	    				group[0].attr('fill', "");
+	    			}).dblclick(function(e) {
+	    				group[0].attr('fill', "red");
+	    				showSpinner();
+	    				startTestECG(peripheral.address);
+	    				this.undblclick();
+	    				//this.remove();
+	    				window.open(ecgUrl, '_self', false);
+	    			}); 
+        		}
+        	}
+        },
+        enableSIDsButtonEvent = function(data) {
         	// find relative peripheral
         	var peripheral;
         	$.each(peripheralList, function(key, val){
@@ -312,7 +363,7 @@ $(function () {
     			group.push(peripheral.instance);
     			group.push(text);
     			//group.peripheral = peripheral;
-    			var ecgUrl = "/liveECG?name="+data.address;
+    			var ecgUrl = "/liveSIDs?name="+data.address;
     			group.attr({
     			    cursor: 'pointer',
     			}).mouseover(function(e) {
@@ -322,7 +373,7 @@ $(function () {
     			}).dblclick(function(e) {
     				group[0].attr('fill', "red");
     				showSpinner();
-    				startTestECG(peripheral.address);
+    				//startTestECG(peripheral.address);
     				this.undblclick();
     				//this.remove();
     				window.open(ecgUrl, '_self', false);

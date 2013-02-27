@@ -8,47 +8,13 @@ import tornado.web
 import json
 
 from BaseHandler import BaseHandler
+from ecg.ECG_reader import ECG_reader
 
 
 #fake the labels for each channels for demo purpose, 
 #eventually label information should be passed from ecg module
 ECG_CHANNELLABELS = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6']
 
-class DSPHandler(BaseHandler):
-    def initialize(self, ecg):
-        self.ecg = ecg
-             
-    def post(self): 
-        data = json.loads(self.get_argument("data"))
-        print data
-        
-        #format of getBinInfo(): [[min, max, value],[min,max,value],...]
-        bins = self.ecg.getBinInfo(data['qPoint'][0], data['tPoint'][0], data['bin']);
-        
-        print bins
-        self.write({'data': bins}) #format of bins json: {'data': bins info}
-          
-    ''' 
-    def get(self):        
-        val = self.fakeData()  #should be replaced by ecg dsp data generation module
-        print val
-        self.write({'dspData': val})   
-    
-    #generate data for n channels with 100 data each, ranged from (-100, 100)
-    def fakeData(self, n=2):
-        datasets = dict()
-        for i in range(n):
-            #data = [[j, random.randint(-100, 100)] for j in range(100)]  
-            data = [random.randint(-100, 100) for j in range(100)]           
-            #label = "channel " + str(i)
-            label = ECG_CHANNELLABELS[i]
-            #print label
-            datasets[i] = dict()
-            datasets[i]['data'] = data 
-            datasets[i]['label'] = label
-        return datasets
-    '''
-from ecg.ECG_reader import ECG_reader
 class ECGAllInOneHandler(BaseHandler):
     def initialize(self):
         self.ecg = ECG_reader()
@@ -114,6 +80,17 @@ class ECGHandler(BaseHandler):
         except:
             self.send_error(302) # 302: invalid file
             
+    def get(self): 
+        data = json.loads(self.get_argument("data"))
+        print data
+        
+        #format of getBinInfo(): [[min, max, value],[min,max,value],...]
+        bins = self.ecg.getBinInfo(data['qPoint'][0], data['tPoint'][0], data['bin']);
+        
+        print bins
+        self.write({'data': bins}) #format of bins json: {'data': bins info}
+              
+            
     '''           
     The datasets dict should have the structure as below:
     datasets = [
@@ -158,7 +135,43 @@ class ECGHandler(BaseHandler):
         self.ecg.setFile(f)
         val = self.getDataFromDicomFile()
         self.write(val)
-    '''    
+    '''  
+
+''' 
+class DSPHandler(BaseHandler):
+    def initialize(self, ecg):
+        self.ecg = ecg
+             
+    def post(self): 
+        data = json.loads(self.get_argument("data"))
+        print data
+        
+        #format of getBinInfo(): [[min, max, value],[min,max,value],...]
+        bins = self.ecg.getBinInfo(data['qPoint'][0], data['tPoint'][0], data['bin']);
+        
+        print bins
+        self.write({'data': bins}) #format of bins json: {'data': bins info}
+          
+    
+    def get(self):        
+        val = self.fakeData()  #should be replaced by ecg dsp data generation module
+        print val
+        self.write({'dspData': val})   
+    
+    #generate data for n channels with 100 data each, ranged from (-100, 100)
+    def fakeData(self, n=2):
+        datasets = dict()
+        for i in range(n):
+            #data = [[j, random.randint(-100, 100)] for j in range(100)]  
+            data = [random.randint(-100, 100) for j in range(100)]           
+            #label = "channel " + str(i)
+            label = ECG_CHANNELLABELS[i]
+            #print label
+            datasets[i] = dict()
+            datasets[i]['data'] = data 
+            datasets[i]['label'] = label
+        return datasets
+'''  
 
 if __name__ == "__main__":
     print DSPHandler().getDataFromDicomFile()

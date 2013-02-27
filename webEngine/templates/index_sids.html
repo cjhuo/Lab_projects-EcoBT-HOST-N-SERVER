@@ -1,10 +1,10 @@
-{% extends "main.html" %}
-
-{% block header %}
-{% end %}
-
-{% block script_include %}
-<script language="javascript" type="text/javascript" src="{{ static_url("lib/jquery-1.8.2.js") }}"></script>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+		<title>{{ page_title }}</title>
+		<link type="text/css" href="{{ static_url("css/index.css") }}" rel="stylesheet" media="screen"/>
+		<script language="javascript" type="text/javascript" src="{{ static_url("lib/jquery-1.8.2.js") }}"></script>
 
 <script>
 function show(item){
@@ -53,16 +53,17 @@ function show(item){
 	return false;
 }
 </script>
-{% end %}
+</head>
 
-{% block body %}
+<body>
 <div class="mainContainer">
 	<div class="navbox">
 		<ul class="nav">
+			<li><a href="#" onclick="return show('administration');">SIDs RECORDING</a></li>
+			<!-- 
 			<li><a href="#" onclick="return show('analysis_allInOne');">DICOM ECG VIEWER</a></li>
 			<li><a href="#" onclick="return show('analysis');">DATA ANALYSIS</a></li>
-			<li><a href="#" onclick="return show('administration');">ECG RECORDING</a></li>
-			<!-- 
+			
 			<li><a href="#" onclick="return show('liveECG');">Live ECG Viewer (Primitive)</a></li>
 			<li><a href="#" onclick="return show('plot');">Live ECG Viewer (Primitive)</a></li>			
 			<li><a href="#" onclick="return show('orientation');">Live Orientation Viewer</a></li>
@@ -72,7 +73,7 @@ function show(item){
 			<li><a href="#" onclick="return show('cardReader');">Node configuration (local)</a></li>		
 			<li><a href="#" >Node configuration (remote TBD)</a></li>
 			 -->
-			 <li><a href="/logout">LOGOUT</a></li>
+			<li><a href="/logout">LOGOUT</a></li>
 			<li><a href="/">HOME</a></li>
 			
 		</ul>
@@ -83,10 +84,7 @@ function show(item){
 	 </iframe>
 	 <div id="content" />
 </div>
-{% end %}
-
-{% block footer %}
-	<!--{{ footer_text }}-->
-{% end %}
+</body>
+</html>
 
 

@@ -19,7 +19,7 @@ class MainHandler(BaseHandler):
             return
         username = tornado.escape.xhtml_escape(self.current_user["name"])
         self.render(
-            "index.html",
+            "index_ecg.html",
             page_title="ECG Demo",
             header_text="ECG Demo",
             footer_text="ECG Demo",
@@ -146,6 +146,21 @@ class LiveECGHandler(BaseHandler):
             header_text="Live ECG Viewer",
             footer_text="",
             serverAddr = LiveECGServerAddr,
+            nodeName = name,
+        )  
+
+class LiveSIDsHandler(BaseHandler):
+    def get(self):  
+        try:
+            name = self.get_argument("name") # node's name, e.g., MAC addres
+        except Exception:
+            name = None   
+        self.render(
+            "live/sids.html",
+            page_title="Live SIDs Viewer",
+            header_text="Live SIDs Viewer",
+            footer_text="",
+            serverAddr = LiveSIDsServerAddr,
             nodeName = name,
         )  
 

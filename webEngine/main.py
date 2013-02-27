@@ -5,10 +5,12 @@ import tornado.httpserver
 import tornado.ioloop
 import tornado.options
 
+import threading
 import webbrowser
 
 from config import *
 from webApp import *
+from host.EcoBTApp import EcoBTApp
 
 from tornado.options import define, options
 #define("port", default=webGUIPort, help="run on the given port", type=int)
@@ -17,21 +19,30 @@ def main():
     writeToLog(isWriteToLog)
     
     print "Running on localhost:", webGUIPort
+    ecoBTApp = EcoBTApp(enableKeyboardInterrupt)
     tornado.options.parse_command_line()
-    http_server = tornado.httpserver.HTTPServer(Application())
-    http_server.listen(webGUIPort)
+    app = Application(ecoBTApp)
+    httpServer = tornado.httpserver.HTTPServer(app)
+    httpServer.listen(webGUIPort)
+    
+    ecoBTApp.setSockets(app.globalSockets)
+    
+    #open a browser for the web interface
+    #webbrowser.open_new('http://localhost:8000/')
+    
+    #start web server
+    t = threading.Thread(target = tornado.ioloop.IOLoop.instance().start)
+    t.setDaemon(True)
+    #t.daemon = True
+    t.start()
+    ecoBTApp.start()
+    
     
     #open a browser for the web interface
     #webbrowser.open_new('http://localhost:8000/')
     
     #start web server
     
-    '''
-    sys.stdout = stdOut
-    sys.stderr = stdErr
-    '''
-    
-        
 def writeToLog(flag):
     if flag == True:
         logFile = open('log.txt','a+', 0)
@@ -42,5 +53,4 @@ def writeToLog(flag):
         
 if __name__ == "__main__":
     main()
-    tornado.ioloop.IOLoop.instance().start()
 
