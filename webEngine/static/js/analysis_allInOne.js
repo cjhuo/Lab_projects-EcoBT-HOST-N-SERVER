@@ -379,7 +379,7 @@ $(function () {
 		resizer.appendTo("body");
     	
 		innerResizer = $('<div id="innerResizer" />').css( {
-			padding: '10px'
+			padding: '0px 10px 0px 0px'
         });	
 		innerResizer.appendTo(resizer);
 	}

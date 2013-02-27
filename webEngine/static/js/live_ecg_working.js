@@ -37,12 +37,12 @@ $(function () {
 	*/
     var datasets; //store datasets
 	function onDataReceived(data) { //setup plot after retrieving data
-		console.log(data);
+		//console.log(data);
 		if( data.from == 'node')
 			if(name.trim() == data.data.address.trim())
 				if(data.data.type == 'ecg'){
 					datasets = data.data.data;
-					console.log(datasets.length);
+					//console.log(datasets.length);
 					removeProgressBar();
 					//addResizer();
 					addStartButton();
@@ -309,12 +309,11 @@ $(function () {
             width: '100%',
             minHeight: '400px',
             //border: '1px solid silver'
-
         });	
 		resizer.appendTo("body");
     	
 		innerResizer = $('<div id="innerResizer" />').css( {
-			padding: '0px',
+			padding: '0px 10px 0px 0px',
 			marginTop: '30px'
         });	
 		innerResizer.appendTo(resizer);
