@@ -510,11 +510,12 @@ $(function () {
     		
     	//plot all channels on one plot
     	diagram = $('<div id="diagram" ></div>').css( {
-            //position: 'relative',
-            width: '100%',
+            position: 'relative',
+            //width: '100%',
             height: '220px',
-            //margin: 'auto',
-            padding: '2px'
+            margin: '5px',
+            //marginRight: '10px',
+            //padding: '2px'
         });
     	diagram.appendTo("body");
     }
