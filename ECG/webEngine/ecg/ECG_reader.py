@@ -65,20 +65,20 @@ class ECG_reader():
             wavedata = self.wavech   
         return wavedata
     
-    def getBinInfo(self, qpoint, tpoint, bin=10, samplingrate=250) :
+    def getBinInfo(self, qpoint, tpoint, bin=10, channelNo = 2) :
         self.peakdata = self.ecg.qrsDetect(0)
         from datetime import datetime
         s1=datetime.now()
-    
+
         # ECG R peak detection
         index_range = range( 1, len( self.peakdata ) - 2 )
         
         # Searching similar point from manually selected Q point
-        new_func = partial( CAPS.SearchingSimilarPoint, qpoint, self.peakdata, self.wavech[0] )
+        new_func = partial( CAPS.SearchingSimilarPoint, qpoint, self.peakdata, self.wavech[int(channelNo)] )
         Qpoint = multiprocessing.pool.Pool().map( new_func, index_range )
     
         # Searching similar point from manually selected T point
-        new_func = partial( CAPS.SearchingSimilarPoint, tpoint, self.peakdata, self.wavech[0] )
+        new_func = partial( CAPS.SearchingSimilarPoint, tpoint, self.peakdata, self.wavech[int(channelNo)] )
         Tpoint = multiprocessing.pool.Pool().map( new_func, index_range )
     
         # Calculate the Qtc value

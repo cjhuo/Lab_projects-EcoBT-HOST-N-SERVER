@@ -50,6 +50,10 @@ function show(item){
 		$('#iframe1').removeAttr('srcdoc');
 		$('#iframe1').attr('src', "liveECG");
 	}
+	else if(item=='sdCard'){
+		$('#iframe1').removeAttr('srcdoc');
+		$('#iframe1').attr('src', "sdCard");
+	}
 	return false;
 }
 </script>
@@ -62,6 +66,7 @@ function show(item){
 			<li><a href="#" onclick="return show('analysis_allInOne');">DICOM ECG VIEWER</a></li>
 			<li><a href="#" onclick="return show('analysis');">DATA ANALYSIS</a></li>
 			<li><a href="#" onclick="return show('administration');">ECG RECORDING</a></li>
+			<li><a href="#" onclick="return show('sdCard');">SDCARD READING</a></li>
 			<!-- 
 			<li><a href="#" onclick="return show('analysis_allInOne');">DICOM ECG VIEWER</a></li>
 			<li><a href="#" onclick="return show('analysis');">DATA ANALYSIS</a></li>

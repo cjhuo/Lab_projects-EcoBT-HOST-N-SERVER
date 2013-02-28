@@ -538,15 +538,24 @@ $(function () {
         $.each(datasets, function(key, val){
 			
         	//generate radiobox for each channel 
+        	/*
         	var domStr = ' <input type="radio" name="channel" id="' + val.label 
         	+ '" value="' + key + '"' + (checked==0?' checked':'') + '>' 
         	+' <label for="' + val.label + '">'+ val.label + '</label>';
-        	
+        	*/
+        	var domStr = ' <input type="radio" name="channel" id="' + val.label 
+        	+ '" value="' + key + '"/>' 
+        	+' <label for="' + val.label + '">'+ val.label + '</label>';
         	choice.append(domStr);
         	
         	++i;
         });
+        
+
         choice.appendTo("body");
+        
+        // check leadII by default
+        choice.find("input").filter('[id=II]').attr('checked',true);
 		
 		choice.find("input").click(plotAccordingToChoices);
     }
@@ -571,7 +580,8 @@ $(function () {
             	//console.log(data.result);
             	choice.remove();
             	diagram.remove();
-            	histogram.remove();
+            	if(histogram != null)
+            		histogram.remove();
             	onDataReceived(data.result);
             },
             fail: function (e, data) {
@@ -635,7 +645,6 @@ $(function () {
 
             if (key && datasets[key])
                 data = datasets[key].data;
-            
         });
     
         if (data.length > 0)
@@ -655,9 +664,10 @@ $(function () {
 	        	options.series.push({
 	        		name: label,
                     data: data,
-                    pointInterval: xPointInterval // 5 millisecond<--wrong! should be 1000/frequency. 
-                    					//in this case 1000/240, multiply 6 on pointInterval = 25
+                    pointInterval: xPointInterval
 	        	});
+	        	if(plot != null)
+	        		plot.destroy();
 	        	plot = new Highcharts.Chart(options, function() {
 	        		hideSpinner();
 	        	});
@@ -820,10 +830,12 @@ $(function () {
     				'selectedPoints': array of peak, e.g. [[1, 20], [5, 40]]
     		}
     	*/
+    	//console.log(choice.find('input').filter('[checked=checked]').attr("value"));
     	var pdata = {//'channel': selectedPoints[0].series.label.substring(8),
     			'qPoint': [qPoint.x/xPointInterval, qPoint.y/xPointInterval],
     			'tPoint': [tPoint.x/xPointInterval, tPoint.y/xPointInterval],
     			'bin': parseInt(bin.val()),
+    			'lead': choice.find('input').filter('[checked=checked]').attr("value")	
     			};
 		plotAccordingToChoices();
 		$.ajax({
