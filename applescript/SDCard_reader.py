@@ -92,7 +92,7 @@ class SDCard_Reader:
         fd.seek(1 * self.blocksize, os.SEEK_SET)
         raw = fd.read(40)
         fields = raw.split('|')
-        if fields[0] != "Ec0BT ECG":
+        if fields[0] != "EcoBT ECG":
             print "Not valid EcoBT ECG Reading"
             exit(0)
         (self.lastBLock,) = struct.unpack("<I", fields[1])
