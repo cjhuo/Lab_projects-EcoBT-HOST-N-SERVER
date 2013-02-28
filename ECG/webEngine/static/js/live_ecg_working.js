@@ -44,11 +44,11 @@ $(function () {
 					datasets = data.data.data;
 					//console.log(datasets.length);
 					removeProgressBar();
-					//addResizer();
+					addCountDownDiv();
+					addCountDownButton();
 					addStartButton();
 					addStopButton();
 					stopButton.hide();
-					//addRedoButton();
 					plotEverything();
 				}
 				else if(data.data.type == 'ECG'){ //state info
@@ -70,11 +70,20 @@ $(function () {
 	}
 	
 	var init = function() {
+		
 		showSpinner();
 		showProgressBar();
+		
 		addResizer();
 		addRedoButton();
 		redoButton.button("enable");
+		/*
+		addCountDownDiv()
+		addCountDownButton();
+		addStartButton();
+		addStopButton();
+		stopButton.hide();
+		*/
 	}
 	
 
@@ -409,7 +418,7 @@ $(function () {
     function startTestECG() {
     	socket.send("startTestECG"+name.trim());
     }
-    var startButton, stopButton;
+    var startButton, stopButton, countDownButton;
     function addStartButton() {
     	startButton = $('<button>START RECORDING</button>').css({
     		float: 'right',
@@ -431,6 +440,8 @@ $(function () {
     	showSpinner();
     }
     function stopECG() {
+    	if(countDownDiv.countdown('getTimes') != null)
+    		countDownDiv.countdown('destroy');
     	socket.send("stopECG"+name.trim());
     	stopButton.hide();
     	hideSpinner();
@@ -463,6 +474,66 @@ $(function () {
 		stopButton.button("enable");
 		stopButton.click(stopECG);
 		stopButton.appendTo(innerResizer);
+    }
+    function addCountDownButton() {
+    	countDownButton = $('<button>SET TIMER</button>').css({
+			float: 'right',
+			fontSize: 'small',
+			position: 'relative',
+			//right: '0px',
+			top: '0px'
+		});   	
+    	countDownButton.button();
+    	countDownButton.click(countDownPopup);
+    	countDownButton.appendTo(innerResizer);
+    }
+    var countDownDiv;
+    function addCountDownDiv() {
+    	countDownDiv = $("<div id='countDown' ></div").css({
+    		margin: 'auto',
+    		width: '200px',
+    		height: '45px'
+    	});
+    	countDownDiv.insertBefore(spinTarget);
+    	countDownDiv.hide();
+    }
+    //var countDownInput;
+    function countDownPopup() {
+    	var popUpDiv = $('<div id="popUpBox"><div>');
+    	$("<p>Please choose the time for EKG recording: </p>").appendTo(popUpDiv);
+    	
+		var input = $("<input id='countDownInput' value = '5'/>").css({
+			fontSize: 'small',
+			width: '30px'
+		});
+		input.appendTo(popUpDiv);
+		$("<label for='countDownInput'> MINUTE(S)</label>").appendTo(popUpDiv);
+		input.spinner({min: 1});
+    	popUpDiv.dialog({
+    		position: {
+    			my: "top",
+    			at: "bottom",
+    			of: startButton
+    		},
+            width: 300,
+            modal: true,
+            resizable: false,
+            buttons: {
+                "START": function() {
+                	t = input.spinner("value") * 60;
+                	startECG();
+                	countDownDiv.countdown({until: +t, format: 'MS', onExpiry:stopECG});
+                	countDownDiv.show();
+                	countDownButton.hide();
+                    $( this ).dialog( "destroy" );
+                }
+            }
+        }).css({
+        	fontSize: 'small'
+        });
+    	$('.ui-button').css({
+    		fontSize: 'small'
+    	});
     }
     
 	var socket = null; //websocket object	
@@ -645,7 +716,8 @@ $(function () {
         position: 'relative',
         width: '50px',
         height: '50px',
-        margin: 'auto'
+        margin: 'auto',
+        display: 'none'
 	});    
 	spinTarget.appendTo("body");
 	var spinner = new Spinner(spinnerOpts);

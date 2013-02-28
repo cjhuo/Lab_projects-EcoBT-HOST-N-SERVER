@@ -742,7 +742,7 @@ $(function () {
     		position: {
     			my: "top",
     			at: "bottom",
-    			of: $("#diagram")[0]
+    			of: $("#diagram")
     		},
             height: 200,
             modal: true,
@@ -759,7 +759,12 @@ $(function () {
                     $( this ).dialog( "close" );
                 }
             }
+        }).css({
+        	fontSize: 'small'
         });
+    	$('.ui-button').css({
+    		fontSize: 'small'
+    	});
     	return pSelection;
     }
     
