@@ -120,8 +120,7 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
             for char in service._.characteristics:
                 NSLog("%@", char._.UUID)
                 notify_list = []
-                notify_list.append(CBUUID.UUIDWithString_("FE14"))
-                notify_list.append(CBUUID.UUIDWithString_("FE15"))
+                notify_list.append(CBUUID.UUIDWithString_("FE13"))
                 if char._.UUID in notify_list:
                     print "Set Notify for ", char._.UUID
                     peripheral.setNotifyValue_forCharacteristic_(True, char)
@@ -283,30 +282,38 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
         sht25_enable = False
         if characteristic._.UUID == CBUUID.UUIDWithString_("FE11"):
             hex_str = binascii.hexlify(characteristic._.value)
-            value = int(hex_str, base=16)
-            if value == 1:
-                sht25_enable = True
-            print "SIDS SHT25 ENABLE?(%s) %s" % (characteristic._.UUID, sht25_enable)
-        if characteristic._.UUID == CBUUID.UUIDWithString_("FE12"):
-            hex_str = binascii.hexlify(characteristic._.value)
-            value = int(hex_str, base=16)
-            print "SIDS SHT25 RATE?(%s) %d sec" % (characteristic._.UUID, value)
-            byte_array = array.array('b', chr(2))
-            val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
+            print "CO2 STATUS\t", hex_str
+            status = struct.pack("<BBBBBB", 1, 0, 0, 0, 0, 0)
+            val_data = NSData.dataWithBytes_length_(status, len(status))
             peripheral.writeValue_forCharacteristic_type_(
                 val_data, characteristic,
                 CBCharacteristicWriteWithResponse)
+#            value = int(hex_str, base=16)
+#            if value == 1:
+#                sht25_enable = True
+#            print "SIDS SHT25 ENABLE?(%s) %s" % (characteristic._.UUID, sht25_enable)
+        if characteristic._.UUID == CBUUID.UUIDWithString_("FE12"):
+            hex_str = binascii.hexlify(characteristic._.value)
+            print "CO2 PARAM\t", hex_str
+#            value = int(hex_str, base=16)
+#            print "SIDS SHT25 RATE?(%s) %d sec" % (characteristic._.UUID, value)
+#            byte_array = array.array('b', chr(2))
+#            val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
+#            peripheral.writeValue_forCharacteristic_type_(
+#                val_data, characteristic,
+#                CBCharacteristicWriteWithResponse)
         if characteristic._.UUID == CBUUID.UUIDWithString_("FE13"):
             hex_str = binascii.hexlify(characteristic._.value)
-            value = int(hex_str, base=16)
-            print "SIDS SHT25 START?(%s) %d" % (characteristic._.UUID, value)
-            if value == 0:
-                print "START SIDS SHT25 Sensor"
-                byte_array = array.array('b', chr(1))
-                val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
-                peripheral.writeValue_forCharacteristic_type_(
-                    val_data, characteristic,
-                    CBCharacteristicWriteWithResponse)
+            print "CO2 READING\t", hex_str
+#            value = int(hex_str, base=16)
+#            print "SIDS SHT25 START?(%s) %d" % (characteristic._.UUID, value)
+#            if value == 0:
+#                print "START SIDS SHT25 Sensor"
+#                byte_array = array.array('b', chr(1))
+#                val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
+#                peripheral.writeValue_forCharacteristic_type_(
+#                    val_data, characteristic,
+#                    CBCharacteristicWriteWithResponse)
         if characteristic._.UUID == CBUUID.UUIDWithString_("FE14"):
             hex_str = binascii.hexlify(characteristic._.value)
             value = int(hex_str[:-2], base=16)
@@ -387,7 +394,7 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
             acc_enable = int(hex_str, base=16)
             if acc_enable == 0:
                 print "Enable ACC"
-                byte_array = array.array('b', chr(0))
+                byte_array = array.array('b', chr(1))
             else:
                 print "Disable ACC"
                 byte_array = array.array('b', chr(0))
