@@ -145,6 +145,7 @@ class ECGSet(Characteristic):
         return val_data
     
     def tryToSaveStateByResend(self):
+        self.lock.acquire()
         NSLog("TRYING TO RESEND SIGNAL TO SAVE THE STATE MACHINE...")
         #time.sleep(5)
         if self.service.state == 1:
@@ -153,9 +154,11 @@ class ECGSet(Characteristic):
             self.peripheralWorker.writeValueForCharacteristic(self.createStopFlag(), self)
         elif self.service.state == 5:
             self.peripheralWorker.writeValueForCharacteristic(self.createReadFromCardFlag(), self)
+            self.lock.release()
 
             
     def processQueue(self):
+        self.lock.acquire()
         job = self.service.delayQueue.pop(0)
         if job == 'WriteStart':
             NSLog("SENDING DELAYED START RECORDING SIGNAL")
@@ -165,6 +168,7 @@ class ECGSet(Characteristic):
             NSLog("SENDING DELAYED READ RECORDING SIGNAL")
             self.service.state = 5
             self.peripheralWorker.writeValueForCharacteristic(self.createReadFromCardFlag(), self)
+        self.lock.release()
 
     def startECG(self):
         self.lock.acquire()
@@ -194,7 +198,7 @@ class ECGSet(Characteristic):
             NSLog("SENDING STOP REAL RECORDING SIGNAL")
             self.service.state = 3
             self.peripheralWorker.writeValueForCharacteristic(self.createStopFlag(), self)
-        self.lock.acquire()
+        self.lock.release()
         
     '''                            
     def readECGData(self):

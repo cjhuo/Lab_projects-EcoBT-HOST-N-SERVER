@@ -342,9 +342,12 @@ $(function () {
         	//yAxisOptions.min = datasets[i].min-0.5;
         	//yAxisOptions.max = datasets[i].max+0.5;
         	//add checker to handler rambled value from any channel, 
+        	console.log("min of ", datasets[i].label, " is ", datasets[i].min);
+        	console.log("max of ", datasets[i].label, " is ", datasets[i].max);
+        	
         	if((datasets[i].max-datasets[i].min) > (10*yGridInterval)) {//greater than 10 blocks, only add 10 blocks based on max
         		yAxisOptions.min = datasets[i].min;
-        		yAxisOptions.max = datasets[i].min + 7 * yGridInterval;  //draw 8 times of yGridInterval
+        		yAxisOptions.max = datasets[i].min + 19 * yGridInterval;  //draw 20 times of yGridInterval
         		yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));
         	}
         	else if((datasets[i].max-datasets[i].min) < (yGridInterval/100)){ //min and max are too close
@@ -357,9 +360,12 @@ $(function () {
         		yAxisOptions.min = datasets[i].min;
         		yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));
         	}
-        	
-        	console.log("min of ", datasets[i].label, " is ", datasets[i].min);
-        	console.log("max of ", datasets[i].label, " is ", datasets[i].max);
+        	/*
+        	yAxisOptions.min = datasets[i].min;
+    		yAxisOptions.max = datasets[i].max;
+    		yAxisOptions.height = yTickHeight*(1 + (yAxisOptions.max  - yAxisOptions.min)/yGridInterval)
+    		*/
+
         	console.log("height of ", datasets[i].label, " is ", yAxisOptions.height);
         	yAxisOptions.top = yTop;
         	yTop += yAxisOptions.height; //!!!!adjust the distance to the top
@@ -450,6 +456,11 @@ $(function () {
     }
     function showCompleteDialog(){
     	$( "<div id='complete'>RECORDING COMPLETE, PLEASE DETACH SENSOR</div>" ).dialog({
+    		position: {
+    			my: "top",
+    			at: "top",
+    			of: $("#diagram")
+    		},
 	      resizable: false,
 	      height: 300,
 	      width: 300,
