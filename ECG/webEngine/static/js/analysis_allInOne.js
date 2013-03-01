@@ -433,7 +433,7 @@ $(function () {
         	//add checker to handler rambled value from any channel, 
         	var min = Math.min.apply(null, datasets[i].data);
         	var max = Math.max.apply(null, datasets[i].data);
-        	if((max-min) > (10*yGridInterval)) {//greater than 10 blocks, only add 10 blocks based on max
+        	if((max-min) > (20*yGridInterval)) {//greater than 10 blocks, only add 10 blocks based on max
         		yAxisOptions.min = min;
         		yAxisOptions.max = min + 19 * yGridInterval;  //draw 20 times of yGridInterval
         		yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));

@@ -345,7 +345,7 @@ $(function () {
         	console.log("min of ", datasets[i].label, " is ", datasets[i].min);
         	console.log("max of ", datasets[i].label, " is ", datasets[i].max);
         	
-        	if((datasets[i].max-datasets[i].min) > (10*yGridInterval)) {//greater than 10 blocks, only add 10 blocks based on max
+        	if((datasets[i].max-datasets[i].min) > (20*yGridInterval)) {//greater than 10 blocks, only add 10 blocks based on max
         		yAxisOptions.min = datasets[i].min;
         		yAxisOptions.max = datasets[i].min + 19 * yGridInterval;  //draw 20 times of yGridInterval
         		yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));
