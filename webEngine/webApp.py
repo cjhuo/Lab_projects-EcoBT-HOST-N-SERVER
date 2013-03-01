@@ -7,6 +7,7 @@ from webHandlers.ECGHandler import *
 from webHandlers.pageRenderingHandlers import *
 from webHandlers.AuthHandlers import AuthHandler
 from webHandlers.ConfigFileHandlers import *
+from webHandlers.SDCardHandler import SDCardHandler
 
 from host.Sockets import Sockets
 from host.EcoBTWebSocket import EcoBTWebSocket
@@ -44,7 +45,8 @@ class Application(tornado.web.Application):
                 (r"/logout", LogOutHandler),
                 (r"/socket", EcoBTWebSocket, dict(globalSockets = self.globalSockets, 
                                               ecoBTApp = self.ecoBTApp)),
-                (r"/config", ConfigHandler, dict(ecoBTApp = self.ecoBTApp))
+                (r"/config", ConfigHandler, dict(ecoBTApp = self.ecoBTApp)),
+                (r"/sdCard", SDCardHandler)
             ]
 
         settings = dict(

@@ -44,11 +44,11 @@ $(function () {
 					datasets = data.data.data;
 					//console.log(datasets.length);
 					removeProgressBar();
-					//addResizer();
+					addCountDownDiv();
+					addCountDownButton();
 					addStartButton();
 					addStopButton();
 					stopButton.hide();
-					//addRedoButton();
 					plotEverything();
 				}
 				else if(data.data.type == 'ECG'){ //state info
@@ -70,11 +70,20 @@ $(function () {
 	}
 	
 	var init = function() {
+		
 		showSpinner();
 		showProgressBar();
+		
 		addResizer();
 		addRedoButton();
 		redoButton.button("enable");
+		/*
+		addCountDownDiv()
+		addCountDownButton();
+		addStartButton();
+		addStopButton();
+		stopButton.hide();
+		*/
 	}
 	
 
@@ -333,9 +342,12 @@ $(function () {
         	//yAxisOptions.min = datasets[i].min-0.5;
         	//yAxisOptions.max = datasets[i].max+0.5;
         	//add checker to handler rambled value from any channel, 
-        	if((datasets[i].max-datasets[i].min) > (10*yGridInterval)) {//greater than 10 blocks, only add 10 blocks based on max
+        	console.log("min of ", datasets[i].label, " is ", datasets[i].min);
+        	console.log("max of ", datasets[i].label, " is ", datasets[i].max);
+        	
+        	if((datasets[i].max-datasets[i].min) > (20*yGridInterval)) {//greater than 10 blocks, only add 10 blocks based on max
         		yAxisOptions.min = datasets[i].min;
-        		yAxisOptions.max = datasets[i].min + 7 * yGridInterval;  //draw 8 times of yGridInterval
+        		yAxisOptions.max = datasets[i].min + 19 * yGridInterval;  //draw 20 times of yGridInterval
         		yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));
         	}
         	else if((datasets[i].max-datasets[i].min) < (yGridInterval/100)){ //min and max are too close
@@ -348,9 +360,12 @@ $(function () {
         		yAxisOptions.min = datasets[i].min;
         		yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));
         	}
-        	
-        	console.log("min of ", datasets[i].label, " is ", datasets[i].min);
-        	console.log("max of ", datasets[i].label, " is ", datasets[i].max);
+        	/*
+        	yAxisOptions.min = datasets[i].min;
+    		yAxisOptions.max = datasets[i].max;
+    		yAxisOptions.height = yTickHeight*(1 + (yAxisOptions.max  - yAxisOptions.min)/yGridInterval)
+    		*/
+
         	console.log("height of ", datasets[i].label, " is ", yAxisOptions.height);
         	yAxisOptions.top = yTop;
         	yTop += yAxisOptions.height; //!!!!adjust the distance to the top
@@ -409,7 +424,7 @@ $(function () {
     function startTestECG() {
     	socket.send("startTestECG"+name.trim());
     }
-    var startButton, stopButton;
+    var startButton, stopButton, countDownButton;
     function addStartButton() {
     	startButton = $('<button>START RECORDING</button>').css({
     		float: 'right',
@@ -431,6 +446,8 @@ $(function () {
     	showSpinner();
     }
     function stopECG() {
+    	if(countDownDiv.countdown('getTimes') != null)
+    		countDownDiv.countdown('destroy');
     	socket.send("stopECG"+name.trim());
     	stopButton.hide();
     	hideSpinner();
@@ -439,6 +456,11 @@ $(function () {
     }
     function showCompleteDialog(){
     	$( "<div id='complete'>RECORDING COMPLETE, PLEASE DETACH SENSOR</div>" ).dialog({
+    		position: {
+    			my: "top",
+    			at: "top",
+    			of: $("#diagram")
+    		},
 	      resizable: false,
 	      height: 300,
 	      width: 300,
@@ -463,6 +485,66 @@ $(function () {
 		stopButton.button("enable");
 		stopButton.click(stopECG);
 		stopButton.appendTo(innerResizer);
+    }
+    function addCountDownButton() {
+    	countDownButton = $('<button>SET TIMER</button>').css({
+			float: 'right',
+			fontSize: 'small',
+			position: 'relative',
+			//right: '0px',
+			top: '0px'
+		});   	
+    	countDownButton.button();
+    	countDownButton.click(countDownPopup);
+    	countDownButton.appendTo(innerResizer);
+    }
+    var countDownDiv;
+    function addCountDownDiv() {
+    	countDownDiv = $("<div id='countDown' ></div").css({
+    		margin: 'auto',
+    		width: '200px',
+    		height: '45px'
+    	});
+    	countDownDiv.insertBefore(spinTarget);
+    	countDownDiv.hide();
+    }
+    //var countDownInput;
+    function countDownPopup() {
+    	var popUpDiv = $('<div id="popUpBox"><div>');
+    	$("<p>Please choose the time for EKG recording: </p>").appendTo(popUpDiv);
+    	
+		var input = $("<input id='countDownInput' value = '5'/>").css({
+			fontSize: 'small',
+			width: '30px'
+		});
+		input.appendTo(popUpDiv);
+		$("<label for='countDownInput'> MINUTE(S)</label>").appendTo(popUpDiv);
+		input.spinner({min: 1});
+    	popUpDiv.dialog({
+    		position: {
+    			my: "top",
+    			at: "bottom",
+    			of: startButton
+    		},
+            width: 300,
+            modal: true,
+            resizable: false,
+            buttons: {
+                "START": function() {
+                	t = input.spinner("value") * 60;
+                	startECG();
+                	countDownDiv.countdown({until: +t, format: 'MS', onExpiry:stopECG});
+                	countDownDiv.show();
+                	countDownButton.hide();
+                    $( this ).dialog( "destroy" );
+                }
+            }
+        }).css({
+        	fontSize: 'small'
+        });
+    	$('.ui-button').css({
+    		fontSize: 'small'
+    	});
     }
     
 	var socket = null; //websocket object	
@@ -645,7 +727,8 @@ $(function () {
         position: 'relative',
         width: '50px',
         height: '50px',
-        margin: 'auto'
+        margin: 'auto',
+        display: 'none'
 	});    
 	spinTarget.appendTo("body");
 	var spinner = new Spinner(spinnerOpts);
