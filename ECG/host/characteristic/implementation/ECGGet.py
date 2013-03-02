@@ -17,6 +17,22 @@ secondHalf = 'FEC7' # V3, V4, V5, V1
 ECG_CHANNELLABELS = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6']
 NUM_OF_SAMPLES = 2500
 
+'''
+idle value of each channel:
+I: 399856
+II: 399856
+III: 0
+aVR: -399856
+aVL: 199928
+aVF: 199928
+V1: 399856
+V2: 399856
+V3: 399856
+V4: 399856
+V5: 399856
+V6: 399856
+'''
+
 class ECGReading:
     def __init__(self):
         self.reading = {}
@@ -158,16 +174,16 @@ class ECGGet(Characteristic):
             (temp,) = struct.unpack(">I", chr(ret[1]) + chr(ret[2]) + chr(ret[3]) + chr(0))
             self.service.read_buffer[key].set('status', temp >> 8)
             (temp,) = struct.unpack(">i", chr(ret[4]) + chr(ret[5]) + chr(ret[6]) + chr(0))
-            temp = temp & 0xFFFFE000
+            #temp = temp & 0xFFFFE000
             self.service.read_buffer[key].set('V6', temp >> 8)
             (temp,) = struct.unpack(">i", chr(ret[7]) + chr(ret[8]) + chr(ret[9]) + chr(0))
-            temp = temp & 0xFFFFE000
+            #temp = temp & 0xFFFFE000
             self.service.read_buffer[key].set('I', temp >> 8)
             (temp,) = struct.unpack(">i", chr(ret[10]) + chr(ret[11]) + chr(ret[12]) + chr(0))
-            temp = temp & 0xFFFFE000
+            #temp = temp & 0xFFFFE000
             self.service.read_buffer[key].set('II', temp >> 8)
             (temp,) = struct.unpack(">i", chr(ret[13]) + chr(ret[14]) + chr(ret[15]) + chr(0))
-            temp = temp & 0xFFFFE000
+            #temp = temp & 0xFFFFE000
             self.service.read_buffer[key].set('V2', temp >> 8)
 
             if self.service.read_buffer[key].isValid():
@@ -214,23 +230,23 @@ class ECGGet(Characteristic):
             """
             key = int(ret[0])
             (temp,) = struct.unpack(">i", chr(ret[1]) + chr(ret[2]) + chr(ret[3]) + chr(0))
-            temp = temp & 0xFFFFE000
+            #temp = temp & 0xFFFFE000
             self.service.read_buffer[key].set('V3', temp >> 8)
             (temp,) = struct.unpack(">i", chr(ret[4]) + chr(ret[5]) + chr(ret[6]) + chr(0))
-            temp = temp & 0xFFFFE000
+            #temp = temp & 0xFFFFE000
             self.service.read_buffer[key].set('V4', temp >> 8)
             (temp,) = struct.unpack(">i", chr(ret[7]) + chr(ret[8]) + chr(ret[9]) + chr(0))
-            temp = temp & 0xFFFFE000
+            #temp = temp & 0xFFFFE000
             self.service.read_buffer[key].set('V5', temp >> 8)
             (temp,) = struct.unpack(">i", chr(ret[10]) + chr(ret[11]) + chr(ret[12]) + chr(0))
-            temp = temp & 0xFFFFE000
+            #temp = temp & 0xFFFFE000
             self.service.read_buffer[key].set('V1', temp >> 8)
 
             if self.service.read_buffer[key].isValid():
                 self.handle_reading(key)
         self.service.setter.lock.release()
 
-
+    
     def handle_reading(self, key):
 #            if not hasattr(self.service, "fd"):
 #                import os

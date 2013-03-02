@@ -38,7 +38,7 @@ $(function () {
     var datasets; //store datasets
 	function onDataReceived(data) { //setup plot after retrieving data
 		//console.log(data);
-		if( data.from == 'node')
+		if( data.from == 'node'){
 			if(name.trim() == data.data.address.trim())
 				if(data.data.type == 'ecg'){
 					datasets = data.data.data;
@@ -67,6 +67,13 @@ $(function () {
 						updateProgress(data.data.value.value);
 					}
 				}
+		}
+		else if(data.from == 'central') {
+			if(data.data.type == 'message'){
+				alert(data.data.value);
+				open('/administration', '_self', true);
+			}
+		}
 	}
 	
 	var init = function() {
@@ -134,6 +141,7 @@ $(function () {
 	    	*/
         	labels: {
         		enabled: false,
+        		align: 'right'
         	},
         	offset: 0,
         	//height: yAxisHeight,
@@ -175,7 +183,40 @@ $(function () {
             title: {
                 text: '10 seconds ECG Data'
             },
-            
+            exporting:{
+                buttons: {
+                    exportButton: {
+                        menuItems: [{
+                            text: 'Export to PNG',
+                            onclick: function() {
+                                this.exportChart({
+                                    width: 2000
+                                });
+                            }
+                        }, 
+                        /*{
+                            text: 'Export to PDF',
+                            onclick: function() {
+                                this.exportChart({
+                                	type: "application/pdf"
+                                });
+                            }
+                        },
+                        */
+                        {
+                            text: 'Export to SVG',
+                            onclick: function() {
+                                this.exportChart({
+                                	type: "image/svg+xml"
+                                });
+                            }
+                        },
+                        null,
+                        null
+                        ]
+                    }
+                }
+            },
             legend: {
                 enabled: true,
                 align: 'right',
@@ -190,7 +231,8 @@ $(function () {
                 shadow: true
             },
             navigator: {
-            	enabled: true
+            	enabled: true,
+            	adaptToUpdatedData: false
             },
             scrollbar: {
             	enabled: true
@@ -222,12 +264,11 @@ $(function () {
                       'Drag your finger over the plot to zoom in'
                 */
             },
-            plotOptions: {         	
+            plotOptions: {
                 line: {
                 	dataGrouping: {
-                		enabled: false //has to do data grouping when unit is millivolt, otherwise, shape looks so wired
-                						// does not need grouping when unit is microvolot
-                	},   
+                		enabled: false
+                	},
                 	allowPointSelect: true,
                 	animation: false,
                 	color: 'black',	
@@ -253,7 +294,19 @@ $(function () {
                     	}
                     },
                     shadow: false,
-                    enableMouseTracking: true
+                    enableMouseTracking: true,
+                    /*
+                    point: {
+                        events: {
+                            click: function(event) {
+    	    			    alert(this.name +' clicked\n'+
+                        	    'Alt: '+ event.altKey +'\n'+
+                            	'Control: '+ event.ctrlKey +'\n'+
+                              	'Shift: '+ event.shiftKey +'\n');
+                            }
+                        }
+                    }
+                    */
                 },
                 series: {
                 	//allowPointSelect: true,  
@@ -268,6 +321,7 @@ $(function () {
                             }
                         }
                     },
+                    /*
                     point: {
                     	events: {
                     		click: function(event){
@@ -277,22 +331,27 @@ $(function () {
                     		}
                     	}
                     }
+                    */
                 }
             },
             xAxis: {
-            	reversed: false,
+            	/*
+				events : {
+					afterSetExtremes : afterSetExtremes
+				},
+				*/
+				//minRange: 1000,
             	lineColor: 'rgb(245, 149, 154)',
             	gridLineColor: 'rgb(245, 149, 154)',
             	gridLineWidth: 0.5,
             	minorGridLineColor: 'rgb(245, 149, 154)',
             	minorGridLineWidth: 0.2,
             	
-            	minorTickInterval: 'auto', //5 minor tick by default, exactlly what we want
+            	minorTickInterval: xGridInterval/5, //5 minor tick by default, exactlly what we want
     	        minorTickWidth: 1,
     	        minorTickLength: 0,
     	        minorTickPosition: 'inside',
     	        minorTickColor: 'red',
-    	        minorTickInterval: xGridInterval/5,
     	
     	        //tickPixelInterval: 30,
     	        tickInterval: xGridInterval, //0.2 second
@@ -305,13 +364,30 @@ $(function () {
     	        	enabled: false,
     	        	//step: 2
     	        },
-    	        startOnTick: true,
-    	        endOnTick: true
+    	        startOnTick: false,
+    	        endOnTick: false
             },
             tooltip: {},
             yAxis: [],
             series: []
     };
+    
+    function afterSetExtremes(e){
+    	plot.showLoading('Loading data from server...');
+    	var newData = [];
+    	//console.log(e.min-Date.UTC(0, 0, 0, 0, 0, 0, 0), e.max-Date.UTC(0, 0, 0, 0, 0, 0, 0));
+    	min = e.min-Date.UTC(0, 0, 0, 0, 0, 0, 0);
+    	max = e.max-Date.UTC(0, 0, 0, 0, 0, 0, 0);
+    	console.log(plot.series);
+    	for(var i=0; i<datasets.length; i++){
+        	for(var j=min/(1000/frequency); j<=max/(1000/frequency); j++){
+        		newData.push(datasets[i].data[j]);
+        	}
+        	console.log(newData);
+    		plot.series[i].setData(newData);
+    	}
+    	plot.hideLoading();
+    }
     var resizer, innerResizer;
     function addResizer() {
     	resizer = $('<div id="resizer" />').css( {
@@ -329,8 +405,10 @@ $(function () {
     }
     
     function plotEverything() {
+    	console.log(datasets);
         var yTop = 65;
         chartOptions.series = [];
+        chartOptions.yAxis = [];
         //loop to fill in yAxis and data series
         var diagramHeight = 65 //calculate the diagram height!!!!!65 is the top padding of chart,
         for(var i=0; i<datasets.length;i++) {
@@ -342,30 +420,35 @@ $(function () {
         	//yAxisOptions.min = datasets[i].min-0.5;
         	//yAxisOptions.max = datasets[i].max+0.5;
         	//add checker to handler rambled value from any channel, 
-        	console.log("min of ", datasets[i].label, " is ", datasets[i].min);
-        	console.log("max of ", datasets[i].label, " is ", datasets[i].max);
+        	var min = Math.min.apply(null, datasets[i].data);
+        	var max = Math.max.apply(null, datasets[i].data);
         	
-        	if((datasets[i].max-datasets[i].min) > (20*yGridInterval)) {//greater than 10 blocks, only add 10 blocks based on max
-        		yAxisOptions.min = datasets[i].min;
-        		yAxisOptions.max = datasets[i].min + 19 * yGridInterval;  //draw 20 times of yGridInterval
+        	if((max-min) > (50*yGridInterval)) {//greater than 10 blocks, only add 10 blocks based on max
+        		yAxisOptions.min = min;
+        		yAxisOptions.max = min + 49 * yGridInterval;  //draw 20 times of yGridInterval
         		yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));
         	}
-        	else if((datasets[i].max-datasets[i].min) < (yGridInterval/100)){ //min and max are too close
-        		yAxisOptions.max = datasets[i].max;
-        		yAxisOptions.min = datasets[i].max - yGridInterval;
+        	else if((max-min) < (yGridInterval/100)){ //min and max are too close
+        		yAxisOptions.max = max;
+        		yAxisOptions.min = max - yGridInterval;
         		yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));
         	}
         	else{
-        		yAxisOptions.max = datasets[i].max;
-        		yAxisOptions.min = datasets[i].min;
+        		yAxisOptions.max = max;
+        		yAxisOptions.min = min;
         		yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));
         	}
         	/*
-        	yAxisOptions.min = datasets[i].min;
-    		yAxisOptions.max = datasets[i].max;
-    		yAxisOptions.height = yTickHeight*(1 + (yAxisOptions.max  - yAxisOptions.min)/yGridInterval)
+    		yAxisOptions.max = max;
+    		yAxisOptions.min = min;
+    		yAxisOptions.height = yTickHeight*(Math.ceil(max/yGridInterval)-Math.floor(min/yGridInterval));
+    		if(yAxisOptions.height > 500){
+    			yAxisOptions.height = 500
+    			yAxisOptions.max = min + 499;
+    		}
     		*/
-
+        	console.log("min of ", datasets[i].label, " is ", yAxisOptions.min);
+        	console.log("max of ", datasets[i].label, " is ", yAxisOptions.max);
         	console.log("height of ", datasets[i].label, " is ", yAxisOptions.height);
         	yAxisOptions.top = yTop;
         	yTop += yAxisOptions.height; //!!!!adjust the distance to the top
@@ -384,10 +467,16 @@ $(function () {
         	var s = '';
         	$.each(this.points, function(key, val) {
         		s += '<b>'+ val.series.name +'</b>'+
-                val.y + '<br/>';
+                val.y + ' ';
+        		if(key == 5)
+        			s +='<br/>'; 
         	});
             return s;
         };
+        
+        chartOptions.tooltip.positioner = function () {
+        	return { x: 200, y: 20 };
+        }
         
 		diagramHeight += 93; //93 is bottom padding
 		
@@ -400,7 +489,7 @@ $(function () {
 
     	plot = new Highcharts.StockChart(chartOptions, function() {
     		hideSpinner();
-    	});      
+    	});     
     }
     var redoButton;
     function addRedoButton() {

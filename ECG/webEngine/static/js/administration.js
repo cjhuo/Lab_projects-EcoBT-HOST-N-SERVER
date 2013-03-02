@@ -15,7 +15,7 @@ $(function () {
 
 	var startDiscoverServices = false;
 	function onDataReceived(data){
-		console.log(data.from);
+		//console.log(data);
 		console.log(data.data);
 		if( data.from == 'central') {
 			if(data.data.type == 'state') {

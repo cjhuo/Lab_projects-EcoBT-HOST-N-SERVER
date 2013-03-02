@@ -1,18 +1,128 @@
-/* Main script for analysis.html page.
- *
- *   <p>1. Choose a radio button to pick the channel you want to analyze
- *   <br>
- *      2. Zoom to the range where you feel comfortable to pick start and end peak points
- *   <br>
- *      3. Pick 2 peak points and hit submit for further analysis in range between those 2 peak points
- *   <br>
- *      <b>Note:</b> <br>
- *      a) Click a point you picked will de-select the point <br>
- *      b) You can always go back to the original state by choose any of the radio buttons</p>
- *
- */
 
 $(function () {
+	
+	/*
+	 * Highcharts plugin for adding an axis after render time. Works with Highcharts >= 2.2.4.
+	 * As of Highcharts 3.0, the contents of this plugin will be part of the Highcharts
+	 * core.
+	 * Author: Torstein Hønsi
+	 * License: MIT License
+	 * Last revision: 2013-02-14
+	 */
+	(function (Highcharts) {
+	    
+	    var each = Highcharts.each,
+	        UNDEFINED;
+	    
+	    /**
+	     * Utility function to remove last occurence of an item from an array
+	     * @param {Array} arr
+	     * @param {Mixed} item
+	     */
+	    function erase(arr, item) {
+	        var i = arr.length;
+	        while (i--) {
+	            if (arr[i] === item) {
+	                arr.splice(i, 1);
+	                break;
+	            }
+	        }
+	        return i;
+	    }
+	    /**
+	     * Add an axis to the chart
+	     * @param {Object} options The axis option
+	     * @param {Boolean} isX Whether it is an X axis or a value axis
+	     */
+	    Highcharts.StockChart.prototype.addAxis = function (options, isX) {
+	        var key = isX ? 'xAxis' : 'yAxis',
+	            axis = new Highcharts.Axis(this, Highcharts.merge(options, {
+	                index: plot[key].length
+	            }));
+	        
+	        // Push the new axis options to the chart options
+	        plot.options[key] = Highcharts.splat(plot.options[key] || {});
+	        plot.options[key].push(options);
+	    };
+	    
+	    /**
+	     * Remove an axis from the chart
+	     */
+	    Highcharts.Axis.prototype.remove = function () {
+	        if (this.series.length) {
+	            console.error('Highcharts error: Cannot remove an axis that has connected series');
+	        } else {
+	            var key = this.isXAxis ? 'xAxis' : 'yAxis';
+
+	            // clean up chart options
+	            var axisIndex = this.options.index;
+	            plot.options[key].splice(axisIndex, 1);
+	            
+	            erase(plot.axes, this);
+	            var index = erase(plot[key], this);
+	            
+	            // clean up following axis options (indices)
+	            for (var i = index; i < plot[key].length; i++) {
+	              plot[key][i].options.index--;
+	            }
+	            
+	            this.destroy();
+	            plot.isDirtyBox = true;
+	            plot.redraw();
+	        }
+	    };
+	    
+	    /** 
+	     * The improved version of Series.bindAxes uses axis.id
+	     */
+	    /**
+		 * Set the xAxis and yAxis properties of cartesian series, and register the series
+		 * in the axis.series array
+		 */
+		Highcharts.Series.prototype.bindAxes = function () {
+			var series = this,
+				seriesOptions = series.options,
+				chart = series.chart,
+				axisOptions;
+				
+			if (series.isCartesian) {
+				
+				each(['xAxis', 'yAxis'], function (AXIS) { // repeat for xAxis and yAxis
+					
+					each(chart[AXIS], function (axis) { // loop through the chart's axis objects
+						
+						axisOptions = axis.options;
+						
+						// apply if the series xAxis or yAxis option mathches the number of the 
+						// axis, or if undefined, use the first axis
+						if ((seriesOptions[AXIS] === axisOptions.index) ||
+								(seriesOptions[AXIS] !== UNDEFINED && seriesOptions[AXIS] === axisOptions.id) || // docs: series.xAxis and series.yAxis can point to axis.id
+								(seriesOptions[AXIS] === UNDEFINED && axisOptions.index === 0)) {
+							
+							// register this series in the axis.series lookup
+							axis.series.push(series);
+							
+							// set this series.xAxis or series.yAxis reference
+							series[AXIS] = axis;
+							
+							// mark dirty for redraw
+							axis.isDirty = true;
+						}
+					});
+
+					// The series needs an X and an Y axis
+					if (!series[AXIS]) {
+						error(17, true);
+					}
+
+				});
+			}
+		};
+	}(Highcharts));
+	// End plugin
+	
+	
+	
 	//ajax call urls
 	var fileHandlerUrl = 'ecgAllInOne'
 	
@@ -55,12 +165,11 @@ $(function () {
         	},
         	*/
         	labels: {
-        		enabled: false
+        		enabled: false,
+        		align: 'right'
         	},
         	offset: 0,
         	height: yAxisHeight,
-        	min: -500,
-        	max: 2000
         };
     
     chartOptions = {
@@ -87,7 +196,41 @@ $(function () {
                 }
             },
             title: {
-                text: 'QRS Wave data analysis'
+                text: 'ECG Viewer'
+            },
+            exporting:{
+                buttons: {
+                    exportButton: {
+                        menuItems: [{
+                            text: 'Export to PNG',
+                            onclick: function() {
+                                this.exportChart({
+                                    width: 2000
+                                });
+                            }
+                        }, 
+                        /*{
+                            text: 'Export to PDF',
+                            onclick: function() {
+                                this.exportChart({
+                                	type: "application/pdf"
+                                });
+                            }
+                        },
+                        */
+                        {
+                            text: 'Export to SVG',
+                            onclick: function() {
+                                this.exportChart({
+                                	type: "image/svg+xml"
+                                });
+                            }
+                        },
+                        null,
+                        null
+                        ]
+                    }
+                }
             },
             legend: {
                 enabled: true,
@@ -104,6 +247,7 @@ $(function () {
             },
             navigator: {
             	enabled: true,
+            	adaptToUpdatedData: false,
             	xAxis:{
             		dateTimeLabelFormats: {
         	        	second: '%H:%M:%S',
@@ -115,7 +259,6 @@ $(function () {
         	        	year: '%Y'
         	        }
             	}
-    	        
             },
             scrollbar: {
             	enabled: true
@@ -171,6 +314,7 @@ $(function () {
                     },
                     shadow: false,
                     enableMouseTracking: true,
+                    /*
                     point: {
                         events: {
                             click: function(event) {
@@ -181,6 +325,7 @@ $(function () {
                             }
                         }
                     }
+                    */
                 },
                 series: {
                 	//allowPointSelect: true,  
@@ -195,6 +340,7 @@ $(function () {
                             }
                         }
                     },
+                    /*
                     point: {
                     	events: {
                     		click: function(event){
@@ -204,9 +350,16 @@ $(function () {
                     		}
                     	}
                     }
+                    */
                 }
             },
             xAxis: {
+            	/*
+				events : {
+					afterSetExtremes : afterSetExtremes
+				},
+				*/
+				//minRange: 1000,
             	lineColor: 'rgb(245, 149, 154)',
             	gridLineColor: 'rgb(245, 149, 154)',
             	gridLineWidth: 0.5,
@@ -237,6 +390,40 @@ $(function () {
             yAxis: [],
             series: []
     };
+    
+    function afterSetExtremes(e){
+    	plot.showLoading('Loading data from server...');
+    	
+    	min = Math.round((e.min-Date.UTC(0, 0, 0, 0, 0, 0, 0))/(1000/frequency));
+    	max = Math.round((e.max-Date.UTC(0, 0, 0, 0, 0, 0, 0))/(1000/frequency));
+    	var newData = [];
+    	var minVal = datasets[0].data[min];
+    	var maxVal = datasets[0].data[min];
+    	for(var j=min; j<=max; j++){
+    		newData.push([e.min+(j-min)*4, datasets[0].data[j]]);
+    		if(datasets[0].data[j]<minVal)
+    			minVal = datasets[0].data[j]
+    		if(datasets[0].data[j]>maxVal)
+    			maxVal = datasets[0].data[j]
+    	}
+    	
+    	plot.series[0].yAxis.setExtremes(minVal, maxVal);
+    	console.log(minVal, maxVal);
+		plot.series[0].setData(newData);
+
+    	/*
+    	for(var i=0; i<datasets.length; i++){
+    		var newData = [];
+        	for(var j=min; j<=max; j++){
+        		newData.push(datasets[i].data[j]);
+        	}
+        	console.log(newData);
+    		plot.series[i].setData(newData);
+    	}
+    	*/
+    	//plot.redraw();
+    	plot.hideLoading();
+    }
     /*
 	function getAndProcessData() { //issue ajax call and further process the data on sucess
 		showSpinner();
@@ -398,15 +585,19 @@ $(function () {
             dataType: 'json',
             send: function (e, data) {
             	showSpinner();
+            	plot.destroy();
+            	plot = null;
+            	diagram.remove();
+            	resizer.remove();
+            	fileInput.remove();
             	//console.log(data);
             },
             done: function (e, data) {
             	//console.log(data.result);
             	//choice.remove()
-            	diagram.remove();
-            	resizer.remove();
-            	fileInput.remove();
+
             	//histogram.remove();
+            	console.log(plot);
             	onDataReceived(data.result);
             },
             fail: function (e, data) {
@@ -420,6 +611,7 @@ $(function () {
     function plotEverything() {
         var yTop = 65;
         chartOptions.series = [];
+        chartOptions.yAxis = [];
         //loop to fill in yAxis and data series
         var diagramHeight = 65 //calculate the diagram height!!!!!65 is the top padding of chart,
         for(var i=0; i<datasets.length;i++) {
@@ -433,9 +625,10 @@ $(function () {
         	//add checker to handler rambled value from any channel, 
         	var min = Math.min.apply(null, datasets[i].data);
         	var max = Math.max.apply(null, datasets[i].data);
-        	if((max-min) > (20*yGridInterval)) {//greater than 10 blocks, only add 10 blocks based on max
+        	
+        	if((max-min) > (50*yGridInterval)) {//greater than 10 blocks, only add 10 blocks based on max
         		yAxisOptions.min = min;
-        		yAxisOptions.max = min + 19 * yGridInterval;  //draw 20 times of yGridInterval
+        		yAxisOptions.max = min + 49 * yGridInterval;  //draw 20 times of yGridInterval
         		yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));
         	}
         	else if((max-min) < (yGridInterval/100)){ //min and max are too close
@@ -448,7 +641,15 @@ $(function () {
         		yAxisOptions.min = min;
         		yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));
         	}
-        	
+        	/*
+    		yAxisOptions.max = max;
+    		yAxisOptions.min = min;
+    		yAxisOptions.height = yTickHeight*(Math.ceil(max/yGridInterval)-Math.floor(min/yGridInterval));
+    		if(yAxisOptions.height > 1000){
+    			yAxisOptions.height = 1000
+    			yAxisOptions.max = null;
+    		}
+    		*/
         	console.log("min of ", datasets[i].label, " is ", min);
         	console.log("max of ", datasets[i].label, " is ", max);
         	console.log("height of ", datasets[i].label, " is ", yAxisOptions.height);
@@ -469,10 +670,16 @@ $(function () {
         	var s = '';
         	$.each(this.points, function(key, val) {
         		s += '<b>'+ val.series.name +'</b>'+
-                val.y + '<br/>';
+                val.y + ' ';
+        		if(key == 5)
+        			s +='<br/>'; 
         	});
             return s;
         };
+        
+        chartOptions.tooltip.positioner = function () {
+        	return { x: 200, y: 20 };
+        }
         
 		diagramHeight += 93; //93 is bottom padding
 		
