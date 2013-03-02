@@ -17,6 +17,7 @@ $(function () {
 	var name =  $('#name').text();
 	var frequency = 250;
     var ECG_CHANNELLABELS = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6'];
+    var TOTAL_POINTS = 2500;
 	
     /**
 	    Data received should have the structure as below:
@@ -43,12 +44,14 @@ $(function () {
 				if(data.data.type == 'ecg'){
 					datasets = data.data.data;
 					//console.log(datasets.length);
+					/*
 					removeProgressBar();
 					addCountDownDiv();
 					addCountDownButton();
 					addStartButton();
 					addStopButton();
 					stopButton.hide();
+					*/
 					plotEverything();
 				}
 				else if(data.data.type == 'ECG'){ //state info
@@ -56,12 +59,11 @@ $(function () {
 						if(data.data.value.value == 0){
 							// ready to start real recording
 							if(startButton != null && redoButton != null){
+								plot.hideLoading();
 								startButton.button("enable");
 								redoButton.button("enable");
 							}
 						}
-
-							
 					}
 					else if(data.data.value.type == 'progress'){
 						updateProgress(data.data.value.value);
@@ -77,8 +79,6 @@ $(function () {
 	}
 	
 	var init = function() {
-		
-		showSpinner();
 		showProgressBar();
 		
 		addResizer();
@@ -232,7 +232,12 @@ $(function () {
             },
             navigator: {
             	enabled: true,
-            	adaptToUpdatedData: false
+            	xAxis: {
+            		labels:{
+            			enabled: true
+            		}
+            	}
+            	//adaptToUpdatedData: false
             },
             scrollbar: {
             	enabled: true
@@ -405,91 +410,116 @@ $(function () {
     }
     
     function plotEverything() {
-    	console.log(datasets);
-        var yTop = 65;
-        chartOptions.series = [];
-        chartOptions.yAxis = [];
-        //loop to fill in yAxis and data series
-        var diagramHeight = 65 //calculate the diagram height!!!!!65 is the top padding of chart,
-        for(var i=0; i<datasets.length;i++) {
-        	var yAxisOptions = $.extend(true, {}, yAxisOptionsTemplate); //!!!deep copy JSON object
-        	yAxisOptions.title = {
-        			text: datasets[i].label,
-        			rotation: 0
-        	};   	
-        	//yAxisOptions.min = datasets[i].min-0.5;
-        	//yAxisOptions.max = datasets[i].max+0.5;
-        	//add checker to handler rambled value from any channel, 
-        	var min = Math.min.apply(null, datasets[i].data);
-        	var max = Math.max.apply(null, datasets[i].data);
-        	
-        	if((max-min) > (50*yGridInterval)) {//greater than 10 blocks, only add 10 blocks based on max
-        		yAxisOptions.min = min;
-        		yAxisOptions.max = min + 49 * yGridInterval;  //draw 20 times of yGridInterval
-        		yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));
-        	}
-        	else if((max-min) < (yGridInterval/100)){ //min and max are too close
-        		yAxisOptions.max = max;
-        		yAxisOptions.min = max - yGridInterval;
-        		yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));
-        	}
-        	else{
-        		yAxisOptions.max = max;
-        		yAxisOptions.min = min;
-        		yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));
-        	}
-        	/*
-    		yAxisOptions.max = max;
-    		yAxisOptions.min = min;
-    		yAxisOptions.height = yTickHeight*(Math.ceil(max/yGridInterval)-Math.floor(min/yGridInterval));
-    		if(yAxisOptions.height > 500){
-    			yAxisOptions.height = 500
-    			yAxisOptions.max = min + 499;
+    	if(plot == null){ // init plot
+	    	console.log(datasets);
+	        var yTop = 65;
+	        chartOptions.series = [];
+	        chartOptions.yAxis = [];
+	        //loop to fill in yAxis and data series
+	        var diagramHeight = 65 //calculate the diagram height!!!!!65 is the top padding of chart,
+	        for(var i=0; i<datasets.length;i++) {
+	        	var yAxisOptions = $.extend(true, {}, yAxisOptionsTemplate); //!!!deep copy JSON object
+	        	yAxisOptions.title = {
+	        			text: datasets[i].label,
+	        			rotation: 0
+	        	};   	
+	        	//yAxisOptions.min = datasets[i].min-0.5;
+	        	//yAxisOptions.max = datasets[i].max+0.5;
+	        	//add checker to handler rambled value from any channel, 
+	        	//var min = Math.min.apply(null, datasets[i].data);
+	        	//var max = Math.max.apply(null, datasets[i].data);
+	        	var min = datasets[i].min;
+	        	var max = datasets[i].max;
+	        	if((max-min) > (50*yGridInterval)) {//greater than 10 blocks, only add 10 blocks based on max
+	        		yAxisOptions.min = min;
+	        		yAxisOptions.max = min + 49 * yGridInterval;  //draw 20 times of yGridInterval
+	        		yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));
+	        	}
+	        	else if((max-min) < (yGridInterval/100)){ //min and max are too close
+	        		yAxisOptions.max = max;
+	        		yAxisOptions.min = max - yGridInterval;
+	        		yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));
+	        	}
+	        	else{
+	        		yAxisOptions.max = max;
+	        		yAxisOptions.min = min;
+	        		yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));
+	        	}
+	        	/*
+	    		yAxisOptions.max = max;
+	    		yAxisOptions.min = min;
+	    		yAxisOptions.height = yTickHeight*(Math.ceil(max/yGridInterval)-Math.floor(min/yGridInterval));
+	    		if(yAxisOptions.height > 500){
+	    			yAxisOptions.height = 500
+	    			yAxisOptions.max = min + 499;
+	    		}
+	    		*/
+	        	console.log("min of ", datasets[i].label, " is ", yAxisOptions.min);
+	        	console.log("max of ", datasets[i].label, " is ", yAxisOptions.max);
+	        	console.log("height of ", datasets[i].label, " is ", yAxisOptions.height);
+	        	yAxisOptions.top = yTop;
+	        	yTop += yAxisOptions.height; //!!!!adjust the distance to the top
+	        	diagramHeight += yAxisOptions.height;
+	        	chartOptions.yAxis.push(yAxisOptions);
+	        	/*
+	        	var tmpData = [];
+	        	for(var j=0;j<TOTAL_POINTS;j++){
+	        		if(j<TOTAL_POINTS-datasets[i].data.length)
+	        			tmpData.push(yAxisOptions.min) // padding points
+	        		else
+	        			tmpData.push(datasets[i].data[j-(TOTAL_POINTS-datasets[i].data.length)]); //received points
+	        	}
+	        	*/
+	        	
+	        	chartOptions.series.push({
+	        		name: datasets[i].label,
+	                data: datasets[i].data,
+	                pointStart: Date.UTC(0, 0, 0, 0, 0, 0, 0),
+	                yAxis: i, //use the index of dataset as the index of yAxis
+	                pointInterval: 1000/frequency // 5 millisecond<--wrong! should be 1000/frequency. in this case 1000/250 = 4
+	        	});
+	        }
+	        //format tooltip
+	        chartOptions.tooltip.formatter = function() {
+	        	var s = '';
+	        	$.each(this.points, function(key, val) {
+	        		s += '<b>'+ val.series.name +'</b>'+
+	                val.y + ' ';
+	        		if(key == 5)
+	        			s +='<br/>'; 
+	        	});
+	            return s;
+	        };
+	        
+	        chartOptions.tooltip.positioner = function () {
+	        	return { x: 200, y: 20 };
+	        }
+	        
+			diagramHeight += 93; //93 is bottom padding
+			
+	    	//plot all channels on one plot
+	    	diagram = $('<div id="diagram" ></div>').css( {
+	            height: diagramHeight.toString() + 'px',
+	        });
+			
+	    	diagram.appendTo(innerResizer);
+	
+	    	plot = new Highcharts.StockChart(chartOptions);     
+    		//showSpinner();
+	    	plot.showLoading("RECEIVING DATA...");
+    	}
+    	else{ // update plot
+    		console.log(datasets[0]);
+    		for(var i=0; i<datasets.length;i++) {
+    			plot.series[i].setData(datasets[i].data, false);
+    			/*
+	        	for(var j=0;j<datasets[i].data.length;j++){
+	        		plot.series[i].addPoint(datasets[i].data[j], false, true);
+	        	}
+	        	*/
     		}
-    		*/
-        	console.log("min of ", datasets[i].label, " is ", yAxisOptions.min);
-        	console.log("max of ", datasets[i].label, " is ", yAxisOptions.max);
-        	console.log("height of ", datasets[i].label, " is ", yAxisOptions.height);
-        	yAxisOptions.top = yTop;
-        	yTop += yAxisOptions.height; //!!!!adjust the distance to the top
-        	diagramHeight += yAxisOptions.height;
-        	chartOptions.yAxis.push(yAxisOptions);
-        	chartOptions.series.push({
-        		name: datasets[i].label,
-                data: datasets[i].data,
-                pointStart: Date.UTC(0, 0, 0, 0, 0, 0, 0),
-                yAxis: i, //use the index of dataset as the index of yAxis
-                pointInterval: 1000/frequency // 5 millisecond<--wrong! should be 1000/frequency. in this case 1000/250 = 4
-        	});
-        }
-        //format tooltip
-        chartOptions.tooltip.formatter = function() {
-        	var s = '';
-        	$.each(this.points, function(key, val) {
-        		s += '<b>'+ val.series.name +'</b>'+
-                val.y + ' ';
-        		if(key == 5)
-        			s +='<br/>'; 
-        	});
-            return s;
-        };
-        
-        chartOptions.tooltip.positioner = function () {
-        	return { x: 200, y: 20 };
-        }
-        
-		diagramHeight += 93; //93 is bottom padding
-		
-    	//plot all channels on one plot
-    	diagram = $('<div id="diagram" ></div>').css( {
-            height: diagramHeight.toString() + 'px',
-        });
-		
-    	diagram.appendTo(innerResizer);
-
-    	plot = new Highcharts.StockChart(chartOptions, function() {
-    		hideSpinner();
-    	});     
+    		plot.redraw();
+    	}
     }
     var redoButton;
     function addRedoButton() {
@@ -525,7 +555,7 @@ $(function () {
     	startButton.button();
     	startButton.button("disable");
     	startButton.click(startECG);
-    	startButton.appendTo(innerResizer);
+    	startButton.insertBefore(diagram);
     }
     function startECG() {
     	socket.send("startECG"+name.trim());
@@ -573,7 +603,7 @@ $(function () {
 		stopButton.button();
 		stopButton.button("enable");
 		stopButton.click(stopECG);
-		stopButton.appendTo(innerResizer);
+		stopButton.insertBefore(diagram);
     }
     function addCountDownButton() {
     	countDownButton = $('<button>SET TIMER</button>').css({
@@ -585,7 +615,7 @@ $(function () {
 		});   	
     	countDownButton.button();
     	countDownButton.click(countDownPopup);
-    	countDownButton.appendTo(innerResizer);
+    	countDownButton.insertBefore(diagram);
     }
     var countDownDiv;
     function addCountDownDiv() {
@@ -634,6 +664,50 @@ $(function () {
     	$('.ui-button').css({
     		fontSize: 'small'
     	});
+    }
+    
+    var progressBar;
+    var progressLabel;
+    function showProgressBar() {
+    	progressLabel = $("<div id='progressLabel'>Recording...</div>").css({
+    		float: 'left',
+        	marginLeft: '45%',
+        	fontWeight: 'bold',
+        	textShadow: '1px 1px 0 #fff',
+    	});
+    	progressBar = $("<div id='progress'></div>");
+    	progressLabel.appendTo(progressBar);
+    	progressBar.progressbar({
+    	      value: false,
+    	      change: function() {
+    	          progressLabel.text( progressBar.progressbar( "value" ) + "%" ).css({
+    	          });
+    	        },
+    	        complete: function() {
+    	          progressLabel.text( "Complete!" );
+    	        }
+        }).css({
+        	width: '98%',
+        	margin: 'auto'
+        });
+    	progressBar.appendTo("body");
+    }
+    
+    function removeProgressBar() {
+    	progressBar.remove();
+    	progressLabel.remove()
+    }
+    
+    function updateProgress(percent){
+    	progressBar.progressbar( "value", percent );
+    	if(percent == 100){
+			removeProgressBar();
+			addCountDownDiv();
+			addCountDownButton();
+			addStartButton();
+			addStopButton();
+			stopButton.hide();
+    	}
     }
     
 	var socket = null; //websocket object	
@@ -831,41 +905,6 @@ $(function () {
     function hideSpinner(){
 		spinTarget.hide();
 		spinner.stop();
-    }
-    var progressBar;
-    var progressLabel;
-    function showProgressBar() {
-    	progressLabel = $("<div id='progressLabel'>Recording...</div>").css({
-    		float: 'left',
-        	marginLeft: '45%',
-        	fontWeight: 'bold',
-        	textShadow: '1px 1px 0 #fff',
-    	});
-    	progressBar = $("<div id='progress'></div>");
-    	progressLabel.appendTo(progressBar);
-    	progressBar.progressbar({
-    	      value: false,
-    	      change: function() {
-    	          progressLabel.text( progressBar.progressbar( "value" ) + "%" ).css({
-    	          });
-    	        },
-    	        complete: function() {
-    	          progressLabel.text( "Complete!" );
-    	        }
-        }).css({
-        	width: '98%',
-        	margin: 'auto'
-        });
-    	progressBar.appendTo("body");
-    }
-    
-    function removeProgressBar() {
-    	progressBar.remove();
-    	progressLabel.remove()
-    }
-    
-    function updateProgress(percent){
-    	progressBar.progressbar( "value", percent );
     }
     
     //getAndProcessData();
