@@ -120,6 +120,7 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
             for char in service._.characteristics:
                 NSLog("%@", char._.UUID)
                 notify_list = []
+                notify_list.append(CBUUID.UUIDWithString_("FE11"))
                 notify_list.append(CBUUID.UUIDWithString_("FE13"))
                 if char._.UUID in notify_list:
                     print "Set Notify for ", char._.UUID
@@ -283,7 +284,7 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
         if characteristic._.UUID == CBUUID.UUIDWithString_("FE11"):
             hex_str = binascii.hexlify(characteristic._.value)
             print "CO2 STATUS\t", hex_str
-            status = struct.pack("<BBBBBB", 1, 0, 0, 0, 0, 0)
+            status = struct.pack("<BBBBBB", 1, 0, 0, 0, 0, 1)
             val_data = NSData.dataWithBytes_length_(status, len(status))
             peripheral.writeValue_forCharacteristic_type_(
                 val_data, characteristic,
