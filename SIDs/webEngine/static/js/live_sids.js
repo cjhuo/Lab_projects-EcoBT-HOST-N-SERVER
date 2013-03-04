@@ -100,15 +100,15 @@ $(function () {
 	    	}
 	    	*/
 	    	tmpSettings = sortOnKeys(settings);
-	    	var rowDom, counter = 1;
+	    	var rowDom, tdDom1, tdDom2, counter = 1;
 	    	$.each(tmpSettings, function(key, val){
 	    		console.log(key, val);
-	    		if(counter == 0){
+	    		if(counter == 1){
 	    			rowDom = $("<tr></tr>");
 	    		}
-	    		if(counter % 4 == 0){
-	    			rowDom = $("<tr></tr>");
+	    		if(counter % 4 == 1){
 		    		rowDom.appendTo(settingTable);
+		    		rowDom = $("<tr></tr>");
 	    		}
 	    		var label = $("<label for='" + key + "'> " + key + " </label><br>");
 	    		var input = $("<input id='" + key + "' value = '" + val + "'/>").css({
@@ -117,9 +117,9 @@ $(function () {
 	    		});
 	    		inputs.push(input);
 	    		
-	    		var tdDom1 = $("<td></td>");
+	    		tdDom1 = $("<td></td>");
 	    		label.appendTo(tdDom1);
-	    		var tdDom2 = $("<td></td>");
+	    		tdDom2 = $("<td></td>");
 	    		input.appendTo(tdDom2);
 	    		input.spinner();
 	    		if(key == "SAMPLE CACULATION"){
@@ -129,6 +129,7 @@ $(function () {
 	    		tdDom2.appendTo(rowDom);	
 	    		counter++;
 	    	});
+	    	rowDom.appendTo(settingTable);
 	    	settingTable.appendTo(settingContainer);
     	}
     	else { // update tables
@@ -165,6 +166,8 @@ $(function () {
                 "<td>" + data[7] + "</td>" +
                 "<td>" + data[8] + "</td>" +
                 "<td>" + data[9] + "</td>" +
+                "<td>" + data[10] + "</td>" +
+
               "</tr>" );
     }
 	
