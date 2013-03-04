@@ -13,6 +13,9 @@ import binascii
 
 from Characteristic import *
 
+ENABLE_FALG = 1
+DISABLE_FALG = 0
+
 class ACCEnable(Characteristic):
     def __init__(self):
         Characteristic.__init__(self)
@@ -21,12 +24,13 @@ class ACCEnable(Characteristic):
         
     def process(self):
         hex_str = binascii.hexlify(self.instance._.value)
-        acc_enable = int(hex_str, base=16) # 1: enabled; 0: disabled                
-        print "ACC ENABLE?(%s) %s" % (self.instance._.UUID, acc_enable)
-        if self.acc_enable != acc_enable:
-            log = "DISABLING ACC" if self.acc_enable == 0 else "ENABLING ACC"
+        self.acc_enable = int(hex_str, base=16) # 1: enabled; 0: disabled                
+        print "ACC ENABLE?(%s) %s" % (self.instance._.UUID, self.acc_enable)
+        if self.acc_enable != ENABLE_FALG:
+            #log = "DISABLING ACC" if self.acc_enable == 0 else "ENABLING ACC"
+            log = "ENABLING ACC"
             NSLog(log)
-            self.peripheralWorker.writeValueForCharacteristic(self.createFlag(self.acc_enable), self)
+            self.peripheralWorker.writeValueForCharacteristic(self.createEnableFlag(), self)
         '''
         data = {'type': 'ACCEnable', 
                 'value': self.acc_enable,
@@ -36,10 +40,10 @@ class ACCEnable(Characteristic):
         '''
     
     def createEnableFlag(self):
-        return self.createFlag(1)
+        return self.createFlag(ENABLE_FALG)
         
     def createDisableFlag(self):
-        return self.createFlag(0)
+        return self.createFlag(DISABLE_FALG)
         
     def createFlag(self, flag):
         byte_array = array.array('b', chr(flag))

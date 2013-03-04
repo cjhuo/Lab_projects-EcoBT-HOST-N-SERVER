@@ -112,10 +112,13 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
     def appendCharacteristicForService(self, characteristic, service, peripheral):
         c = characteristicFactory.createCharacteristic(self.checkUUID(characteristic._.UUID), characteristic, service, self)
         # Characteristic that has read&write and system infor needs to be read at the beginning         
-        if c.privilege == 1 or c.privilege == 2: 
+        if c.privilege == 1: # can be auto-notified also can get value by issuing read signal, need to read at the beginning
+            self.setNotifyValueForCharacteristic(True, c)  
             self.readValueForCharacteristic(c)
-        elif c.privilege == 0:
-            self.setNotifyValueForCharacteristic(True, c)   
+        if c.privilege == 2: # can only get value by issuing read signal
+            self.readValueForCharacteristic(c)
+        elif c.privilege == 0: # can only be auto-notified
+            self.setNotifyValueForCharacteristic(True, c)  
         service.characteristics.append(c)
     
     def checkUUID(self, UUID):
@@ -129,6 +132,9 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
     
     def findECGService(self):
         return self.findCharacteristicByUUID("FEC5")
+
+    def findSIDsService(self):
+        return self.findCharacteristicByUUID("FE11")
   
     '''  
     # for the purpose of test, enable some certain characteristic(s) at the starting point

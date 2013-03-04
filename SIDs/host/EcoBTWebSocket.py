@@ -55,6 +55,32 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
                 # self.ecoBTApp.managerWorker.sendState() 
             elif message == 'peripheralList':
                 self.ecoBTApp.managerWorker.sendPeripheralList()
+            elif message.startswith("SIDs_EnterPage"):
+                address = message[14:]
+                # stopScan
+                self.ecoBTApp.managerWorker.stopScan() 
+                self.ecoBTApp.managerWorker.state = 4
+                #self.ecoBTApp.managerWorker.sendState()
+                # cancel all other connection
+                self.ecoBTApp.managerWorker.cancelAllConnectionExcept(\
+                                self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).peripheral)
+            elif message.startswith("startSIDs"):
+                address = message[9:]
+                self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsService().startSIDs()
+                
+            elif message.startswith("stopSIDs"): 
+                address = message[7:]
+                self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsService().stopSIDs()         
+ 
+                '''                
+                self.ecoBTApp.managerWorker.stopScan() 
+                self.ecoBTApp.managerWorker.state = 4
+                #self.ecoBTApp.managerWorker.sendState()
+                # cancel all other connection
+                self.ecoBTApp.managerWorker.cancelAllConnectionExcept(\
+                                self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).peripheral)     
+                '''       
+            '''
             elif message.startswith("startTestECG"):
                 address = message[12:]
                 self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findECGService().startTestECG()
@@ -69,4 +95,5 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
                 self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findECGService().startECG()       
             elif message.startswith("stopECG"):
                 address = message[7:]
-                self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findECGService().stopECG()                     
+                self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findECGService().stopECG()         
+            '''           

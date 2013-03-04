@@ -32,9 +32,9 @@ ProfileList = [
 "FEC0",             # ECG Profile
 # Characteristic Profile
 "2A23",             # Device Info Characteristic Profile
-"FE11",             # SIDs Enable Characteristic Profile
-"FE12",             # SIDs Rate Characteristic Profile, default 10
-"FE13",             # SIDs Start Characteristic Profile , default 0
+"FE11",             # SIDs CO2 STATUS Characteristic Profile
+"FE12",             # SIDs CO2 PARAM Characteristic Profile, default 10
+"FE13",             # SIDs CO2 READING Characteristic Profile , default 0
 "FE14",             # Temperature Characteristic Profile
 "FE15",             # Humidity Characteristic Profile
 "FF11",             # LED 0 Enable Characteristic Profile

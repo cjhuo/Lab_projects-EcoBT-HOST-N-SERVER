@@ -17,7 +17,7 @@ from Characteristic import *
 class LEDEnable(Characteristic):
     def __init__(self):
         Characteristic.__init__(self)
-        self.privilege = 1
+        self.privilege = 2
         
     def process(self):
         hex_str = binascii.hexlify(self.instance._.value)

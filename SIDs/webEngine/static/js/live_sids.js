@@ -6,7 +6,7 @@ $(function () {
     var datasets; //store datasets
 	function onDataReceived(data) { //setup plot after retrieving data
 		console.log(data);
-		if( data.from == 'node')
+		if( data.from == 'node'){
 			if(name.trim() == data.data.address.trim())
 				if(data.data.type == 'sids'){ //real data
 					/*
@@ -34,6 +34,13 @@ $(function () {
 						}	
 					}
 				}
+		}
+		else if(data.from == 'central') {
+			if(data.data.type == 'message'){
+				alert(data.data.value);
+				open('/administration', '_self', true);
+			}
+		}
 	}
 	
 	

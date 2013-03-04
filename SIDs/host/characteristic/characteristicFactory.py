@@ -3,10 +3,7 @@ Created on Feb 9, 2013
 
 @author: cjhuo
 '''
-from implementation import Characteristic, DeviceInfo, ACCXYZ, ACCEnable, \
-SIDsEnable, SIDsRate, SIDsStart,\
-SIDsTempRead, SIDsHumidRead, LEDEnable, LEDBlinkInterval,\
-RTCSet, RTCGet, ECGGet, ECGSet, ECGStatus
+from host.characteristic.implementation import *
 
 def createCharacteristic(UUID, instance, service, peripheralWorker):
     c = None
@@ -17,11 +14,11 @@ def createCharacteristic(UUID, instance, service, peripheralWorker):
     elif UUID == "FFA1":
         c = ACCEnable.ACCEnable()
     elif UUID == "FE11":
-        c = SIDsEnable.SIDsEnable()
+        c = SIDsCO2Status.SIDsCO2Status()
     elif UUID == "FE12":
-        c = SIDsRate.SIDsRate()
+        c = SIDsCO2Set.SIDsCO2Set()
     elif UUID == "FE13":
-        c = SIDsStart.SIDsStart()
+        c = SIDsCO2Read.SIDsCO2Read()
     elif UUID == "FE14":
         c = SIDsTempRead.SIDsTempRead()
     elif UUID == "FE15":
