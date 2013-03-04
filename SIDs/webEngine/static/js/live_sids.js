@@ -21,19 +21,20 @@ $(function () {
 					plotEverything();
 					*/
 				}
+				/*
 				else if(data.data.type == 'SIDs'){ //state info
 					if(data.data.value.type == 'state'){
 						if(data.data.value.value == 0){
 							// ready to start real recording
-							/*
 							if(startButton != null && redoButton != null){
 								startButton.button("enable");
 								redoButton.button("enable");
 							}
-							*/
+							
 						}	
 					}
 				}
+				*/
 		}
 		else if(data.from == 'central') {
 			if(data.data.type == 'message'){
@@ -52,6 +53,7 @@ $(function () {
 		addFileUploadDiv();
 		addStartButton();
 		addStopButton();
+		startButton.button("enable");
 		stopButton.hide();
 
 	}
@@ -93,6 +95,7 @@ $(function () {
     	fileInput.hide();
     	startButton.hide();
     	stopButton.show();
+    	socket.send("startSIDs"+name.trim());
     	/*
     	socket.send("startECG"+name.trim());
     	startButton.hide();

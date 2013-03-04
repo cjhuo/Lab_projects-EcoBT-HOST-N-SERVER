@@ -55,7 +55,7 @@ class SIDsCO2Status(Characteristic):
         # send a message to UI
         data = {'type': 'SIDs',
         'value': {'type': 'state',
-                  'value': STOP_FLAG # stopped == ready signal
+                  'value': self.state # stopped == ready signal
                   }
         }
         self.peripheralWorker.delegateWorker.getQueue().put(data)

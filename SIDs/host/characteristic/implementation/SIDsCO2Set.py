@@ -71,6 +71,8 @@ class SIDsCO2Set(Characteristic):
         return data
         '''
     
+    def updateSettings(self):
+        pass
     def createRateBySec(self, sec):
         byte_array = array.array('b', chr(sec))
         val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
