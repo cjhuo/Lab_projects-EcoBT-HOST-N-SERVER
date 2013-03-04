@@ -46,6 +46,11 @@ class ConfigHandler(BaseHandler):
     def put(self): # get current settings from UI, update settings to EcoBTApp
         data = json.loads(self.get_argument("data"))
         print data                
+        address = str(data['address'])
+        settings = data['settings']
+        for count in range(len(settings)):
+            settings[count] = int(settings[count])
+        self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsSet().updateSettings(settings)        
         
         # update settings in EcoBTApp
         

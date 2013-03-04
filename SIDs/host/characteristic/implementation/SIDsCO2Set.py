@@ -47,7 +47,7 @@ class SIDsCO2Set(Characteristic):
     def __init__(self):
         Characteristic.__init__(self)
         self.privilege = 2
-        self.settings = None
+        self.settings = dict()
         
     def process(self):
         hex_str = binascii.hexlify(self.instance._.value)
@@ -55,10 +55,10 @@ class SIDsCO2Set(Characteristic):
         
         value = self.instance._.value
         temp = struct.unpack("<HBBBBHBBBBHBBBHB", value)
-        self.settings = dict()
         counter = 0
         for item in temp:
             self.settings[SETTING_NAMES[counter]] = int(item)
+            counter += 1
         
         #self.rate = int(hex_str, base=16) # 1: enabled; 0: disabled
         #print "SIDS SHT25 RATE?(%s) %d sec" % (self.UUID, self.rate)
@@ -71,8 +71,12 @@ class SIDsCO2Set(Characteristic):
         return data
         '''
     
-    def updateSettings(self):
-        pass
+    def updateSettings(self, settings):
+        counter = 0;
+        for val in settings:
+            self.settings[SETTING_NAMES[counter]] = val
+            counter += 0
+            
     def createRateBySec(self, sec):
         byte_array = array.array('b', chr(sec))
         val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))

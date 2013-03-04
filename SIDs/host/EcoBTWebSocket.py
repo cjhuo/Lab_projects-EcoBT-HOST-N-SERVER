@@ -66,11 +66,11 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
                                 self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).peripheral)
             elif message.startswith("startSIDs"):
                 address = message[9:]
-                self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsService().startSIDs()
+                self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsStatus().startSIDs()
                 
             elif message.startswith("stopSIDs"): 
-                address = message[7:]
-                self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsService().stopSIDs()         
+                address = message[8:]
+                self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsStatus().stopSIDs()         
  
                 '''                
                 self.ecoBTApp.managerWorker.stopScan() 

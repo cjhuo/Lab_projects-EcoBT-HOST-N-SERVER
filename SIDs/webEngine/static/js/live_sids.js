@@ -113,6 +113,7 @@ $(function () {
     	fileInput.show();
     	stopButton.hide();
     	startButton.show();
+    	socket.send("stopSIDs"+name.trim());
     	/*
     	socket.send("stopECG"+name.trim());
     	stopButton.hide();
@@ -237,17 +238,24 @@ $(function () {
     function updateSettings() { //update setting through ajax
     	var config = [];
     	$.each(inputs, function(key, val){
+    		config.push(val[0].value);
+    		/*
     		config.push({
     			name: val[0].id,
     			value: val[0].value
     		});
+    		*/
     	});
+    	var data = {
+    			'address': name.trim(),
+    			'settings': config
+    	};
 		$.ajax({
 			type: 'put',
 			url: configUrl,
 			dataType: 'json',
 			cache: false,
-			data: {"data":JSON.stringify(config)},
+			data: {"data":JSON.stringify(data)},
 			beforeSend: showSpinner,
 			success: function(){
 				hideSpinner();
