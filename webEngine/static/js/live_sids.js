@@ -106,7 +106,7 @@ $(function () {
 	    		if(counter == 1){
 	    			rowDom = $("<tr></tr>");
 	    		}
-	    		if(counter % 4 == 0){
+	    		if(counter % 4 == 1){
 		    		rowDom.appendTo(settingTable);
 		    		rowDom = $("<tr></tr>");
 	    		}
