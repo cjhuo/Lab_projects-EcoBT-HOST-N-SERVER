@@ -14,15 +14,19 @@ class ConfigHandler(BaseHandler):
     
     def post(self): # get uploaded config file from user
         try:
+            address = self.get_argument(u'address')
             if len(self.request.files) != 0: #user uploaded file from UI 
                 f = self.request.files['uploaded_files'][0]
                 orig_fname = f['filename']
                 path = os.path.join(os.path.dirname(__file__), os.pardir, "static/Uploads/")
-                ofd = open(path + orig_fname, 'w')
+                fname = path + orig_fname
+                ofd = open(fname, 'w')
                 ofd.write(f['body'])
                 ofd.close()
                 
                 # update settings in EcoBTApp
+                self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsSet().updateSettingsByFile(fname) 
+
                 
                 #self.ecg.setFile(path + orig_fname)               
             else: #use default test file
@@ -45,14 +49,13 @@ class ConfigHandler(BaseHandler):
         
     def put(self): # get current settings from UI, update settings to EcoBTApp
         data = json.loads(self.get_argument("data"))
-        print data                
+        print data
         address = str(data['address'])
         settings = data['settings']
         for count in range(len(settings)):
             settings[count] = int(settings[count])
-        self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsSet().updateSettings(settings)        
+        self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsSet().updateSettingsByDict(settings)        
         
         # update settings in EcoBTApp
-        
-        
+
 

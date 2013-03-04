@@ -21,6 +21,9 @@ $(function () {
 					plotEverything();
 					*/
 				}
+				else if(data.data.type == 'SIDsSettings'){
+					
+				}
 				/*
 				else if(data.data.type == 'SIDs'){ //state info
 					if(data.data.value.type == 'state'){
@@ -165,6 +168,9 @@ $(function () {
     	fileInput.fileupload({
     		url: configUrl,
             dataType: 'json',
+            formData: {
+            	address: name.trim()
+            },
             send: function (e, data) {
             	showSpinner();
             	//console.log(data);
