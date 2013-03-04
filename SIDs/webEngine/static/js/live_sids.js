@@ -190,7 +190,9 @@ $(function () {
     function stopSIDs() {
     	//enable all setting inputs
     	$.each(inputs, function(key,val){
-    		val.spinner("enable");
+    		if(val[0].id != "SAMPLE CACULATION"){
+    			val.spinner("enable");
+    		}
     	});    	
     	fileInput.show();
     	stopButton.hide();
