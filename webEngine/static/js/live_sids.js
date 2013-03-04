@@ -165,6 +165,8 @@ $(function () {
                 "<td>" + data[7] + "</td>" +
                 "<td>" + data[8] + "</td>" +
                 "<td>" + data[9] + "</td>" +
+                "<td>" + data[10] + "</td>" +
+
               "</tr>" );
     }
 	
