@@ -1,0 +1,73 @@
+{% extends "main.html" %}
+
+{% block header %}
+	<h1>{{ header_text }}</h1>
+{% end %}
+
+{% block body %}
+
+<!-- 
+ 	<p>1. Pick the channel that you want to analyze
+    <br>
+       2. Zoom and pick any Q and T points
+    <br>
+       3. Hit 'Submit' to generate bin information on overall samples
+    <br>
+  <b>Note:</b> <br>
+       a) De-select the point you've already selected by clicking it again <br>
+       b) You can always go back to the original state by choose any of the radio buttons 
+    </p>
+-->
+{% end %}
+
+{% block footer %}
+	{{ footer_text }}
+{% end %}
+
+{% block script_include %}
+<STYLE type="text/css">
+.file-wrapper {
+  cursor: pointer;
+  display: inline-block;
+  overflow: hidden;
+  position: relative;
+}
+.file-wrapper input {
+  cursor: pointer;
+  height: 100%;
+  filter: alpha(opacity=1);
+  -moz-opacity: 0.01;
+  opacity: 0.01;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+</STYLE>
+
+<!--  
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/flot/jquery.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/flot/jquery.flot.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/flot/jquery.flot.resize.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/flot/jquery.flot.crosshair.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/flot/jquery.flot.selection.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/flot/jquery.flot.symbol.js") }}"></script>
+-->
+
+<link type="text/css" href="{{ static_url("css/smoothness/jquery-ui-1.8.23.custom.css") }}" rel="stylesheet" />
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/jquery-1.8.2.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/jquery-ui-1.8.23.custom.min.js") }}"></script>
+
+  
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/highcharts/highcharts.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/highcharts/highcharts-more.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/highcharts/modules/exporting.js") }}"></script>
+
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/spin.min.js") }}"></script>
+
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/jquery.iframe-transport.js") }}"></script>
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/jquery-fileupload/jquery.fileupload.js") }}"></script>
+
+
+<script language="javascript" type="text/javascript" src="{{ static_url("js/analysis.js") }}"></script>
+{% end %}
+
