@@ -110,7 +110,6 @@ $(function () {
 		    		rowDom.appendTo(settingTable);
 		    		rowDom = $("<tr></tr>");
 	    		}
-	    		if(counter == )
 	    		var label = $("<label for='" + key + "'> " + key + " </label><br>");
 	    		var input = $("<input id='" + key + "' value = '" + val + "'/>").css({
 	    			fontSize: 'small',
