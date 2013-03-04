@@ -103,7 +103,7 @@ $(function () {
 	    	var rowDom, counter = 1;
 	    	$.each(tmpSettings, function(key, val){
 	    		console.log(key, val);
-	    		if(counter == 0){
+	    		if(counter == 1){
 	    			rowDom = $("<tr></tr>");
 	    		}
 	    		if(counter % 4 == 0){
