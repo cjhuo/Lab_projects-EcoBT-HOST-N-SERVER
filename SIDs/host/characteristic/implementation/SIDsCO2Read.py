@@ -12,6 +12,9 @@ from objc import *
 import array
 import binascii
 import struct
+import csv
+import os.path
+from datetime import datetime
 
 from Characteristic import *
 
@@ -41,14 +44,22 @@ class SIDsCO2Read(Characteristic):
         hex_str = binascii.hexlify(self.instance._.value)
         print "CO2 READING: ", hex_str
         value = self.instance._.value
-        hour, min, sec, LED00, LED01, LED10, LED11, amb0, amb1, rh, temp = struct.unpack("<BBBhhhhhhHH", value)
+        hour, minute, sec, LED00, LED01, LED10, LED11, amb0, amb1, rh, temp = struct.unpack("<BBBhhhhhhHH", value)
         print rh, temp
         rh = rh & 0xFFFC
         rh = -6.0 + (125.0 * rh) / 65536
         temp = temp & 0xFFFC
         temp = -46.85 + (175.72 * temp) / 65536
 
-        print hour, min, sec, LED00, LED01, LED10, LED11, amb0, amb1, rh, temp
+        print hour, minute, sec, LED00, LED01, LED10, LED11, amb0, amb1, rh, temp
+        self.logToFile(hour, minute, sec, LED00, LED01, LED10, LED11, amb0, amb1, rh, temp)
+        
+        data = {
+                'type': 'SIDsRead',
+                'value': [hour, minute, sec, LED00, LED01, LED10, LED11, amb0, amb1, rh, temp]
+                }
+        
+        self.peripheralWorker.delegateWorker.getQueue().put(data)
         '''
         self.start = int(hex_str, base=16) # 1: enabled; 0: disabled
         print "SIDS SHT25 Start?(%s) %d" % (self.instance._.UUID, self.start)
@@ -59,14 +70,28 @@ class SIDsCO2Read(Characteristic):
                 }
         return data
         '''
-
-    def createStartFlag(self):
-        return self.createFlag(1)
-
-    def createStopFlag(self):
-        return self.createFlag(0)
-
-    def createFlag(self, flag):
-        byte_array = array.array('b', chr(flag))
-        val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
-        return val_data
+    def logToFile(self, hour, minute, sec, LED00, LED01, LED10, LED11, amb0, amb1, rh, temp):
+        if not hasattr(self.service, 'log_file') or self.service.log_file == False: # try to open a file
+            prefix = os.path.join(os.path.dirname(__file__), os.path.pardir, os.pardir, os.pardir, "data/log_")
+            name = datetime.now().strftime("%Y%m%d%H%M%S")
+            postfix = '.csv'
+            fd = None
+            if not os.path.exists(prefix + name + postfix):
+                    fd = open(prefix + name + postfix, 'w')
+                    self.service.log_file = fd
+                    self.service.csvWriter = csv.writer(fd, delimiter=',')
+                    self.service.csvWriter.writerow(["Time", "LED1PD1", "LED1PD2", "LED2PD1", "LED2PD2", "AMBIENT1", "AMBIENT2", "RH", "TEMP"])
+            else:
+                raise Exception
+        if self.service.log_file != False:
+            self.service.csvWriter.writerow([str(hour)+":"+str(minute)+":"+str(sec), LED00, LED01, LED10, LED11, amb0, amb1, rh, temp])
+                
+                
+                
+                
+                
+                
+                
+                
+        
+        

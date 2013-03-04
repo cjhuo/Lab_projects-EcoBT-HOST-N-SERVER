@@ -12,6 +12,7 @@ from objc import *
 import array
 import binascii
 import struct
+import os
 
 from host.characteristic.implementation.Characteristic import *
 
@@ -43,7 +44,7 @@ class SIDsCO2Status(Characteristic):
         print "CO2 STATUS: ", hex_str
         value = self.instance._.value
         self.start, self.LED_ready, self.PD0, self.PD1, self.RH_T_ready, self.RH_T_enable = struct.unpack("<BBBBBB", value)
-        print self.start, self.LED_ready, self.PD0, self.PD1, self.RH_T_ready, self.RH_T_enable
+        #print self.start, self.LED_ready, self.PD0, self.PD1, self.RH_T_ready, self.RH_T_enable
         if int(self.start) == 0 and int(self.LED_ready) == 1 and int(self.PD0) == 1 and \
                                     int(self.PD1) == 1 and int(self.RH_T_ready) == 1 and int(self.RH_T_enable) == 1: # correct initial state
             self.state = STOP_FLAG
@@ -82,6 +83,11 @@ class SIDsCO2Status(Characteristic):
         byte_array = struct.pack("<BBBBBB", 0, 1, 1, 1, 1, 1)
         val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
         self.peripheralWorker.writeValueForCharacteristic(val_data, self)
+        if hasattr(self.service, 'log_file'):
+            self.service.log_file.close() # close log file
+            self.service.log_file = False
+        dataPath = os.path.join(os.path.dirname(__file__), os.path.pardir, os.pardir, os.pardir, "data")
+        os.system('open "%s"' % dataPath)
     '''
     def createStartFlag(self):
         return self.createFlag(START_FLAG)

@@ -41,8 +41,8 @@ typedef union{
 } co2_param_t;
 '''
 
-SETTING_NAMES = ['TIME BETWEEN DATA', 'SAMPLE COUNT', 'SAMPLE CACULATION', 'LED1 POWER', 'LED1 PD1 POWER', 'LED1 PD2 POWER', 'LED1 DELAY', \
-                 'LED2 POWER', 'LED2 PD1 POWER', 'LED2 PD2 POWER', 'LED2 DELAY', 'AMBIENT PD1 POWER', 'AMBIENT PD2 POWER','AMBIENT DELAY']
+SETTING_NAMES = ['TIME BETWEEN DATA (ms)', 'SAMPLE COUNT', 'SAMPLE CACULATION', 'LED1 POWER', 'LED1 PD1 POWER', 'LED1 PD2 POWER', 'LED1 DELAY (ms)', \
+                 'LED2 POWER', 'LED2 PD1 POWER', 'LED2 PD2 POWER', 'LED2 DELAY (ms)', 'AMBIENT PD1 POWER', 'AMBIENT PD2 POWER','AMBIENT DELAY (ms)']
 
 class SIDsCO2Set(Characteristic):
     def __init__(self):
@@ -53,20 +53,23 @@ class SIDsCO2Set(Characteristic):
     def process(self):
         hex_str = binascii.hexlify(self.instance._.value)
         print "CO2 PARAMETERS: ", hex_str
-        
         value = self.instance._.value
         temp = struct.unpack("<HBBBBBHBBBHBBH", value)
         counter = 0
         for item in temp:
             self.settings[SETTING_NAMES[counter]] = int(item)
             counter += 1
+        
         self.sendSettingsToFrontend()
+        
     
     def updateSettingsByDict(self, settings):
         counter = 0;
-        for val in settings:
-            self.settings[SETTING_NAMES[counter]] = val
+        for key, val in settings.items():
+            self.settings[str(key)] = int(val)
             counter += 0
+        print self.settings
+        self.sendSettingsToPeripheral()
             
     def updateSettingsByFile(self, fname):
         with open(fname, 'r') as csvfile:
@@ -89,7 +92,9 @@ class SIDsCO2Set(Characteristic):
         self.peripheralWorker.delegateWorker.getQueue().put(data)
  
     def createSettings(self):
-        settings = self.settings.itervalues()
+        settings = list()
+        for name in SETTING_NAMES:
+            settings.append(self.settings[name])
         byte_array = struct.pack("<HBBBBBHBBBHBBH", *settings)
         val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
         return val_data

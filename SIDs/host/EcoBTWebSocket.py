@@ -20,7 +20,7 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
     def open(self):
         if len(self.globalSockets) == 0: # allow only 1 socket to connect
             self.globalSockets.append(self)
-            self.ecoBTApp.managerWorker.sendState()
+            self.ecoBTApp.managerWorker.sendState()                
             print "WebSocket opened"
         else:
             self.close()
@@ -71,7 +71,10 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
             elif message.startswith("stopSIDs"): 
                 address = message[8:]
                 self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsStatus().stopSIDs()         
- 
+            elif message.startswith("sendSIDsSet"): 
+                address = message[11:]
+                self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsSet().sendSettingsToFrontend()         
+
                 '''                
                 self.ecoBTApp.managerWorker.stopScan() 
                 self.ecoBTApp.managerWorker.state = 4

@@ -39,21 +39,22 @@ class ConfigHandler(BaseHandler):
     def get(self): # get current settings from UI, generate config.csv for user to download
         data = json.loads(self.get_argument("data"))
         print data
+        address = str(data['address'])
+        settings = data['settings']
         path = os.path.join(os.path.dirname(__file__), os.pardir, "static/Uploads/")
         fname = "config.csv"
         with open(path + fname, 'w') as csvfile:
             csvWriter = csv.writer(csvfile, delimiter=',')
-            for item in data:
-                csvWriter.writerow([item['name'], item['value']])
+            for key, val in settings.items():
+                csvWriter.writerow([str(key), int(val)])
         self.write({'url': self.static_url(path+fname)})
+        self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsSet().updateSettingsByDict(settings)
         
     def put(self): # get current settings from UI, update settings to EcoBTApp
         data = json.loads(self.get_argument("data"))
         print data
         address = str(data['address'])
         settings = data['settings']
-        for count in range(len(settings)):
-            settings[count] = int(settings[count])
         self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsSet().updateSettingsByDict(settings)        
         
         # update settings in EcoBTApp
