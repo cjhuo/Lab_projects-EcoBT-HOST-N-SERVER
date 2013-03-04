@@ -107,8 +107,8 @@ $(function () {
 	    			rowDom = $("<tr></tr>");
 	    		}
 	    		if(counter % 4 == 0){
-	    			rowDom = $("<tr></tr>");
 		    		rowDom.appendTo(settingTable);
+		    		rowDom = $("<tr></tr>");
 	    		}
 	    		var label = $("<label for='" + key + "'> " + key + " </label><br>");
 	    		var input = $("<input id='" + key + "' value = '" + val + "'/>").css({
