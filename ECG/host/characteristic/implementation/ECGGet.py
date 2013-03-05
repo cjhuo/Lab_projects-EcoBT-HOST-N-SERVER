@@ -169,22 +169,22 @@ class ECGGet(Characteristic):
             self.service.aVL = self.service.LeadI - (self.service.LeadII / 2)
             self.service.aVF = self.service.LeadII - (self.service.LeadI / 2)
             """
-            # chr() will return a char in value range of 0-255, and the return result of unpack won't be negative value forever???????
+            # right shift 13 bits for lead data since only the first 19bits are valid
             key = int(ret[0])
             (temp,) = struct.unpack(">I", chr(ret[1]) + chr(ret[2]) + chr(ret[3]) + chr(0))
             self.service.read_buffer[key].set('status', temp >> 8)
             (temp,) = struct.unpack(">i", chr(ret[4]) + chr(ret[5]) + chr(ret[6]) + chr(0))
             #temp = temp & 0xFFFFE000
-            self.service.read_buffer[key].set('V6', temp >> 8)
+            self.service.read_buffer[key].set('V6', temp >> 13)
             (temp,) = struct.unpack(">i", chr(ret[7]) + chr(ret[8]) + chr(ret[9]) + chr(0))
             #temp = temp & 0xFFFFE000
-            self.service.read_buffer[key].set('I', temp >> 8)
+            self.service.read_buffer[key].set('I', temp >> 13)
             (temp,) = struct.unpack(">i", chr(ret[10]) + chr(ret[11]) + chr(ret[12]) + chr(0))
             #temp = temp & 0xFFFFE000
-            self.service.read_buffer[key].set('II', temp >> 8)
+            self.service.read_buffer[key].set('II', temp >> 13)
             (temp,) = struct.unpack(">i", chr(ret[13]) + chr(ret[14]) + chr(ret[15]) + chr(0))
             #temp = temp & 0xFFFFE000
-            self.service.read_buffer[key].set('V2', temp >> 8)
+            self.service.read_buffer[key].set('V2', temp >> 13)
 
             if self.service.read_buffer[key].isValid():
                 self.handle_reading(key)
@@ -231,16 +231,16 @@ class ECGGet(Characteristic):
             key = int(ret[0])
             (temp,) = struct.unpack(">i", chr(ret[1]) + chr(ret[2]) + chr(ret[3]) + chr(0))
             #temp = temp & 0xFFFFE000
-            self.service.read_buffer[key].set('V3', temp >> 8)
+            self.service.read_buffer[key].set('V3', temp >> 13)
             (temp,) = struct.unpack(">i", chr(ret[4]) + chr(ret[5]) + chr(ret[6]) + chr(0))
             #temp = temp & 0xFFFFE000
-            self.service.read_buffer[key].set('V4', temp >> 8)
+            self.service.read_buffer[key].set('V4', temp >> 13)
             (temp,) = struct.unpack(">i", chr(ret[7]) + chr(ret[8]) + chr(ret[9]) + chr(0))
             #temp = temp & 0xFFFFE000
-            self.service.read_buffer[key].set('V5', temp >> 8)
+            self.service.read_buffer[key].set('V5', temp >> 13)
             (temp,) = struct.unpack(">i", chr(ret[10]) + chr(ret[11]) + chr(ret[12]) + chr(0))
             #temp = temp & 0xFFFFE000
-            self.service.read_buffer[key].set('V1', temp >> 8)
+            self.service.read_buffer[key].set('V1', temp >> 13)
 
             if self.service.read_buffer[key].isValid():
                 self.handle_reading(key)
