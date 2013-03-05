@@ -121,7 +121,7 @@ class SDCard_Reader:
             for i in range(1, 9):
                 idx = i * 3
                 (reading,) = struct.unpack(">i", raw[idx:(idx + 3)] + chr(0))
-                reading = reading >> 8
+                reading = reading >> 13 # right shift 13 bits since only the first 19 bits are valid
                 reading = int(reading * 2.86 / 6 / 10) # micorvolt
                 if reading > 32767:
                     reading = 32767
