@@ -56,6 +56,8 @@ class EcoBTApp(object):
        
     def keyboardHandler_(self, notification): # handlder must has a function name ended by a single "_"        
         NSLog("Keyboard Interrupt Captured")
+        self.running.set()
+        '''
         data = notification.userInfo().objectForKey_(NSFileHandleNotificationDataItem)
         string = NSString.alloc().initWithData_encoding_(data, NSUTF8StringEncoding).autorelease()
         NSLog("Got string: %@", string)
@@ -68,7 +70,7 @@ class EcoBTApp(object):
             stdIn = NSFileHandle.fileHandleWithStandardInput().retain()
             stdIn.readInBackgroundAndNotify()
             #self.handleKeyboardInterrupt()
-
+        '''
 
 if __name__ == '__main__':
     #main()
