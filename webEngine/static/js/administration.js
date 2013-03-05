@@ -15,7 +15,7 @@ $(function () {
 
 	var startDiscoverServices = false;
 	function onDataReceived(data){
-		console.log(data.from);
+		//console.log(data);
 		console.log(data.data);
 		if( data.from == 'central') {
 			if(data.data.type == 'state') {
@@ -348,37 +348,38 @@ $(function () {
         	})
         	
         	if(peripheral != null){
-        		peripheral.instance.attr({cursor: "pointer"});
-        		
-        		// draw ready text
-    			x = peripheral.instance.attr("x") + 10;
-    			y = peripheral.instance.attr("y") + 30;
-    			var text = r.text(x+20, y-10, "START").attr({
-        			opacity: 1, 
-        			fill: 'black', 
-        			"stroke-width": 2,
-        			"font-weight":900});
-    			peripheral.readyInstance = text;
-    			var group = r.set();
-    			group.push(peripheral.instance);
-    			group.push(text);
-    			//group.peripheral = peripheral;
-    			var ecgUrl = "/liveSIDs?name="+data.address;
-    			group.attr({
-    			    cursor: 'pointer',
-    			}).mouseover(function(e) {
-    				group[0].attr('fill', "green");
-    			}).mouseout(function(e) {
-    				group[0].attr('fill', "");
-    			}).dblclick(function(e) {
-    				group[0].attr('fill', "red");
-    				showSpinner();
-    				//startTestECG(peripheral.address);
-    				this.undblclick();
-    				//this.remove();
-    				window.open(ecgUrl, '_self', false);
-    			}); 
-    			
+        		if(peripheral.readyInstance == null){
+	        		peripheral.instance.attr({cursor: "pointer"});
+	        		
+	        		// draw ready text
+	    			x = peripheral.instance.attr("x") + 10;
+	    			y = peripheral.instance.attr("y") + 30;
+	    			var text = r.text(x+20, y-10, "START").attr({
+	        			opacity: 1, 
+	        			fill: 'black', 
+	        			"stroke-width": 2,
+	        			"font-weight":900});
+	    			peripheral.readyInstance = text;
+	    			var group = r.set();
+	    			group.push(peripheral.instance);
+	    			group.push(text);
+	    			//group.peripheral = peripheral;
+	    			var ecgUrl = "/liveSIDs?name="+data.address;
+	    			group.attr({
+	    			    cursor: 'pointer',
+	    			}).mouseover(function(e) {
+	    				group[0].attr('fill', "green");
+	    			}).mouseout(function(e) {
+	    				group[0].attr('fill', "");
+	    			}).dblclick(function(e) {
+	    				group[0].attr('fill', "red");
+	    				showSpinner();
+	    				//startTestECG(peripheral.address);
+	    				this.undblclick();
+	    				//this.remove();
+	    				window.open(ecgUrl, '_self', false);
+	    			}); 
+        		}
         	}
         },
         dragger = function (x, y, event) {

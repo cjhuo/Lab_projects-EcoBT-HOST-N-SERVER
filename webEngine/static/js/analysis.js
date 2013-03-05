@@ -649,6 +649,8 @@ $(function () {
     
         if (data.length > 0)
 	        if(diagram) {//just in case the plot div is not yet generated when user starts to click radio buttons
+	        	if(plot != null)
+	        		plot.destroy();
 	        	/* re-initialize every parameter */
 	        	//diagram.unbind();
 	        	qPoint = null;
@@ -666,18 +668,11 @@ $(function () {
                     data: data,
                     pointInterval: xPointInterval
 	        	});
-	        	if(plot != null)
-	        		plot.destroy();
 	        	plot = new Highcharts.Chart(options, function() {
 	        		hideSpinner();
 	        	});
 	        	
 	        	//end loading data
-	            //plot = $.plot(diagram, data, options);
-	            //addHoverEvent();
-	           	//plotOverview(data);
-	           	//addSelectionEvent(data);
-	            //addClickEvent();
 	        }
 	        else {
 	        	alert('plot div has not been generated!');

@@ -17,6 +17,22 @@ secondHalf = 'FEC7' # V3, V4, V5, V1
 ECG_CHANNELLABELS = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6']
 NUM_OF_SAMPLES = 2500
 
+'''
+idle value of each channel:
+I: 399856
+II: 399856
+III: 0
+aVR: -399856
+aVL: 199928
+aVF: 199928
+V1: 399856
+V2: 399856
+V3: 399856
+V4: 399856
+V5: 399856
+V6: 399856
+'''
+
 class ECGReading:
     def __init__(self):
         self.reading = {}
@@ -114,7 +130,7 @@ class ECGGet(Characteristic):
                 self.service.read_buffer[idx] = ECGReading()
 
     def process(self):
-        self.service.setter.lock.acquire()
+        
         # starting from a brand new recording, means ECGSet doesn't assign it an initial value, reading a remnant data
         if not hasattr(self.service, "record_cnt"):
             if not hasattr(self.service, "sendStopFromGetter") or self.service.sendStopFromGetter == False:
@@ -158,16 +174,16 @@ class ECGGet(Characteristic):
             (temp,) = struct.unpack(">I", chr(ret[1]) + chr(ret[2]) + chr(ret[3]) + chr(0))
             self.service.read_buffer[key].set('status', temp >> 8)
             (temp,) = struct.unpack(">i", chr(ret[4]) + chr(ret[5]) + chr(ret[6]) + chr(0))
-            temp = temp & 0xFFFFE000
+            #temp = temp & 0xFFFFE000
             self.service.read_buffer[key].set('V6', temp >> 8)
             (temp,) = struct.unpack(">i", chr(ret[7]) + chr(ret[8]) + chr(ret[9]) + chr(0))
-            temp = temp & 0xFFFFE000
+            #temp = temp & 0xFFFFE000
             self.service.read_buffer[key].set('I', temp >> 8)
             (temp,) = struct.unpack(">i", chr(ret[10]) + chr(ret[11]) + chr(ret[12]) + chr(0))
-            temp = temp & 0xFFFFE000
+            #temp = temp & 0xFFFFE000
             self.service.read_buffer[key].set('II', temp >> 8)
             (temp,) = struct.unpack(">i", chr(ret[13]) + chr(ret[14]) + chr(ret[15]) + chr(0))
-            temp = temp & 0xFFFFE000
+            #temp = temp & 0xFFFFE000
             self.service.read_buffer[key].set('V2', temp >> 8)
 
             if self.service.read_buffer[key].isValid():
@@ -214,23 +230,23 @@ class ECGGet(Characteristic):
             """
             key = int(ret[0])
             (temp,) = struct.unpack(">i", chr(ret[1]) + chr(ret[2]) + chr(ret[3]) + chr(0))
-            temp = temp & 0xFFFFE000
+            #temp = temp & 0xFFFFE000
             self.service.read_buffer[key].set('V3', temp >> 8)
             (temp,) = struct.unpack(">i", chr(ret[4]) + chr(ret[5]) + chr(ret[6]) + chr(0))
-            temp = temp & 0xFFFFE000
+            #temp = temp & 0xFFFFE000
             self.service.read_buffer[key].set('V4', temp >> 8)
             (temp,) = struct.unpack(">i", chr(ret[7]) + chr(ret[8]) + chr(ret[9]) + chr(0))
-            temp = temp & 0xFFFFE000
+            #temp = temp & 0xFFFFE000
             self.service.read_buffer[key].set('V5', temp >> 8)
             (temp,) = struct.unpack(">i", chr(ret[10]) + chr(ret[11]) + chr(ret[12]) + chr(0))
-            temp = temp & 0xFFFFE000
+            #temp = temp & 0xFFFFE000
             self.service.read_buffer[key].set('V1', temp >> 8)
 
             if self.service.read_buffer[key].isValid():
                 self.handle_reading(key)
-        self.service.setter.lock.release()
+        
 
-
+    
     def handle_reading(self, key):
 #            if not hasattr(self.service, "fd"):
 #                import os
@@ -255,13 +271,43 @@ class ECGGet(Characteristic):
                                 }
                         }
             self.peripheralWorker.delegateWorker.getQueue().put(progress)
+        if self.service.record_cnt % 500 == 1: # send to UI once per 500 samples collected
+            tmpDatasets = []
+            for i in range(len(self.service.datasets)):
+                data = []
+                minVal = min(self.service.datasets[i])
+                maxVal = max(self.service.datasets[i])
+                for j in range(NUM_OF_SAMPLES):
+                    if j < (NUM_OF_SAMPLES - len(self.service.datasets[i])):
+                        data.append(minVal)
+                    else:
+                        data.append(self.service.datasets[i][j-(NUM_OF_SAMPLES-len(self.service.datasets[i]))])
+                #data = [self.service.datasets[i][j] for j in range(len(self.service.datasets[i]))]
+                label = ECG_CHANNELLABELS[i]
+                #label = "channel " + str(i)
+                tmpDatasets.append(dict())
+                tmpDatasets[i]['data'] = data
+                tmpDatasets[i]['label'] = label
+                tmpDatasets[i]['min'] = minVal#min(data)
+                tmpDatasets[i]['max'] = maxVal#max(data)
+
+            val = {
+                    'type': 'ecg',
+                    'data': tmpDatasets
+                }
+            #self.service.queue.put(val)
+            #print val
+            self.peripheralWorker.delegateWorker.getQueue().put(val)         
         if self.service.record_cnt > NUM_OF_SAMPLES: # time to stop reading from sd card after reading the first 10-second samples
             # send data to peripheral delegate worker
             if self.service.sampleRecorded == False: # make sure it only send once!!!!!!
+                self.service.setter.lock.acquire()
                 self.service.sampleRecorded = True # set sampleRecorded flag to True to prevent recording a sample again;
                 NSLog("10 SAMPLES READING COMPLETE, STOPPING FROM READING SD CARD")
                 self.service.state = 3
                 self.peripheralWorker.writeValueForCharacteristic(self.service.setter.createStopFlag(), self.service.setter)
+                self.service.setter.lock.release()
+                '''
                 tmpDatasets = []
                 for i in range(len(self.service.datasets)):
                     data = [self.service.datasets[i][j] for j in range(len(self.service.datasets[i]))]
@@ -281,6 +327,7 @@ class ECGGet(Characteristic):
                 #print val
                 self.peripheralWorker.delegateWorker.getQueue().put(val)
                 #self.service.send = True
+                '''
             else: # not sending samples to clients
                 pass
 

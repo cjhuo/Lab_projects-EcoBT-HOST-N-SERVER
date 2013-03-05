@@ -122,21 +122,39 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
                  }
             data['value'].append(p)
         self.delegateWorker.getQueue().put(data)
+        
+    def sendFailMessage(self, message):
+        msg = {
+               'type': 'message',
+               'value': message
+               }
+        self.delegateWorker.getQueue().put(msg)
 
     # CBCentralManager delegate methods
     def centralManagerDidUpdateState_(self, central):
         ble_state = central._.state
         if ble_state == CBCentralManagerStateUnkown:
             NSLog("state unkown")
+            self.state = 0
+            self.sendFailMessage("state unkown")
         elif ble_state == CBCentralManagerStateResetting:
             NSLog("resetting")
+            self.state = 0
+            self.sendFailMessage("resetting")
         elif ble_state == CBCentralManagerStateUnsupported:
             NSLog("BLE is not supported")
+            self.state = 0
+            self.sendFailMessage("BLE is not supported")
+            self.sendState()
             #AppHelper.stopEventLoop()
         elif ble_state == CBCentralManagerStateUnauthorized:
             NSLog("unauthorized")
+            self.state = 0
+            self.sendFailMessage("unauthorized")
         elif ble_state == CBCentralManagerStatePoweredOff:
             NSLog("power off")
+            self.state = 0
+            self.sendFailMessage("power off")
         elif ble_state == CBCentralManagerStatePoweredOn:
             NSLog("ble is ready!!")
             
@@ -231,6 +249,7 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
             worker.stop()
             self.peripheralWorkers.remove(worker)
             NSLog("Disconnect from Peripheral No %@", worker.peripheral.number)
+            self.sendFailMessage("Disconnect from Peripheral %s" % worker.peripheral.name)
         else:
             NSLog("Didn't find the peripheral to remove from peripherhal list!")
         

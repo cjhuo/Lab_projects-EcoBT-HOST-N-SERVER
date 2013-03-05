@@ -3,10 +3,7 @@ Created on Feb 9, 2013
 
 @author: cjhuo
 '''
-from implementation import Characteristic, DeviceInfo, ACCXYZ, ACCEnable, \
-SIDsEnable, SIDsRate, SIDsStart,\
-SIDsTempRead, SIDsHumidRead, LEDEnable, LEDBlinkInterval,\
-RTCSet, RTCGet, ECGGet, ECGSet, ECGStatus
+from host.characteristic.implementation import *
 
 def createCharacteristic(UUID, instance, service, peripheralWorker):
     c = None
