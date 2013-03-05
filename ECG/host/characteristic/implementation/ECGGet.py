@@ -169,7 +169,7 @@ class ECGGet(Characteristic):
             self.service.aVL = self.service.LeadI - (self.service.LeadII / 2)
             self.service.aVF = self.service.LeadII - (self.service.LeadI / 2)
             """
-
+            # chr() will return a char in value range of 0-255, and the return result of unpack won't be negative value forever???????
             key = int(ret[0])
             (temp,) = struct.unpack(">I", chr(ret[1]) + chr(ret[2]) + chr(ret[3]) + chr(0))
             self.service.read_buffer[key].set('status', temp >> 8)
