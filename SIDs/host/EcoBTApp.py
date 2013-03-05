@@ -29,12 +29,14 @@ class EcoBTApp(object):
             self.handleKeyboardInterrupt()
         self.running = Event()
         self.runLoop = NSRunLoop.currentRunLoop()
-        
-        # run NSRunLoop infinitely
-        while (not self.running.isSet()) and self.runLoop.runMode_beforeDate_(NSDefaultRunLoopMode, NSDate.distantFuture()):
-            # do nothing
-            pass
-        
+        try:
+            # run NSRunLoop infinitely
+            while (not self.running.isSet()) and self.runLoop.runMode_beforeDate_(NSDefaultRunLoopMode, NSDate.distantFuture()):
+                # do nothing
+                pass
+        except:
+            print >> sys.stderr, 'Exception caught found in EcoBTApp'
+            
         # clean up       
         self.managerWorker.stop()
         NSLog("Program Terminated")
