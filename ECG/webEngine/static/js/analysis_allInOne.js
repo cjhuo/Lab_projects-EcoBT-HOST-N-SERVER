@@ -623,35 +623,49 @@ $(function () {
         	//yAxisOptions.min = datasets[i].min-0.5;
         	//yAxisOptions.max = datasets[i].max+0.5;
         	//add checker to handler rambled value from any channel, 
-        	var min = Math.min.apply(null, datasets[i].data);
-        	var max = Math.max.apply(null, datasets[i].data);
-        	
+        	var min = datasets[i].min;
+        	var max = datasets[i].max;
+        	var tempMin, tempMax;
         	if((max-min) > (50*yGridInterval)) {//greater than 10 blocks, only add 10 blocks based on max
-        		yAxisOptions.min = min;
-        		yAxisOptions.max = min + 49 * yGridInterval;  //draw 20 times of yGridInterval
-        		yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));
+        		//yAxisOptions.min = min;
+        		//yAxisOptions.max = min + 49 * yGridInterval;  //draw 20 times of yGridInterval
+        		//yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));
+        		tempMin = min;
+        		tempMax = min + 49 * yGridInterval;
+        		yAxisOptions.range = 50 * yGridInterval;
+        		yAxisOptions.height = yTickHeight*(Math.ceil(tempMax/yGridInterval)-Math.floor(tempMin/yGridInterval));
         	}
         	else if((max-min) < (yGridInterval/100)){ //min and max are too close
-        		yAxisOptions.max = max;
-        		yAxisOptions.min = max - yGridInterval;
+        		yAxisOptions.max = max + yGridInterval;
+        		yAxisOptions.min = max;
         		yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));
+        		//tempMax = max;
+        		//tempMin = max - yGridInterval;
+        		//yAxisOptions.range = 2 * yGridInterval;
+        		//yAxisOptions.height = yTickHeight*(Math.ceil(tempMax/yGridInterval)-Math.floor(tempMin/yGridInterval));
         	}
         	else{
-        		yAxisOptions.max = max;
-        		yAxisOptions.min = min;
-        		yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));
+        		//yAxisOptions.max = max;
+        		//yAxisOptions.min = min;
+        		//yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));
+        		tempMax = max;
+        		tempMin = min;
+        		yAxisOptions.range = max - min;
+        		yAxisOptions.height = yTickHeight*(Math.ceil(tempMax/yGridInterval)-Math.floor(tempMin/yGridInterval));
         	}
         	/*
     		yAxisOptions.max = max;
     		yAxisOptions.min = min;
     		yAxisOptions.height = yTickHeight*(Math.ceil(max/yGridInterval)-Math.floor(min/yGridInterval));
-    		if(yAxisOptions.height > 1000){
-    			yAxisOptions.height = 1000
-    			yAxisOptions.max = null;
+    		if(yAxisOptions.height > 500){
+    			yAxisOptions.height = 500
+    			yAxisOptions.max = min + 499;
     		}
     		*/
-        	console.log("min of ", datasets[i].label, " is ", min);
-        	console.log("max of ", datasets[i].label, " is ", max);
+        	//console.log("min of ", datasets[i].label, " is ", yAxisOptions.min);
+        	//console.log("max of ", datasets[i].label, " is ", yAxisOptions.max);
+        	console.log("min of ", datasets[i].label, " is ", tempMin);
+        	console.log("max of ", datasets[i].label, " is ", tempMax);
         	console.log("height of ", datasets[i].label, " is ", yAxisOptions.height);
         	yAxisOptions.top = yTop;
         	yTop += yAxisOptions.height; //!!!!adjust the distance to the top
