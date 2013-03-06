@@ -13,11 +13,15 @@ class SDCardHandler(BaseHandler):
             dev="/dev/disk1"
             command = """osascript -e 'do shell script "sudo python %s %s %s" with administrator privileges'""" % \
                 ((os.path.join(os.path.dirname(__file__), os.path.pardir,"sdReader/SDCard_reader.py"),  dev, dataPath))
-            os.system(command)
-            print command
+            result = os.system(command)
+            #print result
             #self.readeSD(os.path.join(dataPath, "records"))
             #os.system('open "%s"' % dataPath)
-            self.write("SD CARD READ SUCCESSFUL!")
+            if result == 0:
+                self.write("SD CARD READ SUCCESSFUL!")
+            else:
+                self.write("SD CARD READ FAILED!")
+            
         except:
             self.write("SD CARD READ FAILED!")
         '''
