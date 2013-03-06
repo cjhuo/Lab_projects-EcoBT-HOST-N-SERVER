@@ -6,7 +6,7 @@ import struct
 from datetime import datetime, timedelta
 
 import threading
-from DICOM_Constructor import constructDicom
+from DICOM_Constructor import *
 
 
 dev = '/dev/disk1'
