@@ -185,11 +185,45 @@ $(function () {
 
     }
     
+    var tableDom, dTable;
+    function drawTable(data){
+		tableDom = $('<table id="dataTable" class="ui-widget ui-widget-content">\
+				<thead>\
+		      <tr class="ui-widget-header ">\
+		        <th>Average Heart Rate</th>\
+		        <th>Heart Rate Range</th>\
+		        <th>Number of Heart Beats (RR)</th>\
+				<th>Longest QTc</th>\
+				<th>Shortest QTc</th>\
+				<th>Percent QTc >=450 ms (0.45 sec)</th>\
+		      </tr>\
+		    </thead>\
+		    <tbody>\
+		    </tbody>\
+		  </table>').css({
+			  fontSize: 'small',
+			  margin: 'auto'
+		  });
+		dTable = tableDom.dataTable({
+	        "bPaginate": false,
+	        "bLengthChange": false,
+	        "bFilter": false,
+	        "bSort": false,
+	        "bInfo": false,
+	        "bAutoWidth": true
+		});
+    	if(data.info != null){
+    		dTable.fnAddData(data.info);
+    	}
+    	tableDom.appendTo("body");
+    }
+    
     /* 
      * draw histogram with bins
      * format of bins json: {'data': [[min, max, value],[min,max,value],...]}
      */
     function onBinDataReceived(data) {
+    	drawTable(data);
 		drawHistogram(data);
     }
     
@@ -580,6 +614,8 @@ $(function () {
             	//console.log(data.result);
             	choice.remove();
             	diagram.remove();
+            	dTable.fnDestroy();
+            	tableDom.remove();
             	if(histogram != null)
             		histogram.remove();
             	onDataReceived(data.result);

@@ -90,7 +90,10 @@ class ECGHandler(BaseHandler):
         bins = self.ecg.getBinInfo(data['qPoint'][0], data['tPoint'][0], data['bin'], data['lead']);
         
         print bins
-        self.write({'data': bins}) #format of bins json: {'data': bins info}
+        self.write({
+                    'data': bins
+                    #'info': [an array of additional information]
+                    }) #format of bins json: {'data': bins info}
               
             
     '''           
