@@ -42,11 +42,18 @@ class ECG_reader():
         
         # original unit in dicom is milliVolt, converted unit in self.wavech is microVolt, assuming channel sensitivity's unit is mV
         # data in dicom file is mising the last 5 bits which will be always 0, adding them when reading
-        self.wavech = [
-                    [
-                        int((elem << 5)*self.sensitivity*1000) for index, elem in enumerate( wavedata ) if index % self.NumofChannels == channel_number
-                    ] for channel_number in range( self.NumofChannels )
-                ]    
+        if 'MIICWwIBAAKBgQCMs1QxLEFE.dcm' in Dfile:
+            self.wavech = [
+                        [
+                            int((elem)*self.sensitivity*1000) for index, elem in enumerate( wavedata ) if index % self.NumofChannels == channel_number
+                        ] for channel_number in range( self.NumofChannels )
+                    ]            
+        else:
+            self.wavech = [
+                        [
+                            int((elem << 5)*self.sensitivity*1000) for index, elem in enumerate( wavedata ) if index % self.NumofChannels == channel_number
+                        ] for channel_number in range( self.NumofChannels )
+                    ]    
         print 'there is ', len(self.wavech), ' channels in the test dicom'
         print 'samples of each channel: ', self.NumofsamplesPerChannel
         print 'sampling rate is: ', self.samplingrate
