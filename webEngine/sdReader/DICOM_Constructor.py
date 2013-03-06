@@ -123,7 +123,7 @@ def packDICOM(ecg_data, outputfilename) :
     ds.save_as(outputfilename)
 
     ds2 = dicom.read_file(outputfilename)
-    a=list()
+    #a=list()
 
 def constructDicom(filename):
     reader = SDCard_reader.SDCard_Reader(filename)

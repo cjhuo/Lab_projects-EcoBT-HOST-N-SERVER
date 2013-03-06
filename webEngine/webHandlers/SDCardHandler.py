@@ -3,16 +3,17 @@ Created on Feb 27, 2013
 
 @author: cjhuo
 '''
+import os
 from BaseHandler import BaseHandler
 from sdReader.SDCard_reader import SDCard_Reader
 class SDCardHandler(BaseHandler):
     def get(self):
         try:
-            import os
+            
             dataPath = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir, "data"))
             self.readeSD(os.path.join(dataPath, "records"))
+            #os.system('open "%s"' % dataPath)
             self.write("SD CARD READ SUCCESSFUL!")
-            os.system('open "%s"' % dataPath)
         except:
             self.write("SD CARD READ FAILED!")
         '''

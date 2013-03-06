@@ -175,16 +175,16 @@ class ECGGet(Characteristic):
             self.service.read_buffer[key].set('status', temp >> 8)
             (temp,) = struct.unpack(">i", chr(ret[4]) + chr(ret[5]) + chr(ret[6]) + chr(0))
             #temp = temp & 0xFFFFE000
-            self.service.read_buffer[key].set('V6', temp >> 13)
+            self.service.read_buffer[key].set('V6', (temp >> 13) << 5)
             (temp,) = struct.unpack(">i", chr(ret[7]) + chr(ret[8]) + chr(ret[9]) + chr(0))
             #temp = temp & 0xFFFFE000
-            self.service.read_buffer[key].set('I', temp >> 13)
+            self.service.read_buffer[key].set('I', (temp >> 13) << 5)
             (temp,) = struct.unpack(">i", chr(ret[10]) + chr(ret[11]) + chr(ret[12]) + chr(0))
             #temp = temp & 0xFFFFE000
-            self.service.read_buffer[key].set('II', temp >> 13)
+            self.service.read_buffer[key].set('II', (temp >> 13) << 5)
             (temp,) = struct.unpack(">i", chr(ret[13]) + chr(ret[14]) + chr(ret[15]) + chr(0))
             #temp = temp & 0xFFFFE000
-            self.service.read_buffer[key].set('V2', temp >> 13)
+            self.service.read_buffer[key].set('V2', (temp >> 13) << 5)
 
             if self.service.read_buffer[key].isValid():
                 self.handle_reading(key)
@@ -231,16 +231,16 @@ class ECGGet(Characteristic):
             key = int(ret[0])
             (temp,) = struct.unpack(">i", chr(ret[1]) + chr(ret[2]) + chr(ret[3]) + chr(0))
             #temp = temp & 0xFFFFE000
-            self.service.read_buffer[key].set('V3', temp >> 13)
+            self.service.read_buffer[key].set('V3', (temp >> 13) << 5)
             (temp,) = struct.unpack(">i", chr(ret[4]) + chr(ret[5]) + chr(ret[6]) + chr(0))
             #temp = temp & 0xFFFFE000
-            self.service.read_buffer[key].set('V4', temp >> 13)
+            self.service.read_buffer[key].set('V4', (temp >> 13) << 5)
             (temp,) = struct.unpack(">i", chr(ret[7]) + chr(ret[8]) + chr(ret[9]) + chr(0))
             #temp = temp & 0xFFFFE000
-            self.service.read_buffer[key].set('V5', temp >> 13)
+            self.service.read_buffer[key].set('V5', (temp >> 13) << 5)
             (temp,) = struct.unpack(">i", chr(ret[10]) + chr(ret[11]) + chr(ret[12]) + chr(0))
             #temp = temp & 0xFFFFE000
-            self.service.read_buffer[key].set('V1', temp >> 13)
+            self.service.read_buffer[key].set('V1', (temp >> 13) << 5)
 
             if self.service.read_buffer[key].isValid():
                 self.handle_reading(key)

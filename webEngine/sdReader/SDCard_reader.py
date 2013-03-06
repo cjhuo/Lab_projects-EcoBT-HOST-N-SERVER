@@ -149,7 +149,10 @@ class SDCard_Reader:
                 foot = "%s:%s\n" % (start, end)
                 self.wfd.write(foot)
                 self.wfd.close()
-                threading.Thread(target=constructDicom, args = (fname, )).start()
+                #constructDicom(fname)
+                t = threading.Thread(target=constructDicom, args = (fname, ))
+                t.start()
+                t.join()
                 self.file_count += 1
                 self.count = 0
                 fname = self.outfile + "_%d.txt" % self.file_count
@@ -163,7 +166,11 @@ class SDCard_Reader:
             foot = "%s:%s\n" % (start, end)
             self.wfd.write(foot)
             self.wfd.close()
-            threading.Thread(target=constructDicom, args = (fname, )).start()
+            #constructDicom(fname)
+            t = threading.Thread(target=constructDicom, args = (fname, ))
+            t.start()
+            t.join()
+            os.system('open "%s"' % os.path.dirname(fname))
 
     def ecg_timestamp(self, timestamp):
         tmp = []
