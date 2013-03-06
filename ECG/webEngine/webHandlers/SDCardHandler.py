@@ -5,13 +5,17 @@ Created on Feb 27, 2013
 '''
 import os
 from BaseHandler import BaseHandler
-from sdReader.SDCard_reader import SDCard_Reader
+#from sdReader.SDCard_reader import SDCard_Reader
 class SDCardHandler(BaseHandler):
     def get(self):
         try:
-            
             dataPath = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir, "data"))
-            self.readeSD(os.path.join(dataPath, "records"))
+            dev="/dev/disk1"
+            command = """osascript -e 'do shell script "sudo python %s %s %s" with administrator privileges'""" % \
+                ((os.path.join(os.path.dirname(__file__), os.path.pardir,"sdReader/SDCard_reader.py"),  dev, dataPath))
+            print command
+            os.system(command)
+            #self.readeSD(os.path.join(dataPath, "records"))
             #os.system('open "%s"' % dataPath)
             self.write("SD CARD READ SUCCESSFUL!")
         except:
@@ -34,7 +38,7 @@ class SDCardHandler(BaseHandler):
         time = "%02d%02d%02d" % (ecg_data['start_time'].hour, ecg_data['start_time'].minute, ecg_data['start_time'].second)
         outfile = "%s/%s_%s.dcm" % (os.path.dirname(filename), date, time)
         packDICOM(ecg_data, outfile)        
-    '''
+    
     def readeSD(self, path, dev="/dev/disk1"):  
         SDCard_Reader(dev, path).read_data()
-
+    '''
