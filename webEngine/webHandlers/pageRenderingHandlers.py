@@ -18,6 +18,9 @@ class MainHandler(BaseHandler):
             self.redirect("/login")
             return
         username = tornado.escape.xhtml_escape(self.current_user["name"])
+        if self.session.get('username'):
+            self.session.set('username', username)
+        print self.session.get('username')
         self.render(
             "index.html",
             page_title="NIH Projects Portal",
@@ -45,6 +48,7 @@ class AnalysisHandler(BaseHandler):
     
 class AnalysisAllInOnceHandler(BaseHandler):
     def get(self):
+        print self.session.get('username')
         self.render(
             "analysis_allInOne.html",
             page_title="ECG Viewer",

@@ -56,6 +56,15 @@ class Application(tornado.web.Application):
                 os.path.dirname(__file__), "static"),
             debug=True,
             cookie_secret="BlaBlaBlaBlaBlaBlaBlaBlaBlaBlaBlaBlaBla",
-            login_url="/login",        
+            login_url="/login", 
+            pycket = {
+                       'engine': 'memcached',
+                       'storage': {
+                                   'servers': ('localhost:11211',)
+                                   },
+                       'cookies': {
+                                   'expires_days': 120,
+                                   },
+                       }       
         )
         tornado.web.Application.__init__(self, self.handlers, **settings)

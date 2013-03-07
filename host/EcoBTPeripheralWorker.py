@@ -119,7 +119,7 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
         service.characteristics.append(c)
     
     def checkUUID(self, UUID):
-        for p in ProfileList:
+        for p in ProfileDict.keys():
             if UUID == CBUUID.UUIDWithString_(p):
                 #peripheral.discoverCharacteristics_forService_(nil, service)
                 return p  

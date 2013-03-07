@@ -3,10 +3,12 @@ Created on Feb 9, 2013
 
 @author: cjhuo
 '''
+from IOBluetooth import *
 from host.characteristic.implementation import *
 
 def createCharacteristic(UUID, instance, service, peripheralWorker):
     c = None
+    '''
     if UUID == "2A23":
         c = DeviceInfo.DeviceInfo() 
     elif UUID == "FFA6":
@@ -14,11 +16,11 @@ def createCharacteristic(UUID, instance, service, peripheralWorker):
     elif UUID == "FFA1":
         c = ACCEnable.ACCEnable()
     elif UUID == "FE11":
-        c = SIDsEnable.SIDsEnable()
+        c = SIDsCO2Status.SIDsCO2Status()
     elif UUID == "FE12":
-        c = SIDsRate.SIDsRate()
+        c = SIDsCO2Set.SIDsCO2Set()
     elif UUID == "FE13":
-        c = SIDsStart.SIDsStart()
+        c = SIDsCO2Read.SIDsCO2Read()
     elif UUID == "FE14":
         c = SIDsTempRead.SIDsTempRead()
     elif UUID == "FE15":
@@ -37,10 +39,15 @@ def createCharacteristic(UUID, instance, service, peripheralWorker):
         c = ECGSet.ECGSet() 
     elif UUID == "FEC6" or UUID == "FEC7":
         c = ECGGet.ECGGet()     
+    '''
+    if UUID in ProfileDict.keys():
+        objStr = ProfileDict[UUID] + '.' + ProfileDict[UUID] + '()'
+        c = eval(objStr)
     else: # found a profile that has not implemented
         c = Characteristic.Characteristic()
     c.setUUIDInstanceServicePeripheralWorker(UUID, instance, service, peripheralWorker)
     c.setRole() # identify itself if it is a setter or getter of the service
 
     return c    
+    
     
