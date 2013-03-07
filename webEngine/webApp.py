@@ -62,9 +62,9 @@ class Application(tornado.web.Application):
                        'storage': {
                                    'servers': ('localhost:11211',)
                                    },
-                       'cookies': {
-                                   'expires_days': 120,
-                                   },
+                       #'cookies': {
+                       #            'expires_days': 120,
+                       #            },
                        }       
         )
         tornado.web.Application.__init__(self, self.handlers, **settings)
