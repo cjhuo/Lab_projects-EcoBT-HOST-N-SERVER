@@ -85,7 +85,7 @@ class Ecg() :
 
         # compensate for delay during integration
         self.QRSpeaks = scipy.array(self.QRSpeaks)
-        self.QRSpeaks -= 40 * self.samplingrate / 1000
+        self.QRSpeaks -= 40 * self.samplingrate / 1000 - 3
 
         print "length of qrs peaks and ecg", len(self.QRSpeaks), len(self.raw_ecg)
 

@@ -5,6 +5,7 @@ import ECG
 import CAPS
 import Qtc
 import Histogram
+import numpy
 from dicom.tag import Tag
 import multiprocessing
 from functools import partial
@@ -24,7 +25,7 @@ class ECG_reader():
         '''
         
     def setFile(self, Dfile = filePath):
-        print Dfile
+        print(Dfile)
         self._parseDicomFile(Dfile)
         
     def _parseDicomFile(self, Dfile):
@@ -41,22 +42,15 @@ class ECG_reader():
         wavedata = list(struct.unpack(fmt,ds.WaveformSequence[0].WaveformData))
         
         # original unit in dicom is milliVolt, converted unit in self.wavech is microVolt, assuming channel sensitivity's unit is mV
-        # data in dicom file is mising the last 5 bits which will be always 0, adding them when reading
-        if 'MIICWwIBAAKBgQCMs1QxLEFE.dcm' in Dfile:
-            self.wavech = [
-                        [
-                            int((elem)*self.sensitivity*1000) for index, elem in enumerate( wavedata ) if index % self.NumofChannels == channel_number
-                        ] for channel_number in range( self.NumofChannels )
-                    ]            
-        else:
-            self.wavech = [
-                        [
-                            int((elem << 5)*self.sensitivity*1000) for index, elem in enumerate( wavedata ) if index % self.NumofChannels == channel_number
-                        ] for channel_number in range( self.NumofChannels )
-                    ]    
-        print 'there is ', len(self.wavech), ' channels in the test dicom'
-        print 'samples of each channel: ', self.NumofsamplesPerChannel
-        print 'sampling rate is: ', self.samplingrate
+        self.wavech = [
+                    [
+                        elem*self.sensitivity*1000 for index, elem in enumerate( wavedata ) if index % self.NumofChannels == channel_number
+                    ] for channel_number in range( self.NumofChannels )
+                ]
+
+        print('there is ', len(self.wavech), ' channels in the test dicom')
+        print('samples of each channel: ', self.NumofsamplesPerChannel)
+        print('sampling rate is: ', self.samplingrate)
         
         info = {'samplingrate':self.samplingrate,'name':self.name}
         self.ecg = ECG.Ecg(self.wavech,info)
@@ -74,23 +68,32 @@ class ECG_reader():
         return wavedata
     
     def getBinInfo(self, qpoint, tpoint, bin=10, channelNo = 2) :
+        ErrorCode = 0
+
         self.peakdata = self.ecg.qrsDetect(0)
         from datetime import datetime
         s1=datetime.now()
 
+        Wavedata = numpy.array(self.wavech)
+
         # ECG R peak detection
-        index_range = range( 1, len( self.peakdata ) - 2 )
-        
+        index_rangeQ = range( 1, len( self.peakdata ) - 1 )
+        index_rangeT = range( 0, len( self.peakdata ) - 1 )
+
         # Searching similar point from manually selected Q point
-        new_func = partial( CAPS.SearchingSimilarPoint, qpoint, self.peakdata, self.wavech[int(channelNo)] )
-        Qpoint = multiprocessing.pool.Pool().map( new_func, index_range )
+        template, offset, stepsize = CAPS.get_templateParam(qpoint, Wavedata)
+
+        SearchingQ = partial( CAPS.get_correlation, 'Q', offset, template, stepsize, self.peakdata, Wavedata )
+        Qpoint = multiprocessing.pool.Pool().map( SearchingQ, index_rangeQ )
     
         # Searching similar point from manually selected T point
-        new_func = partial( CAPS.SearchingSimilarPoint, tpoint, self.peakdata, self.wavech[int(channelNo)] )
-        Tpoint = multiprocessing.pool.Pool().map( new_func, index_range )
+        template, offset, stepsize = CAPS.get_templateParam(tpoint, Wavedata)
+
+        SearchingT = partial( CAPS.get_correlation, 'T', offset, template, stepsize,  self.peakdata, Wavedata )
+        Tpoint = multiprocessing.pool.Pool().map( SearchingT, index_rangeT )
     
         # Calculate the Qtc value
-        Qtcs = Qtc.CalculateQtc(self.peakdata, Qpoint, Tpoint, int(self.samplingrate))
+        Qtcs, AvgHR, LongQTc, ShortQTc, NumofHR, PercentOverQTc, RangeRR = Qtc.CalculateQtc(self.peakdata, Qpoint, Tpoint, int(self.samplingrate))
 
         # Make histogram
         histo = Histogram.histo(Qtcs,bin)
@@ -98,6 +101,7 @@ class ECG_reader():
     
         s2=datetime.now()
         print(histodata)
-        print s2-s1
-        return histodata
+        print(s2-s1)
+
+        return histodata, [AvgHR, str(RangeRR[0]) + '~' + str(RangeRR[1]), NumofHR, LongQTc, ShortQTc, PercentOverQTc]#, ErrorCode
 

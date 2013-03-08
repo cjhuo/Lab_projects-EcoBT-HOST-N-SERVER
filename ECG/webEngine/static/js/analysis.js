@@ -187,31 +187,36 @@ $(function () {
     
     var tableDom, dTable;
     function drawTable(data){
-		tableDom = $('<table id="dataTable" class="ui-widget ui-widget-content">\
-				<thead>\
-		      <tr class="ui-widget-header ">\
-		        <th>Average Heart Rate</th>\
-		        <th>Heart Rate Range</th>\
-		        <th>Number of Heart Beats (RR)</th>\
-				<th>Longest QTc</th>\
-				<th>Shortest QTc</th>\
-				<th>Percent QTc >=450 ms (0.45 sec)</th>\
-		      </tr>\
-		    </thead>\
-		    <tbody>\
-		    </tbody>\
-		  </table>').css({
-			  fontSize: 'small',
-			  margin: 'auto'
-		  });
-		dTable = tableDom.dataTable({
-	        "bPaginate": false,
-	        "bLengthChange": false,
-	        "bFilter": false,
-	        "bSort": false,
-	        "bInfo": false,
-	        "bAutoWidth": true
-		});
+    	if(tableDom == null){
+			tableDom = $('<table id="dataTable" class="ui-widget ui-widget-content">\
+					<thead>\
+			      <tr class="ui-widget-header ">\
+			        <th>Average Heart Rate</th>\
+			        <th>Heart Rate Range</th>\
+			        <th>Number of Heart Beats (RR)</th>\
+					<th>Longest QTc</th>\
+					<th>Shortest QTc</th>\
+					<th>Percent QTc >=450 ms (0.45 sec)</th>\
+			      </tr>\
+			    </thead>\
+			    <tbody>\
+			    </tbody>\
+			  </table>').css({
+				  fontSize: 'small',
+				  //width: 'auto',
+				  margin: 'auto',
+				  //marginRight: '15px'
+			  });
+			dTable = tableDom.dataTable({
+		        "bPaginate": false,
+		        "bLengthChange": false,
+		        "bFilter": false,
+		        "bSort": false,
+		        "bInfo": false,
+		        "bAutoWidth": true
+			});
+    	}
+    	dTable.fnClearTable();
     	if(data.info != null){
     		dTable.fnAddData(data.info);
     	}
@@ -616,6 +621,7 @@ $(function () {
             	diagram.remove();
             	dTable.fnDestroy();
             	tableDom.remove();
+            	tableDom = null;
             	if(histogram != null)
             		histogram.remove();
             	onDataReceived(data.result);

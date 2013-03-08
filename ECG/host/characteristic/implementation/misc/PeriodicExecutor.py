@@ -23,4 +23,7 @@ class PeriodicExecutor(threading.Thread):
     def run(self):
         while not self.setFlag.isSet():
             time.sleep(self.sleep)
-            self.func(self.param1, self.param2)
+            if self.param2 == None:
+                self.func(self.param1)
+            else:
+                self.func(self.param1, self.param2)
