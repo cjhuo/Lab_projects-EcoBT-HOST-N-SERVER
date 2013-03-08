@@ -131,8 +131,8 @@ def constructDicom(filename):
     date = "%04d%02d%02d" % (ecg_data['start_time'].year, ecg_data['start_time'].month, ecg_data['start_time'].day)
     time = "%02d%02d%02d" % (ecg_data['start_time'].hour, ecg_data['start_time'].minute, ecg_data['start_time'].second)
     outfile = "%s/%s_%s.dcm" % (os.path.dirname(filename), date, time)
-    packDICOM(ecg_data, outfile)   
-         
+    packDICOM(ecg_data, outfile)
+
 if __name__ == "__main__":
     filename = "ecg_data_0.txt"
     filename = sys.argv[1]
@@ -142,4 +142,6 @@ if __name__ == "__main__":
     time = "%02d%02d%02d" % (ecg_data['start_time'].hour, ecg_data['start_time'].minute, ecg_data['start_time'].second)
     outfile = "%s/%s_%s.dcm" % (os.path.dirname(filename), date, time)
 
+    if os.path.exists(outfile):
+        outfile = "%s/%s_%s_all.dcm" % (os.path.dirname(filename), date, time)
     packDICOM(ecg_data, outfile)

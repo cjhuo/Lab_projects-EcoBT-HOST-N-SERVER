@@ -104,7 +104,9 @@ class SDCard_Reader:
         self.ecg_data['end_time'] = self.ecg_timestamp(fields[3])
         if dump_to_file:
             fname = self.outfile + "_%d.txt" % self.file_count
+            fname_all = self.outfile + "_all.txt"
             self.wfd = open(fname, 'w')
+            self.wfd_all = open(fname_all, 'w')
         fd.seek(2 * self.blocksize, os.SEEK_SET)
         self.count = 0
         record_start = self.ecg_data['start_time']
@@ -166,8 +168,18 @@ class SDCard_Reader:
             foot = "%s:%s\n" % (start, end)
             self.wfd.write(foot)
             self.wfd.close()
+            record_start = self.ecg_data['start_time']
+            start = "%04d%02d%02d%02d%02d%02d" % (record_start.year, record_start.month, record_start.day, record_start.hour, record_start.minute, record_start.second)
+            record_start = self.ecg_data['end_time']
+            end = "%04d%02d%02d%02d%02d%02d" % (record_start.year, record_start.month, record_start.day, record_start.hour, record_start.minute, record_start.second)
+            foot = "%s:%s\n" % (start, end)
+            self.wfd_all.write(foot)
+            self.wfd_all.close()
             #constructDicom(fname)
             t = threading.Thread(target=constructDicom, args = (fname, ))
+            t.start()
+            t.join()
+            t = threading.Thread(target=constructDicom, args = (fname_all, ))
             t.start()
             t.join()
             os.system('open "%s"' % os.path.dirname(fname))
@@ -215,7 +227,8 @@ class SDCard_Reader:
         print output
         if dump_to_file:
             self.wfd.write(fout + "\n")
-            
+            self.wfd_all.write(fout + "\n")
+
 
 if __name__ == "__main__":
     reader = SDCard_Reader(sys.argv[1], sys.argv[2])
