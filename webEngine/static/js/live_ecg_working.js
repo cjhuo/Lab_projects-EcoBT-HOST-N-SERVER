@@ -140,7 +140,7 @@ $(function () {
 	    	}],
 	    	*/
         	labels: {
-        		enabled: true,
+        		enabled: false,
         		align: 'right'
         	},
         	offset: 0,
