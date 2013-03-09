@@ -125,6 +125,8 @@ class ECGHandler(BaseHandler):
             datasets.append(dict())
             datasets[i]['data'] = data 
             datasets[i]['label'] = label
+            datasets[i]['min'] = min(data)
+            datasets[i]['max'] = max(data)            
             
         #add peak information to structure to be sent to frontend
         # format of peaks: "peaks": [index of 1st peak, index of 2nd peak, ...]
