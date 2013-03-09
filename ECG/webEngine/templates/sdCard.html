@@ -1,0 +1,102 @@
+{% extends "main.html" %}
+
+{% block header %}
+{% end %}
+
+{% block body %}
+
+<script>
+var spinnerOpts = { //options settings for spinner
+		  lines: 13, // The number of lines to draw
+		  length: 7, // The length of each line
+		  width: 4, // The line thickness
+		  radius: 10, // The radius of the inner circle
+		  corners: 1, // Corner roundness (0..1)
+		  rotate: 0, // The rotation offset
+		  color: '#000', // #rgb or #rrggbb
+		  speed: 1, // Rounds per second
+		  trail: 60, // Afterglow percentage
+		  shadow: false, // Whether to render a shadow
+		  hwaccel: false, // Whether to use hardware acceleration
+		  className: 'spinner', // The CSS class to assign to the spinner
+		  zIndex: 2e9, // The z-index (defaults to 2000000000)
+		  top: 'auto', // Top position relative to parent in px
+		  left: 'auto' // Left position relative to parent in px
+		};
+spinTarget = $('<div id="spinner" ></div>').css( {
+          position: 'relative',
+          width: '50px',
+          height: '50px',
+          margin: 'auto'
+});
+spinTarget.appendTo("body");
+
+spinner = new Spinner(spinnerOpts);
+
+/* show loading spinner, stopped when chart is fully loaded */
+function showSpinner(){
+	spinTarget.show();
+	spinner.spin(spinTarget[0]);
+}
+
+function hideSpinner(){
+	spinTarget.hide();
+	spinner.stop();
+}
+
+function init() {
+	showSpinner();
+	$.ajax({
+		url: 'sdCardLoad',
+		cache: false,
+		type: 'GET',
+		beforeSend: showSpinner,
+		complete: hideSpinner,
+		dataType: 'json',
+		success: function(data){
+			alert(data.message);
+			
+		},
+		error: function(data){
+			alert("Loading SD Card Failed");
+		}
+	});
+}
+
+init();
+</script>
+
+{% end %}
+
+{% block footer %}
+{% end %}
+
+{% block script_include %}
+<STYLE type="text/css">
+.file-wrapper {
+  cursor: pointer;
+  display: inline-block;
+  overflow: hidden;
+  position: relative;
+}
+.file-wrapper input {
+  cursor: pointer;
+  height: 100%;
+  filter: alpha(opacity=1);
+  -moz-opacity: 0.01;
+  opacity: 0.01;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+td {
+	text-align:center;
+}
+</STYLE>
+
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/jquery-1.8.2.js") }}"></script>
+
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/spin.min.js") }}"></script>
+
+{% end %}
+

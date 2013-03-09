@@ -18,9 +18,9 @@ class SDCardHandler(BaseHandler):
             #self.readeSD(os.path.join(dataPath, "records"))
             #os.system('open "%s"' % dataPath)
             if result == 0:
-                self.write("SD CARD READ SUCCESSFUL!")
+                self.write({'message': "SD CARD READ SUCCESSFUL!"})
             else:
-                self.write("SD CARD READ FAILED!")
+                self.write({'message': "SD CARD READ FAILED!"})
             
         except:
             self.write("SD CARD READ FAILED!")
