@@ -44,6 +44,8 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
     def stop(self):
         self.delegateWorker.getQueue().put('stop')
         self.delegateWorker.join()
+        for service in self.services:
+            service.stop()
 
     def discoverServices(self):
         self.peripheral.instance.discoverServices_(None)

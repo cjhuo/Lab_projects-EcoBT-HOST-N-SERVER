@@ -15,7 +15,7 @@ class ECGStatus(Characteristic):
         self.pe = PeriodicExecutor()
         
     def setRole(self):
-        self.pe.setParams(60, self.peripheralWorker.readValueForCharacteristic, self)
+        self.pe.setParams(10, self.peripheralWorker.readValueForCharacteristic, self)
         self.pe.start()
         
     def process(self):

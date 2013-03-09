@@ -26,3 +26,9 @@ class Service(object):
                 print obj
         else:
             print "There is no job in delayQueue of service ", self.UUID
+    
+    def stop(self):
+        for char in self.characteristics:
+            if hasattr(char, 'pe'): # stop periodic executor in any characteristic
+                char.pe.setFlag.set()
+                
