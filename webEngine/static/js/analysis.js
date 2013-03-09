@@ -49,6 +49,7 @@ $(function () {
     var xGridInterval = 200; //0.2 second = 200ms, pointInterval was multiplied by 6, so GridInterval is also multiplied by 6
     var yGridInterval = 500; //0.5 mV
     var xPointInterval = 1000/frequency;
+    var yTickHeight = 20;
     
     var hOptions = { // //options settings for histogram plot
         chart: {
@@ -187,40 +188,46 @@ $(function () {
     
     var tableDom, dTable;
     function drawTable(data){
-    	if(tableDom == null){
-			tableDom = $('<table id="dataTable" class="ui-widget ui-widget-content">\
-					<thead>\
-			      <tr class="ui-widget-header ">\
-			        <th>Average Heart Rate</th>\
-			        <th>Heart Rate Range</th>\
-			        <th>Number of Heart Beats (RR)</th>\
-					<th>Longest QTc</th>\
-					<th>Shortest QTc</th>\
-					<th>Percent QTc >=450 ms (0.45 sec)</th>\
-			      </tr>\
-			    </thead>\
-			    <tbody>\
-			    </tbody>\
-			  </table>').css({
-				  fontSize: 'small',
-				  //width: 'auto',
-				  margin: 'auto',
-				  //marginRight: '15px'
-			  });
-			dTable = tableDom.dataTable({
-		        "bPaginate": false,
-		        "bLengthChange": false,
-		        "bFilter": false,
-		        "bSort": false,
-		        "bInfo": false,
-		        "bAutoWidth": true
-			});
+    	console.log(data);
+    	if(tableDom != null){
+    		dTable.fnDestroy();
+        	tableDom.remove();
+        	tableDom = null;
     	}
-    	dTable.fnClearTable();
+		tableDom = $('<table id="dataTable" class="ui-widget ui-widget-content">\
+				<thead>\
+		      <tr class="ui-widget-header ">\
+		        <th>Average Heart Rate</th>\
+		        <th>Heart Rate Range</th>\
+		        <th>Number of Heart Beats (RR)</th>\
+				<th>Longest QTc</th>\
+				<th>Shortest QTc</th>\
+				<th>Percent QTc >=450 ms (0.45 sec)</th>\
+		      </tr>\
+		    </thead>\
+		    <tbody>\
+		    </tbody>\
+		  </table>').css({
+			  fontSize: 'small',
+			  //width: 'auto',
+			  margin: 'auto',
+			  //marginRight: '15px'
+		  });
+		dTable = tableDom.dataTable({
+	        "bPaginate": false,
+	        "bLengthChange": false,
+	        "bFilter": false,
+	        "bSort": false,
+	        "bInfo": false,
+	        "bAutoWidth": true
+		});
+		tableDom.appendTo("body");
+
+    	//dTable.fnClearTable();
     	if(data.info != null){
     		dTable.fnAddData(data.info);
     	}
-    	tableDom.appendTo("body");
+    	
     }
     
     /* 
@@ -333,14 +340,14 @@ $(function () {
     	        tickLength: 0,
     	        tickColor: 'red',
     	        
-    	        //height: 100,
+    	        //height: 120,
+    	        
             	title: {
             		text: ""
             	},
             	labels: {
             		enabled: false
             	}
-
             },
             tooltip: {
                 enabled: true,
@@ -527,7 +534,7 @@ $(function () {
 		addChoices(); //add channel radio buttons
 		addReferenceImg();
 		addFileUploadDiv();
-		addPlot();  //generate main plot div
+		//addPlot();  //generate main plot div
 		//addOverview(); // generate overview plot div
 		plotAccordingToChoices(); //plot diagram on generated div and generate overview
 	
@@ -538,30 +545,6 @@ $(function () {
 		datasets = data.dspData;		
 		peaks = data.peaks;
 	}
-    
-    function addPlot() { 
-    	/*//generate one plot for each channel
-    	var diagram = $('<div id="channel'+ index +'"/>').css( {
-            position: 'relative',
-            width: '500px',
-            height: '200px',
-            margin: 'auto',
-            padding: '2px'
-        });
-    	*/
-    		
-    	//plot all channels on one plot
-    	diagram = $('<div id="diagram" ></div>').css( {
-            position: 'relative',
-            //width: '100%',
-            height: '220px',
-            margin: '5px',
-            //marginRight: '10px',
-            //padding: '2px'
-        });
-    	diagram.appendTo("body");
-    }
-
     
     function addChoices() {
         var i = 1;
@@ -619,9 +602,11 @@ $(function () {
             	//console.log(data.result);
             	choice.remove();
             	diagram.remove();
-            	dTable.fnDestroy();
-            	tableDom.remove();
-            	tableDom = null;
+            	if(tableDom != null){
+	            	dTable.fnDestroy();
+	            	tableDom.remove();
+	            	tableDom = null;
+            	}
             	if(histogram != null)
             		histogram.remove();
             	onDataReceived(data.result);
@@ -675,50 +660,87 @@ $(function () {
     		refImgDiv.dialog("open");
     	}
     }
+    /*
+    function addPlot() { 
+    		
+    	//plot all channels on one plot
+    	diagram = $('<div id="diagram" ></div>').css( {
+            position: 'relative',
+            //width: '100%',
+            height: '240px',
+            margin: '5px',
+            //marginRight: '10px',
+            //padding: '2px'
+        });
+    	diagram.appendTo("body");
+    }
+    */
+	
     
     function plotAccordingToChoices() {
         var data = [];
         var key;
         var label;
-
+        var yTop = 110;
+        var min, max;
+        
         choice.find("input:checked").each(function () {
         	key = $(this).attr("value");
         	label = $(this).attr("id");
 
-            if (key && datasets[key])
+            if (key && datasets[key]){
                 data = datasets[key].data;
+                min = datasets[key].min;
+                max = datasets[key].max;
+            }
+            	
         });
-    
-        if (data.length > 0)
-	        if(diagram) {//just in case the plot div is not yet generated when user starts to click radio buttons
-	        	if(plot != null)
-	        		plot.destroy();
-	        	/* re-initialize every parameter */
-	        	//diagram.unbind();
-	        	qPoint = null;
-	        	tPoint = null;
-	    		/* remove peakText button if any */
-	    		if(peakText)
-	    			peakText.remove();
-	    		/* remove submit button if any */
-	    		if(submit)
-	    			submit.remove();
-				/* re-plot everything */
-	        	options.series = [];
-	        	options.series.push({
-	        		name: label,
-                    data: data,
-                    pointInterval: xPointInterval
-	        	});
-	        	plot = new Highcharts.Chart(options, function() {
-	        		hideSpinner();
-	        	});
-	        	
-	        	//end loading data
-	        }
-	        else {
-	        	alert('plot div has not been generated!');
-	        }        
+    	options.yAxis.min = min;
+    	options.yAxis.max = min + 11 * yGridInterval;
+    	options.yAxis.height = yTickHeight*(Math.ceil(options.yAxis.max/yGridInterval)-Math.floor(options.yAxis.min/yGridInterval));
+    	options.yAxis.top = yTop;
+    	var diagramHeight = yTop + options.yAxis.height + 15;
+        if (data.length > 0){
+        	if(plot != null){
+        		plot.destroy();
+        		diagram.remove();
+        	}
+        		
+        	/* re-initialize every parameter */
+        	//diagram.unbind();
+        	qPoint = null;
+        	tPoint = null;
+    		/* remove peakText button if any */
+    		if(peakText)
+    			peakText.remove();
+    		/* remove submit button if any */
+    		if(submit)
+    			submit.remove();
+			/* re-plot everything */
+        	options.series = [];
+        	options.series.push({
+        		name: label,
+                data: data,
+                pointInterval: xPointInterval
+        	});
+        	
+        	//plot all channels on one plot
+        	diagram = $('<div id="diagram" ></div>').css( {
+                position: 'relative',
+                //width: '100%',
+                height: diagramHeight.toString() + 'px',
+                margin: '5px',
+                //marginRight: '10px',
+                //padding: '2px'
+            });
+        	diagram.insertAfter(choice);
+        	
+        	plot = new Highcharts.Chart(options, function() {
+        		hideSpinner();
+        	});
+        	
+        	//end loading data   
+        }
     }
     
     /* show loading spinner, stopped when chart is fully loaded */

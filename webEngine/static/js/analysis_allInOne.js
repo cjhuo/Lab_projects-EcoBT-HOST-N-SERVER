@@ -137,7 +137,7 @@ $(function () {
     var frequency = 250;
     var xGridInterval = 200; //0.2 second
     var yGridInterval = 500; //0.5 mV, assuming the unit of ECG output is microvolt
-    var yAxisHeight = 100;
+    //var yAxisHeight = 100;
     var yTickHeight = 20;
     
     var yAxisOptionsTemplate = {
@@ -169,7 +169,7 @@ $(function () {
         		align: 'right'
         	},
         	offset: 0,
-        	height: yAxisHeight,
+        	//height: yAxisHeight,
         };
     
     chartOptions = {
@@ -286,7 +286,7 @@ $(function () {
             plotOptions: {
                 line: {
                 	dataGrouping: {
-                		enabled: false
+                		enabled: true
                 	},
                 	allowPointSelect: true,
                 	animation: false,
@@ -623,8 +623,13 @@ $(function () {
         	//yAxisOptions.min = datasets[i].min-0.5;
         	//yAxisOptions.max = datasets[i].max+0.5;
         	//add checker to handler rambled value from any channel, 
+        	
         	var min = datasets[i].min;
         	var max = datasets[i].max;
+        	yAxisOptions.min = min;
+        	yAxisOptions.max = min + 11 * yGridInterval
+        	yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));
+        	/*
         	var tempMin, tempMax;
         	if((max-min) > (50*yGridInterval)) {//greater than 10 blocks, only add 10 blocks based on max
         		//yAxisOptions.min = min;
@@ -653,6 +658,7 @@ $(function () {
         		yAxisOptions.range = max - min;
         		yAxisOptions.height = yTickHeight*(Math.ceil(tempMax/yGridInterval)-Math.floor(tempMin/yGridInterval));
         	}
+        	*/
         	/*
     		yAxisOptions.max = max;
     		yAxisOptions.min = min;
@@ -662,10 +668,10 @@ $(function () {
     			yAxisOptions.max = min + 499;
     		}
     		*/
-        	//console.log("min of ", datasets[i].label, " is ", yAxisOptions.min);
-        	//console.log("max of ", datasets[i].label, " is ", yAxisOptions.max);
-        	console.log("min of ", datasets[i].label, " is ", tempMin);
-        	console.log("max of ", datasets[i].label, " is ", tempMax);
+        	console.log("min of ", datasets[i].label, " is ", yAxisOptions.min);
+        	console.log("max of ", datasets[i].label, " is ", yAxisOptions.max);
+        	//console.log("min of ", datasets[i].label, " is ", tempMin);
+        	//console.log("max of ", datasets[i].label, " is ", tempMax);
         	console.log("height of ", datasets[i].label, " is ", yAxisOptions.height);
         	yAxisOptions.top = yTop;
         	yTop += yAxisOptions.height; //!!!!adjust the distance to the top
