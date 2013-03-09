@@ -46,7 +46,8 @@ class Application(tornado.web.Application):
                 (r"/socket", EcoBTWebSocket, dict(globalSockets = self.globalSockets, 
                                               ecoBTApp = self.ecoBTApp)),
                 (r"/config", ConfigHandler, dict(ecoBTApp = self.ecoBTApp)),
-                (r"/sdCard", SDCardHandler)
+                (r"/sdCard", SDCardPageHandler),
+                (r"/sdCardLoad", SDCardHandler)
             ]
 
         settings = dict(

@@ -172,4 +172,13 @@ class AdministrationHandler(BaseHandler):
             header_text="Administration Viewer",
             footer_text="",
             serverAddr = administrationServerAddr,
-        )     
+        )    
+    
+class SDCardPageHandler(BaseHandler):
+    def get(self):     
+        self.render(
+            "sdCard.html",
+            page_title="",
+            header_text="",
+            footer_text="",
+        )  

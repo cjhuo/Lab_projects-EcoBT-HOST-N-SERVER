@@ -52,6 +52,7 @@ class ECGAllInOneHandler(BaseHandler):
             datasets[i]['label'] = label
             datasets[i]['min'] = min(data)
             datasets[i]['max'] = max(data)
+            #print min(data), data.index(min(data))
             
         #add peak information to structure to be sent to frontend
         # format of peaks: "peaks": [index of 1st peak, index of 2nd peak, ...]
