@@ -286,7 +286,7 @@ $(function () {
             plotOptions: {
                 line: {
                 	dataGrouping: {
-                		enabled: true
+                		enabled: false
                 	},
                 	allowPointSelect: true,
                 	animation: false,
