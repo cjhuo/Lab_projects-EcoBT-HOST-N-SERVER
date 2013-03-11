@@ -7,6 +7,8 @@ import tornado.web
 import sys
 import os.path
 import json
+import os
+from datetime import datetime
 
 from config import *
 from BaseHandler import BaseHandler
@@ -22,17 +24,33 @@ class ECGAllInOneHandler(BaseHandler):
     def initialize(self, ecg):
         self.ecg = ecg
         
-    def get(self): # asynchronous loading handler
-        minVal = int(self.get_argument("min"))
-        maxVal = int(self.get_argument("max"))
+    def get(self): # asynchronous loading handler    
+        minVal = self.get_argument("min", default=None)       
+        maxVal = self.get_argument("max", default=None)
         wavech = []
-        for i in range(len(self.ecg.wavech)):
-            wavech.append([self.ecg.wavech[i][j] for j in range(minVal, maxVal)])
-        if len(wavech[0]) > arrayLength: # compress it
-            print >> sys.stderr, 'TOO MANY SAMPLES, CAN\'T DRAW DIRECTLY, START COMPRESSING'
-            wavech = self.dataSetsCompression(wavech, arrayLength)
-            print >> sys.stderr, 'COMPRESSION COMPLETE, SENDING COMPRESSED DATA FOR DRAWING'
-        
+        if minVal != None and maxVal !=None:
+            minVal = int(minVal)
+            maxVal = int(maxVal)
+            for i in range(len(self.ecg.wavech)):
+                wavech.append([self.ecg.wavech[i][j] for j in range(minVal, maxVal)])
+            if len(wavech[0]) > arrayLength: # compress it
+                print >> sys.stderr, 'TOO MANY SAMPLES, CAN\'T DRAW DIRECTLY, START COMPRESSING'
+                self.dataSetsCompression(wavech, wavech, arrayLength)
+                print >> sys.stderr, 'COMPRESSION COMPLETE, SENDING COMPRESSED DATA FOR DRAWING' 
+            pointInterval = (1000/frequency) * int(round(float(len(self.ecg.wavech[0]))/float(arrayLength)))
+
+        else: # plot along the entire time period
+            sampleCountToBeSent = 10000
+            if len(self.ecg.wavech[0]) > sampleCountToBeSent: # compress it
+                print >> sys.stderr, 'TOO MANY SAMPLES, CAN\'T DRAW DIRECTLY, START COMPRESSING'
+                self.dataSetsCompression(self.ecg.wavech, wavech, sampleCountToBeSent)
+                print >> sys.stderr, 'COMPRESSION COMPLETE, SENDING COMPRESSED DATA FOR DRAWING'   
+            else: 
+                sampleCountToBeSent = len(self.ecg.wavech[0])
+                wavech = self.ecg.wavech                    
+            pointInterval = (1000/frequency) * int(round(float(len(self.ecg.wavech[0]))/float(sampleCountToBeSent)))
+
+        print 'pointInterval: ', pointInterval
         datasets = []
         for i in range(len(wavech)):
             #data = wavech[i] #[wavech[i][j] for j in range(len(wavech[i]))]
@@ -47,35 +65,42 @@ class ECGAllInOneHandler(BaseHandler):
             datasets[i]['max'] = max(data)
         
         self.write({
-                    'data': datasets
+                    'data': datasets,
+                    'pointInterval': pointInterval
                     })
 
+        
+    def put(self):
+        options = self.get_argument("data")
+
+        with open(os.path.join(self.settings['static_path'], uploadPath, 'options.json'), 'w') as outfile:
+            outfile.write(options)
+        
+        convertTool = os.path.join(self.settings['static_path'], 'lib/highstock/highcharts-convert.js')
+        jsonFile = os.path.join(self.settings['static_path'], uploadPath, 'options.json')
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        svgFile = os.path.join(self.settings['static_path'], uploadPath, 'svg/chart_'+ timestamp +'.svg')
+        command = "/usr/local/bin/phantomjs %s -infile %s -outfile %s -constr StockChart" % (convertTool, jsonFile, svgFile)
+        rcode = os.system(command)
+        print rcode
+        
+        if rcode == 0:
+            os.system('open "%s"' % os.path.dirname(svgFile))
+            self.write({'message': 'file generation success!'})
+        else:
+            self.write({'message': 'file generation failed!'})
+        
+        
+            
     def post(self): # file upload handler
         try:
             if len(self.request.files) != 0: #user uploaded file from UI 
                 f = self.request.files['uploaded_files'][0]
                 orig_fname = f['filename']
-                # search locally by the filename, if existed, use it instead of uploading
-                path1 = os.path.join(self.settings['static_path'], uploadPath)
-                path2 = os.path.join(self.settings['static_path'], os.pardir, os.pardir, 'data')
-                
-                path = None
-                if os.path.exists(os.path.join(path1,orig_fname)):
-                    path = path1
-                elif os.path.exists(os.path.join(path2,orig_fname)):
-                    path = path2
-                
-                if path == None:
-                    path = os.path.join(self.settings['static_path'], uploadPath)
-                    ofd = open(path + orig_fname, 'w')
-                    ofd.write(f['body'])
-                    ofd.close()
-                    print >> sys.stderr, 'FILE UPLOADED, OPENING'
-                else:
-                    print >> sys.stderr, 'FILE EXISTS, OPENING DIRECTLY'
+                filePath = checkFileExistInPath(self.settings['static_path'], orig_fname, f['body'])
                 
                 print >> sys.stderr, 'START READING ECG DATA IN ECG MODULE..'
-                self.ecg.setFile(path + orig_fname)              
+                self.ecg.setFile(filePath)              
                 print >> sys.stderr, 'FINISH READING ECG DATA IN ECG MODULE..' 
             else: #user user the default test file
                 print >> sys.stderr, 'START READING ECG DATA IN ECG MODULE..'
@@ -103,7 +128,7 @@ class ECGAllInOneHandler(BaseHandler):
             pointInterval = (1000/frequency) * int(round(float(len(wavech[0]))/float(arrayLength)))
             tmpWavech = []
             for i in range(len(wavech)):
-                tmpWavech.append([wavech[i][j] for j in range(2500)]) # only pick the first 2500 samples for the first time
+                tmpWavech.append([wavech[i][j] for j in range(arrayLength)]) # only pick the first 2500 samples for the first time
             wavech = tmpWavech
         else:
             base = wavech[0]
@@ -124,8 +149,12 @@ class ECGAllInOneHandler(BaseHandler):
         #add peak information to structure to be sent to frontend
         # format of peaks: "peaks": [index of 1st peak, index of 2nd peak, ...]
 
-        print pointInterval
-        val = {'dspData': datasets, 'pointInterval': pointInterval, 'base': base}
+        print 'pointInterval: ', pointInterval
+        val = {
+               'dspData': datasets, 
+               'pointInterval': pointInterval, 
+               'base': base
+               }
         return val       
     
     def compressList(self, inputList, outputList, outputLength):
@@ -142,16 +171,33 @@ class ECGAllInOneHandler(BaseHandler):
             outputList.append(tmpSum/tmpLen)
             
         
-    def dataSetsCompression(self, wavech, arrayLength): # compress data into length of arrayLength by averaging
-        tempWavech = []
+    def dataSetsCompression(self, wavech, output, arrayLength): # compress data into length of arrayLength by averaging
         for data in wavech:
             tmpList = []
-            self.arrayCompression(data, tmpList, arrayLength)
-            tempWavech.append(tmpList)            
-        
-        return tempWavech
+            self.compressList(data, tmpList, arrayLength)
+            output.append(tmpList)
             
-            
+def checkFileExistInPath(pathName, fileName, fileContent):
+    # search locally by the filename, if existed, use it instead of uploading
+    path1 = os.path.join(pathName, uploadPath)
+    path2 = os.path.join(pathName, os.pardir, os.pardir, 'data')
+    
+    path = None
+    if os.path.exists(os.path.join(path1,fileName)):
+        path = path1
+    elif os.path.exists(os.path.join(path2,fileName)):
+        path = path2
+    
+    if path == None:
+        path = os.path.join(pathName, uploadPath)
+        ofd = open(path + fileName, 'w')
+        ofd.write(fileContent)
+        ofd.close()
+        print >> sys.stderr, 'FILE UPLOADED, OPENING'
+    else:
+        print >> sys.stderr, 'FILE EXISTS, OPENING DIRECTLY'
+    return path + fileName
+  
 class ECGHandler(BaseHandler):
     def initialize(self, ecg):
         self.ecg = ecg
@@ -161,14 +207,15 @@ class ECGHandler(BaseHandler):
             if len(self.request.files) != 0: #user uploaded file from UI 
                 f = self.request.files['uploaded_files'][0]
                 orig_fname = f['filename']
-                import os
-                path = os.path.join(os.path.dirname(__file__), os.pardir, uploadPath)
-                ofd = open(path + orig_fname, 'w')
-                ofd.write(f['body'])
-                ofd.close()
-                self.ecg.setFile(path + orig_fname)               
+                filePath = checkFileExistInPath(self.settings['static_path'], orig_fname, f['body'])
+                
+                print >> sys.stderr, 'START READING ECG DATA IN ECG MODULE..'
+                self.ecg.setFile(filePath)              
+                print >> sys.stderr, 'FINISH READING ECG DATA IN ECG MODULE..' 
             else: #user user the default test file
+                print >> sys.stderr, 'START READING ECG DATA IN ECG MODULE..'
                 self.ecg.setFile()               
+                print >> sys.stderr, 'FINISH READING ECG DATA IN ECG MODULE..' 
             val = self.getDataFromDicomFile()
             self.write(val)
         except:

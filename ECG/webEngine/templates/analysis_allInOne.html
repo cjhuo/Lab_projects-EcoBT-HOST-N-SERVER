@@ -3,7 +3,24 @@
 {% block header %}
 	<h1>{{ header_text }}</h1>
 	<input type="text" id="frequency" style="display:none" value="{{ frequency }}">
-	
+	<div id="wrap" style="display: none">
+		<form id="exportForm" action="http://export.highcharts.com/" method="POST">
+
+			<textarea id="options" name="options" rows="12" cols="30">
+			</textarea>
+			
+			<textarea id="type" name="type">
+			</textarea>
+			
+			<textarea id="filename" name="filename">
+			</textarea>
+			
+			<textarea id="constr" name="constr">
+			</textarea>
+
+			<!-- <input name="submit" type="submit" value="Generate Image">  -->
+		</form>
+	</div>	
 {% end %}
 {% block body %}
 

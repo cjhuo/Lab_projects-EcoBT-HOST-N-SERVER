@@ -696,10 +696,13 @@ $(function () {
             }
             	
         });
-    	options.yAxis.min = min;
-    	options.yAxis.max = min + 11 * yGridInterval;
-    	options.yAxis.height = yTickHeight*(Math.ceil(options.yAxis.max/yGridInterval)-Math.floor(options.yAxis.min/yGridInterval));
-    	options.yAxis.top = yTop;
+    	//options.yAxis.min = min;
+    	//options.yAxis.max = min + 11 * yGridInterval;
+        options.yAxis.minRange = 12 * yGridInterval;
+        options.yAxis.range = 12 * yGridInterval;
+    	//options.yAxis.height = yTickHeight*(Math.ceil(options.yAxis.max/yGridInterval)-Math.floor(options.yAxis.min/yGridInterval));
+        options.yAxis.height = 12 * yTickHeight;
+        options.yAxis.top = yTop;
     	var diagramHeight = yTop + options.yAxis.height + 15;
         if (data.length > 0){
         	if(plot != null){

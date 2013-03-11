@@ -14,9 +14,11 @@ from BaseHandler import BaseHandler
 class MainHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
+        '''
         if not self.current_user:
             self.redirect("/login")
             return
+        '''
         username = tornado.escape.xhtml_escape(self.current_user["name"])
         self.render(
             "index_ecg.html",
@@ -43,13 +45,23 @@ class AnalysisHandler(BaseHandler):
             footer_text="",
             frequency = frequency
         )
-    
+
 class AnalysisAllInOnceHandler(BaseHandler):
     def get(self):
         self.render(
             "analysis_allInOne.html",
             page_title="ECG Viewer",
             header_text="ECG Viewer",
+            footer_text="",
+            frequency = frequency
+        )
+    
+class ECGPlotLarge(BaseHandler):
+    def get(self):
+        self.render(
+            "analysis_plotLarge.html",
+            page_title="",
+            header_text="",
             footer_text="",
             frequency = frequency
         )

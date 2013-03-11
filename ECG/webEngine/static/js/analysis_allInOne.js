@@ -46,7 +46,7 @@ $(function () {
         	},
         	*/
         	labels: {
-        		enabled: true,
+        		enabled: false,
         		align: 'right'
         	},
         	offset: 0,
@@ -78,7 +78,7 @@ $(function () {
                 }
             },
             title: {
-                text: 'ECG Viewer'
+                text: 'ECG Viewer (Maximum time slot: 10 seconds)'
             },
             exporting:{
                 buttons: {
@@ -332,6 +332,8 @@ $(function () {
         var minDistance = 1000; // 1 second
         if ((e.max - e.min) < minDistance) { //less than minrange
             var min = e.max - minDistance;
+            if(min < Date.UTC(0, 0, 0, 0, 0, 0, 0))
+            	min = Date.UTC(0, 0, 0, 0, 0, 0, 0);
             var max = e.max;
             window.setTimeout(function() {
                 xaxis.setExtremes(min, max);
@@ -357,9 +359,9 @@ $(function () {
 				tmpDatasets = data.data;
 				
 				// remove original series
-				console.log(plot.series.length, tmpDatasets.length);
+				//console.log(plot.series.length, tmpDatasets.length);
 				for(var i=0; i<tmpDatasets.length; i++){
-					console.log(plot.series[i].name);
+					//console.log(plot.series[i].name);
 					//plot.series[0].remove(false);
 					var dataWithTime = [];
 					for(var j=0; j<tmpDatasets[i].data.length; j++){
@@ -576,6 +578,8 @@ $(function () {
             	diagram.remove();
             	resizer.remove();
             	fileInput.remove();
+            	overViewButton.remove();
+            	generateButton.remove();
             	//console.log(data);
             },
             done: function (e, data) {
@@ -592,6 +596,26 @@ $(function () {
             }
         });
     	fileInput.appendTo(innerResizer);
+    }
+    
+    var overViewButton;
+    function addOverViewButton(){
+    	var minCount = parseInt(datasets[0].data.length*pointInterval/1000/60);
+    	var secCount = (datasets[0].data.length*pointInterval/1000) % 60;
+    	overViewButton = $('<button>CLICK TO SEE ALL ' + minCount + ' minutes and ' + secCount + ' seconds</button>').css({
+    		float: 'left',
+    		fontSize: 'small',
+    	});   	
+
+    	overViewButton.button();
+    	overViewButton.click(plotLarge);
+    	overViewButton.appendTo(innerResizer);
+    	
+    }
+    
+    function plotLarge(){
+    	window.open('plotLarge', '_blank', false);
+    	return false;
     }
     
     function plotEverything() {
@@ -711,6 +735,8 @@ $(function () {
 		console.log(diagramLength);
 	    addResizer(diagramLength);
 		addFileUploadDiv();
+		addOverViewButton();
+		addGenerateButton();
     	//plot all channels on one plot
     	diagram = $('<div id="diagram" ></div>').css( {
             height: diagramHeight.toString() + 'px',
@@ -720,6 +746,175 @@ $(function () {
 
     	plot = new Highcharts.StockChart(chartOptions);     
     	hideSpinner();
+    }
+    
+    var generateButton;
+    function addGenerateButton(){
+    	var minCount = parseInt(datasets[0].data.length*pointInterval/1000/60);
+    	var secCount = (datasets[0].data.length*pointInterval/1000) % 60;
+    	generateButton = $('<button>GENERATE IMAGE FILE FOR ALL ' + minCount + ' minutes and ' + secCount + ' seconds</button>').css({
+    		float: 'left',
+    		fontSize: 'small',
+    	});   	
+
+    	generateButton.button();
+    	generateButton.click(generateSVG);
+    	generateButton.appendTo(innerResizer);
+    	
+    }
+    
+    function onDataReceivedForOutputFile(data){
+		datasets = data.data;
+		pointInterval = data.pointInterval;
+		constructChartOptionsForOutput();
+		
+		//send options back to server
+		$.ajax({
+			url: dataUrl,
+			cache: true,
+			type: 'PUT',
+			dataType: 'json',
+			data: {'data': JSON.stringify(largeChartOptions)},
+			beforeSend: showSpinner,
+			success: function(data){
+				hideSpinner();
+				alert(data.message);
+			},
+			error: function(data){
+				hideSpinner();
+				alert(data.message);
+			}
+		});
+
+    }
+    var largeChartOptions = {
+            chart: {
+                alignTicks: false,
+                marginRight: 50
+            },
+            credits: {
+            	href: "http://cps.eng.uci.edu:8000/analysis",
+            	text: "UCI Embedded Lab",
+            },
+            title: {
+                text: 'ECG Viewer (All Samples)'
+            },
+            legend: {
+                enabled: false,
+            },
+            navigator: {
+            	enabled: false,
+            },
+            scrollbar: {
+            	enabled: false
+            },
+            rangeSelector:{
+            	enabled: false,
+            },
+            plotOptions: {
+                line: {
+                	dataGrouping: {
+                		enabled: false
+                	},
+                	color: 'black',	
+                	lineWidth: 0.7,
+                    dataLabels: {
+                        enabled: false
+                    }
+                }
+            },
+            xAxis: {           	
+            	lineColor: 'rgb(245, 149, 154)',
+            	gridLineColor: 'rgb(245, 149, 154)',
+            	gridLineWidth: 0.5,
+            	minorGridLineColor: 'rgb(245, 149, 154)',
+            	minorGridLineWidth: 0.2,
+            	
+            	minorTickInterval: xGridInterval/5, //5 minor tick by default, exactlly what we want
+    	        minorTickWidth: 1,
+    	        minorTickLength: 0,
+    	        minorTickPosition: 'inside',
+    	        minorTickColor: 'red',
+    	
+    	        //tickPixelInterval: 30,
+    	        tickInterval: xGridInterval, //0.2 second
+    	        tickWidth: 2,
+    	        tickPosition: 'inside',
+    	        tickLength: 0,
+    	        tickColor: 'red',
+    	        
+        		dateTimeLabelFormats: {
+        			millisecond: '%H:%M:%S',
+    	        	second: '%H:%M:%S',
+    	        	minute: '%H:%M:%S',
+    	        	hour: '%H:%M',
+    	        	day: '%e. %b',
+    	        	week: '%e. %b',
+    	        	month: '%b \'%y',
+    	        	year: '%Y'
+    	        },
+    	        
+    	        labels: {
+    	        	enabled: true,
+    	        	step: 10,
+    	        	overflow: false
+    	        },
+    	        startOnTick: true,
+    	        endOnTick: true
+            },
+            tooltip: {},
+            yAxis: [],
+            series: []
+    };
+    function constructChartOptionsForOutput(){
+    	//largeChartOptions = $.extend(true, {}, chartOptions);
+        var yTop = 40; // top padding
+        largeChartOptions.series = [];
+        largeChartOptions.yAxis = [];
+        //loop to fill in yAxis and data series
+        var diagramHeight = 65 //calculate the diagram height!!!!!65 is the top padding of chart,
+        for(var i=0; i<datasets.length;i++) {
+        	var yAxisOptions = $.extend(true, {}, yAxisOptionsTemplate); //!!!deep copy JSON object
+        	yAxisOptions.title = {
+        			text: datasets[i].label,
+        			align: 'high',
+        			rotation: 0,
+        			y: 15
+        	};   	
+        	var min = datasets[i].min;
+        	var max = datasets[i].max;
+        	yAxisOptions.min = min;
+        	yAxisOptions.max = min + 11 * yGridInterval
+        	yAxisOptions.height = yTickHeight*(Math.ceil(yAxisOptions.max/yGridInterval)-Math.floor(yAxisOptions.min/yGridInterval));
+
+        	yAxisOptions.top = yTop;
+        	yTop += yAxisOptions.height; //!!!!adjust the distance to the top
+        	diagramHeight += yAxisOptions.height;
+        	largeChartOptions.yAxis.push(yAxisOptions);
+        	largeChartOptions.series.push({
+        		name: datasets[i].label,
+                data: datasets[i].data,
+                pointStart: Date.UTC(0, 0, 0, 0, 0, 0, 0),
+                yAxis: i, //use the index of dataset as the index of yAxis
+                pointInterval: pointInterval //1000/frequency // 5 millisecond<--wrong! should be 1000/frequency. in this case 1000/250 = 4
+        	});
+        }        
+		diagramHeight += 4; //4 is bottom padding
+		var chartWidth = datasets[0].data.length * pointInterval * xTickHeight / xGridInterval;
+	    largeChartOptions.chart.width = chartWidth;
+	    largeChartOptions.chart.height = diagramHeight;
+    }
+    
+    function generateSVG() {
+		$.ajax({
+			url: dataUrl,
+			cache: true,
+			type: 'GET',
+			dataType: 'json',
+			beforeSend: showSpinner,
+			success: onDataReceivedForOutputFile
+		});
+    	
     }
     
     /* show loading spinner, stopped when chart is fully loaded */
