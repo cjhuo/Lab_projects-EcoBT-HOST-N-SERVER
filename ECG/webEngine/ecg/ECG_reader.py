@@ -25,7 +25,7 @@ class ECG_reader():
         '''
         
     def setFile(self, Dfile = filePath):
-        print(Dfile)
+        #print(Dfile)
         self._parseDicomFile(Dfile)
         
     def _parseDicomFile(self, Dfile):
@@ -41,12 +41,19 @@ class ECG_reader():
         fmt="<"+str(self.NumofsamplesPerChannel*self.NumofChannels)+"h"
         wavedata = list(struct.unpack(fmt,ds.WaveformSequence[0].WaveformData))
         
-        # original unit in dicom is milliVolt, converted unit in self.wavech is microVolt, assuming channel sensitivity's unit is mV
-        self.wavech = [
+        if Dfile == filePath:
+            self.wavech = [
                     [
-                        (elem<<5)*self.sensitivity*1000 for index, elem in enumerate( wavedata ) if index % self.NumofChannels == channel_number
+                        (elem)*self.sensitivity*1000 for index, elem in enumerate( wavedata ) if index % self.NumofChannels == channel_number
                     ] for channel_number in range( self.NumofChannels )
-                ]
+                ] 
+        else:       
+            # original unit in dicom is milliVolt, converted unit in self.wavech is microVolt, assuming channel sensitivity's unit is mV
+            self.wavech = [
+                        [
+                            (elem<<5)*self.sensitivity*1000 for index, elem in enumerate( wavedata ) if index % self.NumofChannels == channel_number
+                        ] for channel_number in range( self.NumofChannels )
+                    ]
 
         print('there is ', len(self.wavech), ' channels in the test dicom')
         print('samples of each channel: ', self.NumofsamplesPerChannel)

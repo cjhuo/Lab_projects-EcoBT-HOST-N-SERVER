@@ -10,6 +10,8 @@ import os.path
 
 from dicom.tag import Tag
 
+from config import *
+
 def initData(ds, info) :
     ds[0x0008,0x0012].value = info['Instance Creation Date']
     ds[0x0008,0x0013].value = info['Instance Creation Time']
@@ -117,7 +119,7 @@ def packDICOM(ecg_data, outputfilename) :
     ds.WaveformSequence[0].WaveformData = struct.pack(format, *(waveform))
     ds[0x5400,0x100][0][0x3a,0x10].value = NumofSamplesPerChannel
     ds[0x5400,0x100][0][0x3a,0x5].value = NumofChannels
-    ds[0x5400,0x100][0][0x3a,0x1a].value = '250'
+    ds[0x5400,0x100][0][0x3a,0x1a].value = str(frequency) #'250'
     ds[0x5400,0x100][0][0x3a,0x200][0][0x3a,0x210].value = '0.001'
 
     ds.save_as(outputfilename)

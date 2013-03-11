@@ -45,10 +45,11 @@ $(function () {
     //borrowed from http://www.davita-shop.co.uk/ecg-instruments.html    
     var refImgUrl = "static/css/images/ecg.png"; 
     
-    var frequency = 250;
+    var frequency = parseInt($('#frequency').val());
     var xGridInterval = 200; //0.2 second = 200ms, pointInterval was multiplied by 6, so GridInterval is also multiplied by 6
     var yGridInterval = 500; //0.5 mV
     var xPointInterval = 1000/frequency;
+    
     var yTickHeight = 20;
     
     var hOptions = { // //options settings for histogram plot

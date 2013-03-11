@@ -41,6 +41,7 @@ class AnalysisHandler(BaseHandler):
             page_title="ECG Analysis Viewer",
             header_text="ECG Analysis Viewer",
             footer_text="",
+            frequency = frequency
         )
     
 class AnalysisAllInOnceHandler(BaseHandler):
@@ -50,6 +51,7 @@ class AnalysisAllInOnceHandler(BaseHandler):
             page_title="ECG Viewer",
             header_text="ECG Viewer",
             footer_text="",
+            frequency = frequency
         )
         
 class AnalysisOldHandler(BaseHandler):

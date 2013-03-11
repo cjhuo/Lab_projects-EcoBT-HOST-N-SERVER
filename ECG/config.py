@@ -6,6 +6,7 @@ Created on Feb 9, 2013
 # setup for ecoBT webEngine
 webGUIPort = 8000
 isWriteToLog = False # True to have std output write to log.txt
+frequency = 250
 
 # addresses where live pages are going to fetch data from
 #'ws://cps.eng.uci.edu:8000/socket' 
