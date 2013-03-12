@@ -164,6 +164,22 @@ class LiveSIDsHandler(BaseHandler):
             nodeName = name,
         )  
 
+class SIDsAllHandler(BaseHandler):
+    def get(self):  
+        try:
+            name = self.get_argument("name") # node's name, e.g., MAC addres
+        except Exception:
+            name = None   
+        self.render(
+            "live/sidsAll.html",
+            page_title="Live SIDs Viewer",
+            header_text="Live SIDs Viewer",
+            footer_text="",
+            serverAddr = LiveSIDsServerAddr,
+            nodeName = name,
+        )  
+
+
 class AdministrationHandler(BaseHandler):
     def get(self):     
         self.render(

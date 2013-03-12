@@ -34,6 +34,7 @@ class Application(tornado.web.Application):
                 (r'/temperature', TemperatureHandler),
                 (r'/liveECG', LiveECGHandler),
                 (r'/liveSIDs', LiveSIDsHandler),
+                (r'/sidsAll', SIDsAllHandler),
                 (r'/administration', AdministrationHandler),
                 (r'/plot', PlotHandler),
                 (r'/analysis', AnalysisHandler),

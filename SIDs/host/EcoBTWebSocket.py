@@ -36,8 +36,14 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
         
         
     def on_message(self, message):
-        #self.ecoBTApp.managerWorker.delegateWorker.getQueue().put(message)
-        self.handleMessage(message)
+        try:
+            #self.ecoBTApp.managerWorker.delegateWorker.getQueue().put(message)
+            self.handleMessage(message)
+        except:
+            self.write_message({'from': 'central', 
+                                'data': {'type': 'message',
+                                         'value': 'error'}
+                                })
         
     def handleMessage(self, message):           
         if message == 'stopScan':
