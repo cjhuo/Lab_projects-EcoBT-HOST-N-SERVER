@@ -7,12 +7,12 @@ $(function () {
 		console.log(data);
 		if( data.from == 'node'){
 			if(name.trim() == data.data.address.trim())
+				if(data.data.type == 'orientation'){
+					updateSimulation(data.data);
+					updateACCChart(data.data);
+				}
 				if(data.data.type == 'SIDsRead'){ //real data
 					console.log(data.data.value);
-					updateDataTable(data.data.value);
-				}
-				else if(data.data.type == 'SIDsSettings'){
-					addSettings(data.data.value);
 				}
 		}
 		else if(data.from == 'central') {
@@ -26,28 +26,32 @@ $(function () {
 	
 	function updateSimulation(data) {
 		//update simulation
-		parent.lookAt(new THREE.Vector3(-data.acc.x, -data.acc.y, data.acc.z));
+		parent.lookAt(new THREE.Vector3(-data.value.x, -data.value.y, data.value.z));
 		renderer.render( scene, camera );
 	}
 	
-	function updateChart(data) {
+	function updateACCChart(data) {
 		//update ACC chart
-		chart.series[0].addPoint(data.acc.x, false, true);
-		chart.series[1].addPoint(data.acc.y, false, true);
-		chart.series[2].addPoint(data.acc.z, true, true);
-		
+		chart.series[0].addPoint(data.value.x, false, true);
+		chart.series[1].addPoint(data.value.y, false, true);
+		chart.series[2].addPoint(data.value.z, true, true);
+	}
+	
+	/**
+	 * SIDsRead value content: [hour, minute, sec, LED00, LED01, LED10, LED11, amb0, amb1, rh, temp]
+	 * */
+	function updateTempHumChart(data){
 		//update Temp chart
 		var point = chartTemp.series[0].points[0];
 		console.log()
-		point.update(data.temperature, true);
+		point.update(data[9], true);
 		
 		//update Hum chart
 		var point = chartHum.series[0].points[0];
 		console.log()
-		point.update(data.humidity, true);
+		point.update(data[10], true);
 
 	}
-	
 	
 	var init = function() {
 		showSpinner();
@@ -419,7 +423,7 @@ $(function () {
 	    
 	        series: [{
 	            name: 'Skin',
-	            data: [10],
+	            data: [0],
 	            yAxis: 0,
 	            tooltip: {
 	                valueSuffix: ' Degree'
@@ -440,7 +444,9 @@ $(function () {
 	            plotBorderWidth: 1,
 	            plotShadow: false
 	        },
-	        
+	        exporting:{
+	        	enabled: false
+	        },
 	        credits: {
 	        	href: "http://cps.eng.uci.edu",
 	        	text: "CECS Lab UI"
