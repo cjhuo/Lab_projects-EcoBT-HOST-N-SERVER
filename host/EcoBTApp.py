@@ -34,8 +34,9 @@ class EcoBTApp(object):
             while (not self.running.isSet()) and self.runLoop.runMode_beforeDate_(NSDefaultRunLoopMode, NSDate.distantFuture()):
                 # do nothing
                 pass
-        except:
+        except Exception as e:
             print >> sys.stderr, 'Exception caught found in EcoBTApp'
+            print e
             
         # clean up       
         self.managerWorker.stop()
