@@ -74,18 +74,19 @@ class ECGAllInOneHandler(BaseHandler):
     @tornado.web.asynchronous
     def put(self):
         options = self.get_argument("data")
-
-        with open(os.path.join(self.settings['static_path'], uploadPath, 'options.json'), 'w') as outfile:
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        jsonFile = 'options_' + timestamp + '.json'
+        with open(os.path.join(self.settings['static_path'], uploadPath, jsonFile), 'w') as outfile:
             outfile.write(options)
         
-        t = threading.Thread(target=self.generateSVG)
+        t = threading.Thread(target=self.generateSVG, args=(jsonFile,))
         t.setDaemon(True)
         t.start()
 
             
-    def generateSVG(self):
+    def generateSVG(self, jsonFile):
         convertTool = os.path.join(self.settings['static_path'], 'lib/highstock/highcharts-convert.js')
-        jsonFile = os.path.join(self.settings['static_path'], uploadPath, 'options.json')
+        jsonFile = os.path.join(self.settings['static_path'], uploadPath, jsonFile)
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         svgFile = os.path.join(self.settings['static_path'], uploadPath, 'svg/chart_'+ timestamp +'.svg')
         command = "/usr/local/bin/phantomjs %s -infile %s -outfile %s -constr StockChart" % (convertTool, jsonFile, svgFile)
