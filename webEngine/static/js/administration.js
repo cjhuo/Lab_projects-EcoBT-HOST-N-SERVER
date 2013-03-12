@@ -11,7 +11,7 @@ $(function () {
 
 	//such as cps.eng.uci.edu:8000/socket
 	console.log(url);
-	var container = $("<div class='container' style='height:2000px'/>").appendTo(document.body);
+	var container = $("<div class='canvas' style='height:2000px'/>").appendTo(document.body);
 
 	var startDiscoverServices = false;
 	function onDataReceived(data){
@@ -364,7 +364,7 @@ $(function () {
 	    			group.push(peripheral.instance);
 	    			group.push(text);
 	    			//group.peripheral = peripheral;
-	    			var sidsUrl = "/liveSIDs?name="+data.address;
+	    			var sidsUrl = "/sidsAll?name="+data.address;//"/liveSIDs?name="+data.address;
 	    			group.attr({
 	    			    cursor: 'pointer',
 	    			}).mouseover(function(e) {

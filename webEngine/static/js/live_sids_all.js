@@ -1,37 +1,28 @@
-/**
- * Main script for generating plot.
- *
- * .with push technology
- *
- */
-
-
 $(function () {
-	var url = $('#serverAddr').val(); 	//push url, need to change this to server's url, 
+	var url = $('#serverAddr').text(); 	//push url, need to change this to server's url, 
 	var name =  $('#name').text();
-	var container = $("<div class='container' />").appendTo(document.body);
-	//such as cps.eng.uci.edu:8000/socket
-	console.log(name);
-	
-	function onDataReceived(data){
-		if( data.from == 'node')
-			if(name == "Demo" || name.trim() == data.data.name.trim())
+		
+    var datasets; //store datasets
+	function onDataReceived(data) { //setup plot after retrieving data
+		console.log(data);
+		if( data.from == 'node'){
+			if(name.trim() == data.data.address.trim())
 				if(data.data.type == 'orientation'){
-					/*
-					if(data.axis == 'x')
-						parent.rotation.setX(data.value);
-						//parent.rotation.x = data.value;
-					else if(data.axis == 'y')
-						parent.rotation.setY(data.value);
-						//parent.rotation.z = data.value;
-					else if(data.axis == 'z')
-						parent.rotation.setZ(data.value);
-						//parent.rotation.y = data.value;
-					*/
 					updateSimulation(data.data);
-					updateChart(data.data);
+					updateACCChart(data.data);
 				}
+				if(data.data.type == 'SIDsRead'){ //real data
+					console.log(data.data.value);
+				}
+		}
+		else if(data.from == 'central') {
+			if(data.data.type == 'message'){
+				alert(data.data.value);
+				//open('/administration', '_self', true);
+			}
+		}
 	}
+	
 	
 	function updateSimulation(data) {
 		//update simulation
@@ -39,21 +30,60 @@ $(function () {
 		renderer.render( scene, camera );
 	}
 	
-	function updateChart(data) {
-		//update chart
-		chart.series[0].addPoint(data.value.x, true, true);
-		chart.series[1].addPoint(data.value.y, true, true);
+	function updateACCChart(data) {
+		//update ACC chart
+		chart.series[0].addPoint(data.value.x, false, true);
+		chart.series[1].addPoint(data.value.y, false, true);
 		chart.series[2].addPoint(data.value.z, true, true);
 	}
 	
-	function init() {
+	/**
+	 * SIDsRead value content: [hour, minute, sec, LED00, LED01, LED10, LED11, amb0, amb1, rh, temp]
+	 * */
+	function updateTempHumChart(data){
+		//update Temp chart
+		var point = chartTemp.series[0].points[0];
+		console.log()
+		point.update(data[9], true);
+		
+		//update Hum chart
+		var point = chartHum.series[0].points[0];
+		console.log()
+		point.update(data[10], true);
+
+	}
+	
+	var init = function() {
 		showSpinner();
+		initLayout();
 		initSimulation();
 		initChart();
+		initTemperatureChart();
+		initHumidityChart();
+		
+	}
+	
+	function initLayout(){
+		$('body').layout({
+			closable: false,
+			west__size:	.80,	
+			west__childOptions:	{
+				closable: false,
+				south__size: .40,
+				center__childOptions:	{
+					closable: false,
+					west__size:		.50
+				},
+				south__childOptions:	{
+					closable: false,
+					west__size:		.50
+				}			}
+		});
 	}
 	
 	var chartContainer;
 	var chart;
+	var container = $("#acceleration");
 	var total_points = 100;
 	function initChart() {
 		chartContainer = $("<div id='chart' class='chart'/>").appendTo(container);
@@ -168,7 +198,6 @@ $(function () {
     		hideSpinner();
     	});
 	}
-
 	
 	var simContainer, stats;
 
@@ -176,14 +205,7 @@ $(function () {
 
 	var cube, plane;
 
-	//var targetRotation = 0;
-	//var targetRotationOnMouseDown = 0;
-
-	//var windowHalfX = window.innerWidth / 2;
-	//var windowHalfY = window.innerHeight / 2;
-
 	var parent;	
-
 	function initSimulation() {
 
 		simContainer = $("<div id='simulation' class='simulation'/>").appendTo(container);;
@@ -298,7 +320,8 @@ $(function () {
 		
 		//render();
 		renderer.render( scene, camera );
-
+		
+		animate();
 	}
 
 	function onWindowResize() {
@@ -329,6 +352,168 @@ $(function () {
 
 	}
 	
+	var chartTemp;
+	function initTemperatureChart(){
+		chartTemp = new Highcharts.Chart({
+		    
+	        chart: {
+	            renderTo: 'temperature',
+	            type: 'gauge',
+	            backgroundColor: 'transparent',
+	            plotBackgroundColor: null,
+	            plotBackgroundImage: null,
+	            plotBorderWidth: 1,
+	            plotShadow: false
+	        },
+	        exporting:{
+	        	enabled: false
+	        },
+	        credits: {
+	        	href: "http://cps.eng.uci.edu",
+	        	text: "CECS Lab UI"
+	        },
+	        
+	        title:{
+	            text: 'Skin Temperature Monitor'
+	        },
+	        
+	        pane: {
+	            startAngle: -100,
+	            endAngle: 100,
+
+	        },
+	           
+	        // the value axis
+	        yAxis: {
+	            min: 10,
+	            max: 45,
+	            
+	            minorTickInterval: 'auto',
+	            minorTickWidth: 1,
+	            minorTickLength: 10,
+	            minorTickPosition: 'inside',
+	            minorTickColor: '#666',
+	    
+	            tickInterval: 5,
+	            tickWidth: 2,
+	            tickPosition: 'inside',
+	            tickLength: 10,
+	            tickColor: '#666',
+	            labels: {
+	                step: 1,
+	                rotation: 'auto'
+	            },
+	            title: {
+	                text: '°C'
+	            },
+	            plotBands: [{
+	                from: 30,
+	                to: 35,
+	                color: '#55BF3B' // green
+	            }, {
+	                from: 35,
+	                to: 37,
+	                color: '#DDDF0D' // yellow
+	            }, {
+	                from: 37,
+	                to: 45,
+	                color: '#DF5353' // red
+	            }]
+	        },
+	    
+	        series: [{
+	            name: 'Skin',
+	            data: [0],
+	            yAxis: 0,
+	            tooltip: {
+	                valueSuffix: ' Degree'
+	            },
+	        }]
+	    });
+	}
+	var chartHum;
+	function initHumidityChart(){
+		chartHum = new Highcharts.Chart({
+	        
+	        chart: {
+	            renderTo: 'humidity',
+	            type: 'gauge',
+	            backgroundColor: 'transparent',
+	            plotBackgroundColor: null,
+	            plotBackgroundImage: null,
+	            plotBorderWidth: 1,
+	            plotShadow: false
+	        },
+	        exporting:{
+	        	enabled: false
+	        },
+	        credits: {
+	        	href: "http://cps.eng.uci.edu",
+	        	text: "CECS Lab UI"
+	        },
+	        
+	        title:{
+	            text: 'Humidity Monitor'
+	        },
+	        
+	        pane: {
+	            startAngle: -100,
+	            endAngle: 100,
+
+	        },
+	           
+	        // the value axis
+	        yAxis: {
+	            min: 0,
+	            max: 100,
+	            
+	            minorTickInterval: 'auto',
+	            minorTickWidth: 1,
+	            minorTickLength: 10,
+	            minorTickPosition: 'inside',
+	            minorTickColor: '#666',
+	    
+	            tickInterval: 10,
+	            tickWidth: 1,
+	            tickPosition: 'inside',
+	            tickLength: 10,
+	            tickColor: '#666',
+	            labels: {
+	                step: 1,
+	                rotation: 'auto'
+	            },
+	            title: {
+	                text: '%'
+	            },
+	            plotBands: [{
+	                from: -10,
+	                to: 10,
+	                color: '#55BF3B' // green
+	            }, {
+	                from: 10,
+	                to: 30,
+	                color: '#DDDF0D' // yellow
+	            }, {
+	                from: 30,
+	                to: 45,
+	                color: '#DF5353' // red
+	            }]
+	        },
+	    
+	        series: [{
+	            name: 'Humidity',
+	            data: [0],
+	            yAxis: 0,
+	            tooltip: {
+	                valueSuffix: ' %'
+	            },
+	        }]
+	    
+	    });		
+	}
+	
+	
+	// start of handling websocket connection
 	var socket = null; //websocket object	
 	var reconMsg = null; //reconnect div object
 	
@@ -370,6 +555,7 @@ $(function () {
 		showReconMsg('connecting to server...');
 	    socket.onopen = function(event) {
 			hideReconMsg();
+			//socket.send("sendSIDsSet"+name.trim());
 	    };
 	    socket.onmessage = function(event) {
 	    	onDataReceived($.parseJSON(event.data));
@@ -428,19 +614,11 @@ $(function () {
 		}
 	}
 	
-	//$(window).bind('resize', onWindowResize);
-	
 	$(window).bind('load', function(e) {
 		init();
-		animate();
 		update();
-		/*
-		setInterval(function(){
-			render();
-		}, 1000);
-		*/
 	});
-	
+
 	$(window).bind('online', function(e) {
 		/*
 		if(socket != null)
@@ -451,7 +629,7 @@ $(function () {
 			socket.close();
 			//socket = null;
 		}
-		*/
+		*/ 
 		hideReconMsg();
 		showReconMsg('connection is back, connecting server in 5 secs...');
 		if(reconn == null) {
@@ -487,7 +665,12 @@ $(function () {
 		hideReconMsg();
 		showReconMsg('connection lost, check wifi...')
 	});	
+	//end of handling websocket connection
 	
+	
+	//start of ajax animation
+	var spinTarget, spinner;; //spinner
+    //show loading spinner, stopped when chart is fully loaded
 	var spinnerOpts = { //options settings for spinner
 			  lines: 13, // The number of lines to draw
 			  length: 7, // The length of each line
@@ -505,17 +688,18 @@ $(function () {
 			  top: 'auto', // Top position relative to parent in px
 			  left: 'auto' // Left position relative to parent in px
 			};
-	var spinTarget = $('<div id="spinner" ></div>').css( {
-	            position: 'relative',
-	            width: '50px',
-	            height: '50px',
-	            margin: 'auto'
-	});
-	spinTarget.appendTo("body");
-	var spinner = new Spinner(spinnerOpts);
-	
     /* show loading spinner, stopped when chart is fully loaded */
     function showSpinner(){
+    	if(spinTarget == null){
+    		spinTarget = $('<div id="spinner" ></div>').css( {
+    	        position: 'relative',
+    	        width: '50px',
+    	        height: '50px',
+    	        margin: 'auto'
+    		});  
+    		spinTarget.appendTo("body");
+    		spinner = new Spinner(spinnerOpts);
+    	}
     	spinTarget.show();
 		spinner.spin(spinTarget[0]);
     }
@@ -524,4 +708,5 @@ $(function () {
 		spinTarget.hide();
 		spinner.stop();
     }
+    //end of ajax animation
 });
