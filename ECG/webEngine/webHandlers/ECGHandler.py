@@ -79,6 +79,7 @@ class ECGAllInOneHandler(BaseHandler):
             outfile.write(options)
         
         t = threading.Thread(target=self.generateSVG)
+        t.setDaemon(True)
         t.start()
 
             

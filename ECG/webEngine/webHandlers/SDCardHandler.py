@@ -13,6 +13,7 @@ class SDCardHandler(BaseHandler):
     @tornado.web.asynchronous
     def get(self):
         t = threading.Thread(target=self.readDataFromCard)
+        t.setDaemon(True)
         t.start()
     
     def readDataFromCard(self):
