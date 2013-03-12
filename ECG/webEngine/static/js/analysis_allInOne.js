@@ -578,7 +578,7 @@ $(function () {
             	diagram.remove();
             	resizer.remove();
             	fileInput.remove();
-            	overViewButton.remove();
+            	//overViewButton.remove();
             	generateButton.remove();
             	//console.log(data);
             },
@@ -735,7 +735,7 @@ $(function () {
 		console.log(diagramLength);
 	    addResizer(diagramLength);
 		addFileUploadDiv();
-		addOverViewButton();
+		//addOverViewButton();
 		addGenerateButton();
     	//plot all channels on one plot
     	diagram = $('<div id="diagram" ></div>').css( {
@@ -778,7 +778,8 @@ $(function () {
 			beforeSend: showSpinner,
 			success: function(data){
 				hideSpinner();
-				alert(data.message);
+				console.log(data.url);
+				open(data.url, '_blank', false);
 			},
 			error: function(data){
 				hideSpinner();

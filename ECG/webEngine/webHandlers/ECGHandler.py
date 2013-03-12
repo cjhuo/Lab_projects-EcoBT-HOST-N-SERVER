@@ -8,7 +8,9 @@ import sys
 import os.path
 import json
 import os
+import subprocess
 from datetime import datetime
+import threading
 
 from config import *
 from BaseHandler import BaseHandler
@@ -40,7 +42,7 @@ class ECGAllInOneHandler(BaseHandler):
             pointInterval = (1000/frequency) * int(round(float(len(self.ecg.wavech[0]))/float(arrayLength)))
 
         else: # plot along the entire time period
-            sampleCountToBeSent = 10000
+            sampleCountToBeSent = len(self.ecg.wavech[0]) / 4 # interval is 16, draw 3 samples in every small block
             if len(self.ecg.wavech[0]) > sampleCountToBeSent: # compress it
                 print >> sys.stderr, 'TOO MANY SAMPLES, CAN\'T DRAW DIRECTLY, START COMPRESSING'
                 self.dataSetsCompression(self.ecg.wavech, wavech, sampleCountToBeSent)
@@ -69,27 +71,32 @@ class ECGAllInOneHandler(BaseHandler):
                     'pointInterval': pointInterval
                     })
 
-        
+    @tornado.web.asynchronous
     def put(self):
         options = self.get_argument("data")
 
         with open(os.path.join(self.settings['static_path'], uploadPath, 'options.json'), 'w') as outfile:
             outfile.write(options)
         
+        t = threading.Thread(target=self.generateSVG)
+        t.start()
+
+            
+    def generateSVG(self):
         convertTool = os.path.join(self.settings['static_path'], 'lib/highstock/highcharts-convert.js')
         jsonFile = os.path.join(self.settings['static_path'], uploadPath, 'options.json')
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         svgFile = os.path.join(self.settings['static_path'], uploadPath, 'svg/chart_'+ timestamp +'.svg')
         command = "/usr/local/bin/phantomjs %s -infile %s -outfile %s -constr StockChart" % (convertTool, jsonFile, svgFile)
-        rcode = os.system(command)
+        rcode = subprocess.call(command, shell=True)
         print rcode
-        
         if rcode == 0:
-            os.system('open "%s"' % os.path.dirname(svgFile))
-            self.write({'message': 'file generation success!'})
+            #os.system('open "%s"' % os.path.dirname(svgFile))
+            self.write({'url': self.static_url(svgFile)})
+            self.finish()
         else:
             self.write({'message': 'file generation failed!'})
-        
+            self.finish()        
         
             
     def post(self): # file upload handler
