@@ -10,6 +10,7 @@ import os.path
 
 from dicom.tag import Tag
 
+
 def initData(ds, info) :
     ds[0x0008,0x0012].value = info['Instance Creation Date']
     ds[0x0008,0x0013].value = info['Instance Creation Time']
