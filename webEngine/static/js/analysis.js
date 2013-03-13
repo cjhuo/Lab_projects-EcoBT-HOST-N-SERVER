@@ -45,10 +45,11 @@ $(function () {
     //borrowed from http://www.davita-shop.co.uk/ecg-instruments.html    
     var refImgUrl = "static/css/images/ecg.png"; 
     
-    var frequency = 250;
+    var frequency = parseInt($('#frequency').val());
     var xGridInterval = 200; //0.2 second = 200ms, pointInterval was multiplied by 6, so GridInterval is also multiplied by 6
     var yGridInterval = 500; //0.5 mV
     var xPointInterval = 1000/frequency;
+    
     var yTickHeight = 20;
     
     var hOptions = { // //options settings for histogram plot
@@ -209,9 +210,10 @@ $(function () {
 		    </tbody>\
 		  </table>').css({
 			  fontSize: 'small',
-			  //width: 'auto',
-			  margin: 'auto',
-			  //marginRight: '15px'
+			  width: '99.5%',
+			  //margin: 'auto',
+			  marginLeft: '5px',
+			  marginRight: '5px'
 		  });
 		dTable = tableDom.dataTable({
 	        "bPaginate": false,
@@ -695,10 +697,13 @@ $(function () {
             }
             	
         });
-    	options.yAxis.min = min;
-    	options.yAxis.max = min + 11 * yGridInterval;
-    	options.yAxis.height = yTickHeight*(Math.ceil(options.yAxis.max/yGridInterval)-Math.floor(options.yAxis.min/yGridInterval));
-    	options.yAxis.top = yTop;
+    	//options.yAxis.min = min;
+    	//options.yAxis.max = min + 11 * yGridInterval;
+        options.yAxis.minRange = 12 * yGridInterval;
+        options.yAxis.range = 12 * yGridInterval;
+    	//options.yAxis.height = yTickHeight*(Math.ceil(options.yAxis.max/yGridInterval)-Math.floor(options.yAxis.min/yGridInterval));
+        options.yAxis.height = 12 * yTickHeight;
+        options.yAxis.top = yTop;
     	var diagramHeight = yTop + options.yAxis.height + 15;
         if (data.length > 0){
         	if(plot != null){
