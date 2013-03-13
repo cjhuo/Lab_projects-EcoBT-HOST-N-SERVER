@@ -532,7 +532,7 @@ $(function () {
 	    	plot.showLoading("RECEIVING DATA...");
     	}
     	else{ // update plot
-    		console.log(datasets[0]);
+    		console.log(datasets[10]);
     		for(var i=0; i<datasets.length;i++) {
     			plot.series[i].setData(datasets[i].data, false);
     			/*
