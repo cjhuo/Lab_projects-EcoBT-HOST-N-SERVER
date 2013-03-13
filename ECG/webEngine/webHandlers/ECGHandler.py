@@ -205,7 +205,7 @@ def checkFileExistInPath(pathName, fileName, fileContent):
         print >> sys.stderr, 'FILE UPLOADED, OPENING'
     else:
         print >> sys.stderr, 'FILE EXISTS, OPENING DIRECTLY'
-    return path + fileName
+    return os.path.join(path, fileName)
   
 class ECGHandler(BaseHandler):
     def initialize(self, ecg):
