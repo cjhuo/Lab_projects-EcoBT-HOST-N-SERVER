@@ -210,9 +210,10 @@ $(function () {
 		    </tbody>\
 		  </table>').css({
 			  fontSize: 'small',
-			  //width: 'auto',
-			  margin: 'auto',
-			  //marginRight: '15px'
+			  width: '99.5%',
+			  //margin: 'auto',
+			  marginLeft: '5px',
+			  marginRight: '5px'
 		  });
 		dTable = tableDom.dataTable({
 	        "bPaginate": false,

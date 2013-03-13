@@ -117,8 +117,9 @@ class ECGAllInOneHandler(BaseHandler):
                 print >> sys.stderr, 'FINISH READING ECG DATA IN ECG MODULE..' 
             val = self.getDataFromDicomFile()
             self.write(val)
-        except:
+        except Exception as e:
             self.send_error(302) # 302: invalid file
+            print e
             
     def getDataFromDicomFile(self):
         #wavech, peaks = ecg.ECG_reader.getTestData()
