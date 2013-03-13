@@ -117,9 +117,8 @@ class ECGAllInOneHandler(BaseHandler):
                 print >> sys.stderr, 'FINISH READING ECG DATA IN ECG MODULE..' 
             val = self.getDataFromDicomFile()
             self.write(val)
-        except Exception as e:
+        except:
             self.send_error(302) # 302: invalid file
-            print e
             
     def getDataFromDicomFile(self):
         #wavech, peaks = ecg.ECG_reader.getTestData()
@@ -206,7 +205,7 @@ def checkFileExistInPath(pathName, fileName, fileContent):
         print >> sys.stderr, 'FILE UPLOADED, OPENING'
     else:
         print >> sys.stderr, 'FILE EXISTS, OPENING DIRECTLY'
-    return path + fileName
+    return os.path.join(path, fileName)
   
 class ECGHandler(BaseHandler):
     def initialize(self, ecg):
