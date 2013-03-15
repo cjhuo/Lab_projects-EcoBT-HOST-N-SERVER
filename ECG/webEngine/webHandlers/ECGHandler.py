@@ -185,7 +185,7 @@ class ECGAllInOneHandler(BaseHandler):
                 else:
                     tmpSum += inputList[j]
                     tmpLen += 1
-            outputList.append(tmpSum/tmpLen)
+            outputList.append(int(tmpSum/tmpLen))
             
         
     def dataSetsCompression(self, wavech, output, arrayLength): # compress data into length of arrayLength by averaging
