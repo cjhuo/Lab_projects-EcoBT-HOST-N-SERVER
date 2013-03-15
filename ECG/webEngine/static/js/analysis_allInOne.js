@@ -778,8 +778,13 @@ $(function () {
 			beforeSend: showSpinner,
 			success: function(data){
 				hideSpinner();
-				console.log(data.url);
-				open(data.url, '_blank', false);
+				if(data.url != null){
+					console.log(data.url);
+					open(data.url, '_blank', false);
+				}
+				else{// failure
+					alert("Sever failure!");
+				}
 			},
 			error: function(data){
 				hideSpinner();
