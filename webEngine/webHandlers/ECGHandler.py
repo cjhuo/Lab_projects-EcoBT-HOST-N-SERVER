@@ -42,15 +42,22 @@ class ECGAllInOneHandler(BaseHandler):
             pointInterval = (1000/frequency) * int(round(float(len(self.ecg.wavech[0]))/float(arrayLength)))
 
         else: # plot along the entire time period
-            sampleCountToBeSent = len(self.ecg.wavech[0]) / 4 # interval is 16, draw 3 samples in every small block
-            if len(self.ecg.wavech[0]) > sampleCountToBeSent: # compress it
+            '''
+            if len(self.ecg.wavech[0]) > sampleCountToBeSent: # down sampling by compress it
+                sampleCountToBeSent = len(self.ecg.wavech[0]) * 5 / 2 # interval is 10, draw 4 samples in every small block(4px)
                 print >> sys.stderr, 'TOO MANY SAMPLES, CAN\'T DRAW DIRECTLY, START COMPRESSING'
                 self.dataSetsCompression(self.ecg.wavech, wavech, sampleCountToBeSent)
                 print >> sys.stderr, 'COMPRESSION COMPLETE, SENDING COMPRESSED DATA FOR DRAWING'   
             else: 
                 sampleCountToBeSent = len(self.ecg.wavech[0])
-                wavech = self.ecg.wavech                    
-            pointInterval = (1000/frequency) * int(round(float(len(self.ecg.wavech[0]))/float(sampleCountToBeSent)))
+                wavech = self.ecg.wavech          
+            '''          
+            sampleCountToBeSent = int(len(self.ecg.wavech[0]) / 2.5) # interval is 10, draw 4 samples in every small block(4px)
+            print >> sys.stderr, 'TOO MANY SAMPLES, CAN\'T DRAW DIRECTLY, START COMPRESSING'
+            self.dataSetsCompression(self.ecg.wavech, wavech, sampleCountToBeSent)
+            print >> sys.stderr, 'COMPRESSION COMPLETE, SENDING COMPRESSED DATA FOR DRAWING'   
+
+            pointInterval = int((1000/frequency) * float(len(self.ecg.wavech[0]))/float(sampleCountToBeSent))
 
         print 'pointInterval: ', pointInterval
         datasets = []
