@@ -354,7 +354,7 @@ $(function () {
 			dataType: 'json',
 			cache: false,
 			data: {"min":min, "max": max},			
-			error: function() {alert("Server Error!");},
+			error: function() {plot.hideLoading();/*alert("Server Error!");*/},
 			success: function(data){
 				tmpDatasets = data.data;
 				
