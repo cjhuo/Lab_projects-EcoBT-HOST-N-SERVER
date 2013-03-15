@@ -783,12 +783,13 @@ $(function () {
 					open(data.url, '_blank', false);
 				}
 				else{// failure
-					alert("Sever failure!");
+					alert(data.message);
+					
 				}
 			},
 			error: function(data){
 				hideSpinner();
-				alert(data.message);
+				alert("Sever failure!");
 			}
 		});
 
