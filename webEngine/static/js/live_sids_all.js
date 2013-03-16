@@ -606,19 +606,31 @@ $(function () {
 	}
 	
 	function update(){
-		if (navigator.onLine) { //navigator.onLine supports limited browsers, see https://developer.mozilla.org/en-US/docs/DOM/window.navigator.onLine
-			establishConnection();	
+		if(url.indexOf('ws://localhost') == -1){
+			if (navigator.onLine) { //navigator.onLine supports limited browsers, see https://developer.mozilla.org/en-US/docs/DOM/window.navigator.onLine
+				establishConnection();	
+			}
+			else {
+				showReconMsg('brower is offline, check wifi...');
+			}
 		}
-		else {
-			showReconMsg('brower is offline, check wifi...');
+		else{
+			establishConnection();
 		}
 	}
+	
+	//$(window).bind('resize', onWindowResize);
 	
 	$(window).bind('load', function(e) {
 		init();
 		update();
+		/*
+		setInterval(function(){
+			render();
+		}, 1000);
+		*/
 	});
-
+	
 	$(window).bind('online', function(e) {
 		/*
 		if(socket != null)
@@ -629,16 +641,18 @@ $(function () {
 			socket.close();
 			//socket = null;
 		}
-		*/ 
-		hideReconMsg();
-		showReconMsg('connection is back, connecting server in 5 secs...');
-		if(reconn == null) {
-			reconn = setTimeout(function() {
-				establishConnection();
-				//alert('Network is back, readyState is: ' + socket.readyState);
-				hideReconMsg();
-				reconn = null;
-			}, 5000);
+		*/
+		if(url.indexOf('ws://localhost') == -1){
+			hideReconMsg();
+			showReconMsg('connection is back, connecting server in 5 secs...');
+			if(reconn == null) {
+				reconn = setTimeout(function() {
+					establishConnection();
+					//alert('Network is back, readyState is: ' + socket.readyState);
+					hideReconMsg();
+					reconn = null;
+				}, 5000);
+			}
 		}
 	});
 	
@@ -661,9 +675,11 @@ $(function () {
 		 * websocket.readyState on browser side is 'OPEN'. A short ping-pong mechanism might resolve 
 		 * the issue.
 		 * */
-		socket.close();
-		hideReconMsg();
-		showReconMsg('connection lost, check wifi...')
+		if(url.indexOf('ws://localhost') == -1){
+			socket.close();
+			hideReconMsg();
+			showReconMsg('connection lost, check wifi...');
+		}
 	});	
 	//end of handling websocket connection
 	
