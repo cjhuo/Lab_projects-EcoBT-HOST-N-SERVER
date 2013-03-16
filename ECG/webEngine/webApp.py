@@ -6,7 +6,6 @@ from webHandlers.fake.fakePlotHandler import *
 from webHandlers.ECGHandler import *
 from webHandlers.pageRenderingHandlers import *
 from webHandlers.AuthHandlers import AuthHandler
-from webHandlers.ConfigFileHandlers import *
 from webHandlers.SDCardHandler import SDCardHandler
 
 from host.Sockets import Sockets
@@ -24,30 +23,20 @@ class Application(tornado.web.Application):
         
         self.handlers = [
                 (r'/', MainHandler),          
-                (r'/soundMonitor', SoundMonitorHandler),
                 (r'/ecgHandler', ECGHandler, dict(ecg = self.ecg)),
-                (r'/ecgAllInOne', ECGAllInOneHandler, dict(ecg = self.ecg)),
-                (r'/plotLarge', ECGPlotLarge),                
+                (r'/ecgAllInOne', ECGAllInOneHandler, dict(ecg = self.ecg)),            
                 (r'/cardReader', CardReaderHandler),
-                (r'/tempAnalysis', TempAnalysisHandler),
-                (r'/analysis_old', AnalysisOldHandler),
                 (r'/analysis_allInOne', AnalysisAllInOnceHandler),   
-                (r'/sidsAll', SIDsAllHandler),
-                (r'/orientation', OrientationHandler),
-                (r'/temperature', TemperatureHandler),
                 (r'/liveECG', LiveECGHandler),
-                (r'/liveSIDs', LiveSIDsHandler),
                 (r'/administration', AdministrationHandler),
                 (r'/plot', PlotHandler),
                 (r'/analysis', AnalysisHandler),
                 (r'/point', PointHandler, dict(ds = self.ds)),
-                #(r'/dsp', DSPHandler, dict(ecg = self.ecg)),
                 (r"/fakeSocket", ClientSocket, dict(ds = self.ds)),
                 (r"/login", AuthHandler),
                 (r"/logout", LogOutHandler),
                 (r"/socket", EcoBTWebSocket, dict(globalSockets = self.globalSockets, 
                                               ecoBTApp = self.ecoBTApp)),
-                (r"/config", ConfigHandler, dict(ecoBTApp = self.ecoBTApp)),
                 (r"/sdCard", SDCardPageHandler),
                 (r"/sdCardLoad", SDCardHandler)
             ]
