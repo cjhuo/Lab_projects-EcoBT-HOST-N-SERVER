@@ -11,6 +11,8 @@ import os
 import subprocess
 from datetime import datetime
 import threading
+import multiprocessing
+from functools import partial
 
 from config import *
 from BaseHandler import BaseHandler
@@ -37,7 +39,7 @@ class ECGAllInOneHandler(BaseHandler):
                 wavech.append([self.ecg.wavech[i][j] for j in range(minVal, maxVal)])
             if len(wavech[0]) > arrayLength: # compress it
                 print >> sys.stderr, 'TOO MANY SAMPLES, CAN\'T DRAW DIRECTLY, START COMPRESSING'
-                self.dataSetsCompression(wavech, wavech, arrayLength)
+                dataSetsCompression(wavech, wavech, arrayLength)
                 print >> sys.stderr, 'COMPRESSION COMPLETE, SENDING COMPRESSED DATA FOR DRAWING' 
             pointInterval = (1000/frequency) * int(round(float(len(self.ecg.wavech[0]))/float(arrayLength)))
 
@@ -52,9 +54,9 @@ class ECGAllInOneHandler(BaseHandler):
                 sampleCountToBeSent = len(self.ecg.wavech[0])
                 wavech = self.ecg.wavech          
             '''          
-            sampleCountToBeSent = int(len(self.ecg.wavech[0]) / 2.5) # interval is 10, draw 4 samples in every small block(4px)
+            sampleCountToBeSent = int(len(self.ecg.wavech[0]) / 5) # interval is 10, draw 4 samples in every small block(4px)
             print >> sys.stderr, 'TOO MANY SAMPLES, CAN\'T DRAW DIRECTLY, START COMPRESSING'
-            self.dataSetsCompression(self.ecg.wavech, wavech, sampleCountToBeSent)
+            dataSetsCompression(self.ecg.wavech, wavech, sampleCountToBeSent)
             print >> sys.stderr, 'COMPRESSION COMPLETE, SENDING COMPRESSED DATA FOR DRAWING'   
 
             pointInterval = int((1000/frequency) * float(len(self.ecg.wavech[0]))/float(sampleCountToBeSent))
@@ -140,7 +142,7 @@ class ECGAllInOneHandler(BaseHandler):
             
             #base = self.dataSetsCompression(wavech, arrayLength)
             base = []
-            self.compressList(wavech[0], base, arrayLength)
+            base = compressList(arrayLength, wavech[0])
             print >> sys.stderr, 'COMPRESSION COMPLETE, SENDING COMPRESSED DATA FOR DRAWING'
             pointInterval = (1000/frequency) * int(round(float(len(wavech[0]))/float(arrayLength)))
             tmpWavech = []
@@ -174,25 +176,35 @@ class ECGAllInOneHandler(BaseHandler):
                }
         return val       
     
-    def compressList(self, inputList, outputList, outputLength):
-        step = int(len(inputList)/outputLength)     
-        for i in range(outputLength):
-            tmpSum = 0
-            tmpLen = 0
-            for j in range(i*step, (i+1)*step):
-                if j == len(inputList): # hit the end of the list
-                    break
-                else:
-                    tmpSum += inputList[j]
-                    tmpLen += 1
-            outputList.append(int(tmpSum/tmpLen))
+def compressList(outputLength, inputList):
+    outputList = []
+    step = int(len(inputList)/outputLength)     
+    for i in range(outputLength):
+        tmpSum = 0
+        tmpLen = 0
+        for j in range(i*step, (i+1)*step):
+            if j == len(inputList): # hit the end of the list
+                break
+            else:
+                tmpSum += inputList[j]
+                tmpLen += 1
+        outputList.append(int(tmpSum/tmpLen))
+    return outputList
             
         
-    def dataSetsCompression(self, wavech, output, arrayLength): # compress data into length of arrayLength by averaging
-        for data in wavech:
-            tmpList = []
-            self.compressList(data, tmpList, arrayLength)
-            output.append(tmpList)
+def dataSetsCompression(wavech, output, arrayLength): # compress data into length of arrayLength by averaging
+    paralFunc = partial(compressList, arrayLength)
+    tmpList = multiprocessing.pool.Pool().map(paralFunc, wavech)
+    for l in tmpList:
+        output.append(l)
+    '''
+    for data in wavech:
+        multiprocessing.pool.Pool().map(self.compressList, iterable)
+    for data in wavech:
+        tmpList = []
+        self.compressList(data, tmpList, arrayLength)
+        output.append(tmpList)
+    '''
             
 def checkFileExistInPath(pathName, fileName, fileContent):
     # search locally by the filename, if existed, use it instead of uploading

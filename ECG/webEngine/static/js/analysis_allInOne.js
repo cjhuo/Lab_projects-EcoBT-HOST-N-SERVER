@@ -22,6 +22,7 @@ $(function () {
     var xTickHeight = 20;
     
     var yAxisOptionsTemplate = {
+    		/*
         	lineColor: 'rgb(245, 149, 154)',
         	gridLineColor: 'rgb(245, 149, 154)', 
         	gridLineWidth: 0.5,
@@ -40,6 +41,7 @@ $(function () {
 	        //tickPosition: 'inside',
 	        tickLength: 0,
 	        //tickColor: 'red',
+	        */
         	/*
         	 * title: {
         		text: "AAA"
@@ -332,9 +334,12 @@ $(function () {
         var minDistance = 1000; // 1 second
         if ((e.max - e.min) < minDistance) { //less than minrange
             var min = e.max - minDistance;
-            if(min < Date.UTC(0, 0, 0, 0, 0, 0, 0))
-            	min = Date.UTC(0, 0, 0, 0, 0, 0, 0);
             var max = e.max;
+            if(min < Date.UTC(0, 0, 0, 0, 0, 0, 0)){
+            	min = Date.UTC(0, 0, 0, 0, 0, 0, 0);
+            	max = e.min + 1000;
+            }
+            
             window.setTimeout(function() {
                 xaxis.setExtremes(min, max);
             }, 1);
@@ -830,7 +835,8 @@ $(function () {
                     }
                 }
             },
-            xAxis: {           	
+            xAxis: {           
+            	/*
             	lineColor: 'rgb(245, 149, 154)',
             	gridLineColor: 'rgb(245, 149, 154)',
             	gridLineWidth: 0.5,
@@ -849,7 +855,7 @@ $(function () {
     	        tickPosition: 'inside',
     	        tickLength: 0,
     	        tickColor: 'red',
-    	        
+    	        */
         		dateTimeLabelFormats: {
         			millisecond: '%H:%M:%S',
     	        	second: '%H:%M:%S',
