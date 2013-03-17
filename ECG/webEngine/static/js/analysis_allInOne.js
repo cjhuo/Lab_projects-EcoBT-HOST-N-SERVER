@@ -22,7 +22,7 @@ $(function () {
     var xTickHeight = 20;
     
     var yAxisOptionsTemplate = {
-    		/*
+    		
         	lineColor: 'rgb(245, 149, 154)',
         	gridLineColor: 'rgb(245, 149, 154)', 
         	gridLineWidth: 0.5,
@@ -41,7 +41,7 @@ $(function () {
 	        //tickPosition: 'inside',
 	        tickLength: 0,
 	        //tickColor: 'red',
-	        */
+	        
         	/*
         	 * title: {
         		text: "AAA"
@@ -836,7 +836,7 @@ $(function () {
                 }
             },
             xAxis: {           
-            	/*
+            	
             	lineColor: 'rgb(245, 149, 154)',
             	gridLineColor: 'rgb(245, 149, 154)',
             	gridLineWidth: 0.5,
@@ -855,7 +855,7 @@ $(function () {
     	        tickPosition: 'inside',
     	        tickLength: 0,
     	        tickColor: 'red',
-    	        */
+    	        
         		dateTimeLabelFormats: {
         			millisecond: '%H:%M:%S',
     	        	second: '%H:%M:%S',
