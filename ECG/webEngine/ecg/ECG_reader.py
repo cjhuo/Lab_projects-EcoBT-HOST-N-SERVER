@@ -43,7 +43,7 @@ class ECG_reader():
         
         self.wavech = [
             [
-                (elem<<5)*self.sensitivity*1000 for index, elem in enumerate( wavedata ) if index % self.NumofChannels == channel_number
+                int((elem<<5)*self.sensitivity*1000) for index, elem in enumerate( wavedata ) if index % self.NumofChannels == channel_number
             ] for channel_number in range( self.NumofChannels )
         ]
 

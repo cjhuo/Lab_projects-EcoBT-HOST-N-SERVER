@@ -297,6 +297,19 @@
 					phantom.exit();
 				} else {
 					// check every 50 ms if all images are loaded
+					timer = window.setInterval(function () {
+						if (!window.imagesLoaded) {
+							console.log('loading images...');
+						} else {
+							console.log('done loading images');
+							scaleAndClipPage(svg, pdfOutput);
+							page.render(output);
+							clearInterval(timer);
+							phantom.exit();
+						}
+					}, 50);
+					/*
+					// check every 50 ms if all images are loaded
 					window.setInterval(function () {
 						if (!window.imagesLoaded) {
 							console.log('loading images...');
@@ -311,7 +324,8 @@
 					// we have a 3 second timeframe..
 					timer = window.setTimeout(function () {
 						phantom.exit();
-					}, 3000);
+					}, 30000); //changed to 30 seconds for larger page rendering
+					*/
 				}
 			} catch (e) {
 				console.log(e);

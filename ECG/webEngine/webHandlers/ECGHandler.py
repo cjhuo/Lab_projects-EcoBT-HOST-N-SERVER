@@ -53,12 +53,17 @@ class ECGAllInOneHandler(BaseHandler):
             else: 
                 sampleCountToBeSent = len(self.ecg.wavech[0])
                 wavech = self.ecg.wavech          
-            '''          
-            sampleCountToBeSent = int(len(self.ecg.wavech[0]) / 5) # interval is 10, draw 4 samples in every small block(4px)
+            '''      
+            # interval is 8, frequency 125, draw 5 samples in every small block(4px)
+            # original frequency / lowered frequency === integer 
+            sampleCountToBeSent = int(len(self.ecg.wavech[0]) / 1) # set to 1 to disable down sampling
             print >> sys.stderr, 'TOO MANY SAMPLES, CAN\'T DRAW DIRECTLY, START COMPRESSING'
             dataSetsCompression(self.ecg.wavech, wavech, sampleCountToBeSent)
-            print >> sys.stderr, 'COMPRESSION COMPLETE, SENDING COMPRESSED DATA FOR DRAWING'   
-
+            print >> sys.stderr, 'COMPRESSION COMPLETE, SENDING COMPRESSED DATA FOR DRAWING'  
+            ''' 
+            sampleCountToBeSent = len(self.ecg.wavech[0])
+            wavech = self.ecg.wavech 
+            '''   
             pointInterval = int((1000/frequency) * float(len(self.ecg.wavech[0]))/float(sampleCountToBeSent))
 
         print 'pointInterval: ', pointInterval
@@ -95,15 +100,17 @@ class ECGAllInOneHandler(BaseHandler):
             
     def generateSVG(self, jsonFile):
         convertTool = os.path.join(self.settings['static_path'], 'lib/highstock/highcharts-convert.js')
+        callback = os.path.join(self.settings['static_path'], 'lib/highstock/callback.js')
         jsonFile = os.path.join(self.settings['static_path'], uploadPath, jsonFile)
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        svgFile = os.path.join(self.settings['static_path'], uploadPath, 'svg/chart_'+ timestamp +'.svg')
-        command = "/usr/local/bin/phantomjs %s -infile %s -outfile %s -constr StockChart" % (convertTool, jsonFile, svgFile)
+        svgFile = os.path.join(self.settings['static_path'], uploadPath, 'svg/chart_'+ timestamp +'.png')
+        command = "/usr/local/bin/phantomjs %s -infile %s -outfile %s -scale 1 -constr StockChart" % (convertTool, jsonFile, svgFile)
         rcode = subprocess.call(command, shell=True)
         print rcode
         if rcode == 0:
             #os.system('open "%s"' % os.path.dirname(svgFile))
-            self.write({'url': self.static_url(svgFile)})
+            #self.write({'url': self.static_url(svgFile)})
+            self.write({'url': '/static/' + uploadPath + 'svg/chart_'+ timestamp +'.png'})
             self.finish()
         else:
             self.write({'message': 'file generation failed!'})
@@ -178,33 +185,36 @@ class ECGAllInOneHandler(BaseHandler):
     
 def compressList(outputLength, inputList):
     outputList = []
-    step = int(len(inputList)/outputLength)     
+    step = int(len(inputList)/outputLength)    
     for i in range(outputLength):
+        #tmpSum = -999999 # start with small enough number
         tmpSum = 0
         tmpLen = 0
         for j in range(i*step, (i+1)*step):
-            if j == len(inputList): # hit the end of the list
+            if j >= len(inputList): # hit the end of the list
                 break
             else:
+                #if inputList[j] > tmpSum:
+                #    tmpSum = inputList[j]
                 tmpSum += inputList[j]
                 tmpLen += 1
+        #outputList.append(tmpSum) # pick the max number
         outputList.append(int(tmpSum/tmpLen))
     return outputList
             
         
 def dataSetsCompression(wavech, output, arrayLength): # compress data into length of arrayLength by averaging
+    '''
     paralFunc = partial(compressList, arrayLength)
     tmpList = multiprocessing.pool.Pool().map(paralFunc, wavech)
     for l in tmpList:
         output.append(l)
     '''
     for data in wavech:
-        multiprocessing.pool.Pool().map(self.compressList, iterable)
-    for data in wavech:
         tmpList = []
-        self.compressList(data, tmpList, arrayLength)
+        tmpList = compressList(arrayLength, data)
         output.append(tmpList)
-    '''
+    
             
 def checkFileExistInPath(pathName, fileName, fileContent):
     # search locally by the filename, if existed, use it instead of uploading
@@ -350,5 +360,5 @@ class DSPHandler(BaseHandler):
 '''  
 
 if __name__ == "__main__":
-    print DSPHandler().getDataFromDicomFile()
+    print ECGHandler().getDataFromDicomFile()
        

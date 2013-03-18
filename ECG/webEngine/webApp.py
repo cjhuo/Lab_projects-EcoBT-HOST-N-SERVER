@@ -38,7 +38,8 @@ class Application(tornado.web.Application):
                 (r"/socket", EcoBTWebSocket, dict(globalSockets = self.globalSockets, 
                                               ecoBTApp = self.ecoBTApp)),
                 (r"/sdCard", SDCardPageHandler),
-                (r"/sdCardLoad", SDCardHandler)
+                (r"/sdCardLoad", SDCardHandler),
+                (r"/static/(.*)", tornado.web.StaticFileHandler, {"path": "staic"}),
             ]
 
         settings = dict(
