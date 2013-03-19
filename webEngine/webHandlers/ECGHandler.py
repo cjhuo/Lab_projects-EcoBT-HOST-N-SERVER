@@ -264,15 +264,18 @@ class ECGHandler(BaseHandler):
         data = json.loads(self.get_argument("data"))
         print data
         
-        #format of getBinInfo(): [[min, max, value],[min,max,value],...]
-        bins, info = self.ecg.getBinInfo(data['qPoint'][0], data['tPoint'][0], data['bin'], data['lead']);
-        
-        print bins, info
-        self.write({
-                    'data': bins,
-                    'info': info
-                    #'info': [an array of additional information]
-                    }) #format of bins json: {'data': bins info}
+        try:
+            #format of getBinInfo(): [[min, max, value],[min,max,value],...]
+            bins, info = self.ecg.getBinInfo(data['qPoint'][0], data['tPoint'][0], data['bin'], data['lead']);
+            
+            print bins, info
+            self.write({
+                        'data': bins,
+                        'info': info
+                        #'info': [an array of additional information]
+                        }) #format of bins json: {'data': bins info}
+        except Exception:
+            self.send_error(302)
               
             
     '''           

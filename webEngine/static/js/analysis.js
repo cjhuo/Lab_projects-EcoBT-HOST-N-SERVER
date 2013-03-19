@@ -798,9 +798,10 @@ $(function () {
     }
     
     /* Q/T point selection pop-up window */
+    var popUpDiv;
     function pointPopup(point) { 
     	var pSelection = null;
-    	var popUpDiv = $('<div id="popUpBox"><div>');
+    	popUpDiv = $('<div id="popUpBox"><div>');
     	popUpDiv.html('<p>Please choose the type for the point: </p>');
     	popUpDiv.dialog({
     		position: {
@@ -815,12 +816,14 @@ $(function () {
                 "Q Point": function() {
                 	pSelection = 1;
                 	makeSelection(point, pSelection);
-                    $( this ).dialog( "close" );
+                    $( this ).dialog( "destroy" );
+                    popUpDiv.remove();
                 },
                 "T Point": function() {
                 	pSelection = 0;
                 	makeSelection(point, pSelection);
-                    $( this ).dialog( "close" );
+                    $( this ).dialog( "destroy" );
+                    popUpDiv.remove();
                 }
             }
         }).css({
@@ -829,7 +832,7 @@ $(function () {
     	$('.ui-button').css({
     		fontSize: 'small'
     	});
-    	return pSelection;
+    	//return pSelection;
     }
     
     function makeBinChooser(){
@@ -916,7 +919,22 @@ $(function () {
 			beforeSend: showSpinner,
 			complete: hideSpinner,
 			success: onBinDataReceived,
-			error: function() {alert("ECG module Error!! (mostly because invalid Q/T input)");}
+			error: function() {
+				alert("ECG module Error!! (mostly because invalid Q/T input)");
+		    	if(tableDom != null){
+		    		dTable.fnDestroy();
+		        	tableDom.remove();
+		        	tableDom = null;
+		    	}
+		    	if(histogram != null){
+		    		histogram.remove();
+		    		histogram = null;
+		    	}
+		    	if(hPlot != null){
+		    		hPlot.destroy();
+		    		hPlot = null;
+		    	}
+			}
 		});
     }
        
