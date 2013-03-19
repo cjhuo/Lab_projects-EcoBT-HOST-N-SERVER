@@ -56,7 +56,7 @@ class ECGAllInOneHandler(BaseHandler):
             '''      
             # interval is 8, frequency 125, draw 5 samples in every small block(4px)
             # original frequency / lowered frequency === integer 
-            sampleCountToBeSent = int(len(self.ecg.wavech[0]) / 1) # set to 1 to disable down sampling
+            sampleCountToBeSent = int(len(self.ecg.wavech[0]) / 2) # set to 1 to disable down sampling
             print >> sys.stderr, 'TOO MANY SAMPLES, CAN\'T DRAW DIRECTLY, START COMPRESSING'
             dataSetsCompression(self.ecg.wavech, wavech, sampleCountToBeSent)
             print >> sys.stderr, 'COMPRESSION COMPLETE, SENDING COMPRESSED DATA FOR DRAWING'  
