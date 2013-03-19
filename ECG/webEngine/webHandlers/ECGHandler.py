@@ -110,7 +110,7 @@ class ECGAllInOneHandler(BaseHandler):
         if rcode == 0:
             #os.system('open "%s"' % os.path.dirname(svgFile))
             #self.write({'url': self.static_url(svgFile)})
-            self.write({'url': '/static/' + uploadPath + 'svg/chart_'+ timestamp +'.png'})
+            self.write({'url': uploadPath + 'svg/chart_'+ timestamp +'.png'})
             self.finish()
         else:
             self.write({'message': 'file generation failed!'})

@@ -3,7 +3,7 @@ import scipy
 import scipy.stats
 import numpy
 
-threshold = 0.6
+threshold = 0.7
 tempsize = 50
 
 def get_step_size( template ):
@@ -32,12 +32,14 @@ def get_matched_template_index( original_data, template, step_size ):
 
     maxcorr  = -1
     candidatelist = []
-
+    temp = -1
     reshapedtemp = template.reshape(1,tempsize*12)[0].tolist()
 
     for i in range( 0, original_data.shape[1] - tempsize, step_size ) :
         reshapeddata = original_data[:, i:i + tempsize].reshape(1,12*tempsize)[0].tolist()
         crosscorr = scipy.stats.pearsonr( reshapedtemp, reshapeddata )[0]
+        if temp<crosscorr :
+            temp = crosscorr
         if crosscorr > threshold :
             candidatelist.append(i)
 
@@ -56,9 +58,15 @@ def get_matched_template_index( original_data, template, step_size ):
     return maxindex
 
 def get_templateParam( searchingpoint, originaldata ):
-    template, offset = get_template_and_offset( originaldata, searchingpoint )
+
+    print('Making template and calculate template parameters from selected point...')
+
+    template, offset = get_template_and_offset(originaldata, searchingpoint)
     step_size  = get_step_size( template )
     new_offset = offset + ( tempsize / 2 )
+
+    print('Completed to calculate template parameters...')
+
     return template, new_offset, step_size
 
 def get_correlation( selectionMode, offset, template, step_size, peakdata, originaldata, index):
@@ -82,8 +90,8 @@ def get_original_chunk( selectionMode, peakpoint, RtoR, originaldata ):
         startpoint = peakpoint - ( ( RtoR + tempsize/2 ) / 2 )
         endpoint   = peakpoint + tempsize/2
     elif selectionMode == 'T' :
-        startpoint = peakpoint - tempsize/2
-        endpoint   = peakpoint + ( ( RtoR + tempsize/2 ) / 2 )
+        startpoint = max(0, peakpoint - tempsize/2)
+        endpoint   = peakpoint + ( 2*RtoR/3) + tempsize
 
     return originaldata[:, startpoint:endpoint]
 

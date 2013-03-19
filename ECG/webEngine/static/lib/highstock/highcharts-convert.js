@@ -296,6 +296,7 @@
 					svgFile.close();
 					phantom.exit();
 				} else {
+					//convert to other format
 					// check every 50 ms if all images are loaded
 					timer = window.setInterval(function () {
 						if (!window.imagesLoaded) {
@@ -359,10 +360,11 @@
 							width: svgElem.getAttribute("width"),
 							height: svgElem.getAttribute("height")
 						};
-					}, pdfOutput);
-
+					}, pdfOutput);				
 					scaleAndClipPage(svg, pdfOutput);
-					page.render(output);
+					
+					var t = page.render(output);
+					console.log(t);
 					phantom.exit();
 				}
 			});

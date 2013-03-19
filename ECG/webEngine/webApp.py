@@ -21,6 +21,16 @@ class Application(tornado.web.Application):
         self.globalSockets = Sockets()
         self.ecoBTApp = ecoBTApp
         
+        settings = dict(
+            template_path=os.path.join(
+                os.path.dirname(__file__), "templates"),
+            static_path=os.path.join(
+                os.path.dirname(__file__), "static"),
+            debug=True,
+            cookie_secret="BlaBlaBlaBlaBlaBlaBlaBlaBlaBlaBlaBlaBla",
+            login_url="/login",        
+        )        
+        
         self.handlers = [
                 (r'/', MainHandler),          
                 (r'/ecgHandler', ECGHandler, dict(ecg = self.ecg)),
@@ -39,16 +49,7 @@ class Application(tornado.web.Application):
                                               ecoBTApp = self.ecoBTApp)),
                 (r"/sdCard", SDCardPageHandler),
                 (r"/sdCardLoad", SDCardHandler),
-                (r"/static/(.*)", tornado.web.StaticFileHandler, {"path": "staic"}),
+                (r"/Uploads/(.*)", tornado.web.StaticFileHandler, {"path": settings['static_path'] + '/Uploads'}),
             ]
 
-        settings = dict(
-            template_path=os.path.join(
-                os.path.dirname(__file__), "templates"),
-            static_path=os.path.join(
-                os.path.dirname(__file__), "static"),
-            debug=True,
-            cookie_secret="BlaBlaBlaBlaBlaBlaBlaBlaBlaBlaBlaBlaBla",
-            login_url="/login",        
-        )
         tornado.web.Application.__init__(self, self.handlers, **settings)

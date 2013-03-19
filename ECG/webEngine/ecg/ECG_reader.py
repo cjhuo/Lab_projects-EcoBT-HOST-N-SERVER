@@ -6,6 +6,8 @@ import CAPS
 import Qtc
 import Histogram
 import numpy
+import Filterbank
+
 from dicom.tag import Tag
 import multiprocessing
 from functools import partial
@@ -52,6 +54,9 @@ class ECG_reader():
         print('sampling rate is: ', self.samplingrate)
         
         info = {'samplingrate':self.samplingrate,'name':self.name}
+        #Filter is on.
+        self.wavech = Filterbank.FilterAllChannel(12,5,self.samplingrate, self.wavech)
+
         self.ecg = ECG.Ecg(self.wavech,info)
         
     def getTestData(self):
@@ -68,39 +73,66 @@ class ECG_reader():
     
     def getBinInfo(self, qpoint, tpoint, bin=10, channelNo = 2) :
         ErrorCode = 0
+        Qtcs = []
+        AvgHR = 0
+        LongQTc = 0
+        ShortQTc = 0
+        NumofHR = 0
+        PercentOverQTc = []
+        RangeRR = []
 
-        self.peakdata = self.ecg.qrsDetect(0)
+        self.peakdata = self.ecg.qrsDetect(1)
         from datetime import datetime
         s1=datetime.now()
 
+#        self.wavech = Filterbank.FilterAllChannel(12, 5, self.samplingrate, self.wavech)
         Wavedata = numpy.array(self.wavech)
 
         # ECG R peak detection
         index_rangeQ = range( 1, len( self.peakdata ) - 1 )
         index_rangeT = range( 0, len( self.peakdata ) - 1 )
 
-        # Searching similar point from manually selected Q point
-        template, offset, stepsize = CAPS.get_templateParam(qpoint, Wavedata)
+        nRangeQ = self.findrange(self.peakdata, qpoint)
+        nRangeT = self.findrange(self.peakdata, tpoint)
 
-        SearchingQ = partial( CAPS.get_correlation, 'Q', offset, template, stepsize, self.peakdata, Wavedata )
-        Qpoint = multiprocessing.pool.Pool().map( SearchingQ, index_rangeQ )
-    
-        # Searching similar point from manually selected T point
-        template, offset, stepsize = CAPS.get_templateParam(tpoint, Wavedata)
+        if ((nRangeQ[0] + (nRangeQ[1]-nRangeQ[0]) / 2) < qpoint < nRangeQ[1]) & ((nRangeT[0] < tpoint < nRangeT[1] - ((nRangeT[1]-nRangeT[0]) / 3))) :
 
-        SearchingT = partial( CAPS.get_correlation, 'T', offset, template, stepsize,  self.peakdata, Wavedata )
-        Tpoint = multiprocessing.pool.Pool().map( SearchingT, index_rangeT )
-    
-        # Calculate the Qtc value
-        Qtcs, AvgHR, LongQTc, ShortQTc, NumofHR, PercentOverQTc, RangeRR = Qtc.CalculateQtc(self.peakdata, Qpoint, Tpoint, int(self.samplingrate))
+            # Searching similar point from manually selected Q point
+            template, offset, stepsize = CAPS.get_templateParam(qpoint, Wavedata)
 
-        # Make histogram
-        histo = Histogram.histo(Qtcs,bin)
-        histodata = histo.Histogram(Qtcs, bin)
-    
-        s2=datetime.now()
-        print(histodata)
-        print(s2-s1)
+            SearchingQ = partial( CAPS.get_correlation, 'Q', offset, template, stepsize, self.peakdata, Wavedata )
+            Qpoint = multiprocessing.pool.Pool().map( SearchingQ, index_rangeQ )
+
+            # Searching similar point from manually selected T point
+            template, offset, stepsize = CAPS.get_templateParam(tpoint, Wavedata)
+
+            SearchingT = partial( CAPS.get_correlation, 'T', offset, template, stepsize,  self.peakdata, Wavedata )
+            Tpoint = multiprocessing.pool.Pool().map( SearchingT, index_rangeT )
+
+            # Calculate the Qtc value
+            Qtcs, AvgHR, LongQTc, ShortQTc, NumofHR, PercentOverQTc, RangeRR = Qtc.CalculateQtc(self.peakdata, Qpoint, Tpoint, int(self.samplingrate))
+
+            # Make histogram
+            histo = Histogram.histo(Qtcs,bin)
+            histodata = histo.Histogram(Qtcs, bin)
+
+            s2=datetime.now()
+            print(histodata)
+            print(s2-s1)
+        else :
+            ErrorCode ='-1'
+            raise ErrorCode
 
         return histodata, [AvgHR, str(RangeRR[0]) + '~' + str(RangeRR[1]), NumofHR, LongQTc, ShortQTc, PercentOverQTc]#, ErrorCode
 
+    def findrange(self, peaklist, value) :
+
+        iList = numpy.array(peaklist)
+        idx = numpy.abs(iList-value).argmin()
+
+        if ((iList[idx]-value) > 0)&(idx>0) :
+            return iList[idx-1], iList[idx], 0
+        elif iList[idx]-value<0 :
+            return iList[idx], iList[idx+1], 0
+        else :
+            return 0, 0, -1
