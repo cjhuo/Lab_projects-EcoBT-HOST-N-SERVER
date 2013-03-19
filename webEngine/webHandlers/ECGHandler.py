@@ -11,6 +11,8 @@ import os
 import subprocess
 from datetime import datetime
 import threading
+import multiprocessing
+from functools import partial
 
 from config import *
 from BaseHandler import BaseHandler
@@ -37,7 +39,7 @@ class ECGAllInOneHandler(BaseHandler):
                 wavech.append([self.ecg.wavech[i][j] for j in range(minVal, maxVal)])
             if len(wavech[0]) > arrayLength: # compress it
                 print >> sys.stderr, 'TOO MANY SAMPLES, CAN\'T DRAW DIRECTLY, START COMPRESSING'
-                self.dataSetsCompression(wavech, wavech, arrayLength)
+                dataSetsCompression(wavech, wavech, arrayLength)
                 print >> sys.stderr, 'COMPRESSION COMPLETE, SENDING COMPRESSED DATA FOR DRAWING' 
             pointInterval = (1000/frequency) * int(round(float(len(self.ecg.wavech[0]))/float(arrayLength)))
 
@@ -51,12 +53,17 @@ class ECGAllInOneHandler(BaseHandler):
             else: 
                 sampleCountToBeSent = len(self.ecg.wavech[0])
                 wavech = self.ecg.wavech          
-            '''          
-            sampleCountToBeSent = int(len(self.ecg.wavech[0]) / 2.5) # interval is 10, draw 4 samples in every small block(4px)
+            '''      
+            # interval is 8, frequency 125, draw 5 samples in every small block(4px)
+            # original frequency / lowered frequency === integer 
+            sampleCountToBeSent = int(len(self.ecg.wavech[0]) / 1) # set to 1 to disable down sampling
             print >> sys.stderr, 'TOO MANY SAMPLES, CAN\'T DRAW DIRECTLY, START COMPRESSING'
-            self.dataSetsCompression(self.ecg.wavech, wavech, sampleCountToBeSent)
-            print >> sys.stderr, 'COMPRESSION COMPLETE, SENDING COMPRESSED DATA FOR DRAWING'   
-
+            dataSetsCompression(self.ecg.wavech, wavech, sampleCountToBeSent)
+            print >> sys.stderr, 'COMPRESSION COMPLETE, SENDING COMPRESSED DATA FOR DRAWING'  
+            ''' 
+            sampleCountToBeSent = len(self.ecg.wavech[0])
+            wavech = self.ecg.wavech 
+            '''   
             pointInterval = int((1000/frequency) * float(len(self.ecg.wavech[0]))/float(sampleCountToBeSent))
 
         print 'pointInterval: ', pointInterval
@@ -93,15 +100,17 @@ class ECGAllInOneHandler(BaseHandler):
             
     def generateSVG(self, jsonFile):
         convertTool = os.path.join(self.settings['static_path'], 'lib/highstock/highcharts-convert.js')
+        callback = os.path.join(self.settings['static_path'], 'lib/highstock/callback.js')
         jsonFile = os.path.join(self.settings['static_path'], uploadPath, jsonFile)
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        svgFile = os.path.join(self.settings['static_path'], uploadPath, 'svg/chart_'+ timestamp +'.svg')
-        command = "/usr/local/bin/phantomjs %s -infile %s -outfile %s -constr StockChart" % (convertTool, jsonFile, svgFile)
+        svgFile = os.path.join(self.settings['static_path'], uploadPath, 'svg/chart_'+ timestamp +'.png')
+        command = "/usr/local/bin/phantomjs %s -infile %s -outfile %s -scale 1 -constr StockChart" % (convertTool, jsonFile, svgFile)
         rcode = subprocess.call(command, shell=True)
         print rcode
         if rcode == 0:
             #os.system('open "%s"' % os.path.dirname(svgFile))
-            self.write({'url': self.static_url(svgFile)})
+            #self.write({'url': self.static_url(svgFile)})
+            self.write({'url': uploadPath + 'svg/chart_'+ timestamp +'.png'})
             self.finish()
         else:
             self.write({'message': 'file generation failed!'})
@@ -124,8 +133,9 @@ class ECGAllInOneHandler(BaseHandler):
                 print >> sys.stderr, 'FINISH READING ECG DATA IN ECG MODULE..' 
             val = self.getDataFromDicomFile()
             self.write(val)
-        except:
+        except Exception as e:
             self.send_error(302) # 302: invalid file
+            print e
             
     def getDataFromDicomFile(self):
         #wavech, peaks = ecg.ECG_reader.getTestData()
@@ -139,7 +149,7 @@ class ECGAllInOneHandler(BaseHandler):
             
             #base = self.dataSetsCompression(wavech, arrayLength)
             base = []
-            self.compressList(wavech[0], base, arrayLength)
+            base = compressList(arrayLength, wavech[0])
             print >> sys.stderr, 'COMPRESSION COMPLETE, SENDING COMPRESSED DATA FOR DRAWING'
             pointInterval = (1000/frequency) * int(round(float(len(wavech[0]))/float(arrayLength)))
             tmpWavech = []
@@ -173,25 +183,38 @@ class ECGAllInOneHandler(BaseHandler):
                }
         return val       
     
-    def compressList(self, inputList, outputList, outputLength):
-        step = int(len(inputList)/outputLength)     
-        for i in range(outputLength):
-            tmpSum = 0
-            tmpLen = 0
-            for j in range(i*step, (i+1)*step):
-                if j == len(inputList): # hit the end of the list
-                    break
-                else:
-                    tmpSum += inputList[j]
-                    tmpLen += 1
-            outputList.append(int(tmpSum/tmpLen))
+def compressList(outputLength, inputList):
+    outputList = []
+    step = int(len(inputList)/outputLength)    
+    for i in range(outputLength):
+        #tmpSum = -999999 # start with small enough number
+        tmpSum = 0
+        tmpLen = 0
+        for j in range(i*step, (i+1)*step):
+            if j >= len(inputList): # hit the end of the list
+                break
+            else:
+                #if inputList[j] > tmpSum:
+                #    tmpSum = inputList[j]
+                tmpSum += inputList[j]
+                tmpLen += 1
+        #outputList.append(tmpSum) # pick the max number
+        outputList.append(int(tmpSum/tmpLen))
+    return outputList
             
         
-    def dataSetsCompression(self, wavech, output, arrayLength): # compress data into length of arrayLength by averaging
-        for data in wavech:
-            tmpList = []
-            self.compressList(data, tmpList, arrayLength)
-            output.append(tmpList)
+def dataSetsCompression(wavech, output, arrayLength): # compress data into length of arrayLength by averaging
+    '''
+    paralFunc = partial(compressList, arrayLength)
+    tmpList = multiprocessing.pool.Pool().map(paralFunc, wavech)
+    for l in tmpList:
+        output.append(l)
+    '''
+    for data in wavech:
+        tmpList = []
+        tmpList = compressList(arrayLength, data)
+        output.append(tmpList)
+    
             
 def checkFileExistInPath(pathName, fileName, fileContent):
     # search locally by the filename, if existed, use it instead of uploading
@@ -337,5 +360,5 @@ class DSPHandler(BaseHandler):
 '''  
 
 if __name__ == "__main__":
-    print DSPHandler().getDataFromDicomFile()
+    print ECGHandler().getDataFromDicomFile()
        

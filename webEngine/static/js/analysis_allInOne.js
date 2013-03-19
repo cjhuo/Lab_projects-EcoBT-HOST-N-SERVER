@@ -22,6 +22,7 @@ $(function () {
     var xTickHeight = 20;
     
     var yAxisOptionsTemplate = {
+    		
         	lineColor: 'rgb(245, 149, 154)',
         	gridLineColor: 'rgb(245, 149, 154)', 
         	gridLineWidth: 0.5,
@@ -40,6 +41,7 @@ $(function () {
 	        //tickPosition: 'inside',
 	        tickLength: 0,
 	        //tickColor: 'red',
+	        
         	/*
         	 * title: {
         		text: "AAA"
@@ -63,7 +65,7 @@ $(function () {
                 type: 'line',
                 zoomType: 'x',
                 alignTicks: false,
-                marginRight: 50
+                marginRight: 50,
             },
             credits: {
             	href: "http://cps.eng.uci.edu:8000/analysis",
@@ -223,7 +225,7 @@ $(function () {
                     	}
                     },
                     shadow: false,
-                    enableMouseTracking: false,
+                    enableMouseTracking: true,
                     /*
                     point: {
                         events: {
@@ -332,9 +334,12 @@ $(function () {
         var minDistance = 1000; // 1 second
         if ((e.max - e.min) < minDistance) { //less than minrange
             var min = e.max - minDistance;
-            if(min < Date.UTC(0, 0, 0, 0, 0, 0, 0))
-            	min = Date.UTC(0, 0, 0, 0, 0, 0, 0);
             var max = e.max;
+            if(min < Date.UTC(0, 0, 0, 0, 0, 0, 0)){
+            	min = Date.UTC(0, 0, 0, 0, 0, 0, 0);
+            	max = e.min + 1000;
+            }
+            
             window.setTimeout(function() {
                 xaxis.setExtremes(min, max);
             }, 1);
@@ -797,8 +802,13 @@ $(function () {
     var largeChartOptions = {
             chart: {
                 alignTicks: false,
-                marginRight: 50
-            },
+                marginRight: 50,
+                //backgroundColor: "transparent",
+                //plotBackgroundImage: "/static/Uploads/svg/chart1_20130316223730.png",
+                //spacingLeft: 0,
+                //spacingRight: 0
+
+            },            
             credits: {
             	href: "http://cps.eng.uci.edu:8000/analysis",
             	text: "UCI Embedded Lab",
@@ -830,7 +840,8 @@ $(function () {
                     }
                 }
             },
-            xAxis: {           	
+            xAxis: {           
+            	
             	lineColor: 'rgb(245, 149, 154)',
             	gridLineColor: 'rgb(245, 149, 154)',
             	gridLineWidth: 0.5,
@@ -873,15 +884,50 @@ $(function () {
             yAxis: [],
             series: []
     };
+    
+    var lyAxisOptionsTemplate = {
+    		
+        	lineColor: 'rgb(245, 149, 154)',
+        	gridLineColor: 'rgb(245, 149, 154)', 
+        	gridLineWidth: 0.5,
+        	minorGridLineColor: 'rgb(245, 149, 154)',
+        	minorGridLineWidth: 0.2,
+        	
+        	minorTickInterval: yGridInterval/5,
+	        //minorTickWidth: 2,
+	        minorTickLength: 0,
+	        //minorTickPosition: 'inside',
+	        //minorTickColor: 'red',
+	
+	        //tickPixelInterval: 30,
+	        tickInterval: yGridInterval,
+	        //tickWidth: 2,
+	        //tickPosition: 'inside',
+	        tickLength: 0,
+	        //tickColor: 'red',
+	        
+        	/*
+        	 * title: {
+        		text: "AAA"
+        	},
+        	*/
+    		//gridLineWidth: 0,
+        	labels: {
+        		enabled: false,
+        		align: 'right'
+        	},
+        	offset: 0,
+        	//height: yAxisHeight,
+        };
     function constructChartOptionsForOutput(){
     	//largeChartOptions = $.extend(true, {}, chartOptions);
         var yTop = 40; // top padding
         largeChartOptions.series = [];
         largeChartOptions.yAxis = [];
         //loop to fill in yAxis and data series
-        var diagramHeight = 65 //calculate the diagram height!!!!!65 is the top padding of chart,
+        var diagramHeight = 40; //calculate the diagram height!!!!!65 is the top padding of chart,
         for(var i=0; i<datasets.length;i++) {
-        	var yAxisOptions = $.extend(true, {}, yAxisOptionsTemplate); //!!!deep copy JSON object
+        	var yAxisOptions = $.extend(true, {}, lyAxisOptionsTemplate); //!!!deep copy JSON object
         	yAxisOptions.title = {
         			text: datasets[i].label,
         			align: 'high',
@@ -906,7 +952,7 @@ $(function () {
                 pointInterval: pointInterval //1000/frequency // 5 millisecond<--wrong! should be 1000/frequency. in this case 1000/250 = 4
         	});
         }        
-		diagramHeight += 4; //4 is bottom padding
+		diagramHeight += 29; //29 is bottom padding
 		var chartWidth = datasets[0].data.length * pointInterval * xTickHeight / xGridInterval;
 	    largeChartOptions.chart.width = chartWidth;
 	    largeChartOptions.chart.height = diagramHeight;

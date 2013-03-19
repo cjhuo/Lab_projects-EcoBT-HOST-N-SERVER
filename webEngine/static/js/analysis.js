@@ -916,7 +916,7 @@ $(function () {
 			beforeSend: showSpinner,
 			complete: hideSpinner,
 			success: onBinDataReceived,
-			error: function() {alert("ECG module Error!!");}
+			error: function() {alert("ECG module Error!! (mostly because invalid Q/T input)");}
 		});
     }
        

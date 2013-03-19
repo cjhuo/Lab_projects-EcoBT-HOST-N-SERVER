@@ -55,16 +55,6 @@ class AnalysisAllInOnceHandler(BaseHandler):
             footer_text="",
             frequency = frequency
         )
-    
-class ECGPlotLarge(BaseHandler):
-    def get(self):
-        self.render(
-            "analysis_plotLarge.html",
-            page_title="",
-            header_text="",
-            footer_text="",
-            frequency = frequency
-        )
         
 class AnalysisOldHandler(BaseHandler):
     def get(self):
@@ -74,16 +64,7 @@ class AnalysisOldHandler(BaseHandler):
             header_text="ECG Analysis Viewer",
             footer_text="",
         )
-        
-class TempAnalysisHandler(BaseHandler):
-    def get(self):
-        self.render(
-            "tempAnalysis.html",
-            page_title="TempAnalysis Viewer",
-            header_text="TempAnalysis Viewer",
-            footer_text="",
-        ) 
-        
+                
 class CardReaderHandler(BaseHandler):
     def get(self):
         self.render(
@@ -93,15 +74,7 @@ class CardReaderHandler(BaseHandler):
             footer_text="",
         )        
         
-class SoundMonitorHandler(BaseHandler):
-    def get(self):
-        self.render(
-            "soundMonitor.html",
-            page_title="Sound Viewer",
-            header_text="Sound Viewer",
-            footer_text="",
-        )     
-        
+       
 # live page rendering handlers
 class PlotHandler(BaseHandler):
     def get(self):
@@ -118,36 +91,6 @@ class PlotHandler(BaseHandler):
             nodeName = name,
         )
         
-class OrientationHandler(BaseHandler):
-    def get(self):
-        try:
-            name = self.get_argument("name") # node's name, e.g., MAC addres
-        except Exception:
-            name = None
-        self.render(
-            "live/orientation.html",
-            page_title="Orientation Viewer",
-            header_text="Orientation Viewer",
-            footer_text="",
-            serverAddr = orientationServerAddr,
-            nodeName = name,
-        )
-        
-class TemperatureHandler(BaseHandler):
-    def get(self):
-        try:
-            name = self.get_argument("name") # node's name, e.g., MAC addres
-        except Exception:
-            name = None        
-        self.render(
-            "live/temperature.html",
-            page_title="Temperature Viewer",
-            header_text="Temperature Viewer",
-            footer_text="",
-            serverAddr = temperatureServerAddr,
-            nodeName = name,
-        )  
-        
 class LiveECGHandler(BaseHandler):
     def get(self):  
         try:
@@ -160,21 +103,6 @@ class LiveECGHandler(BaseHandler):
             header_text="Live ECG Viewer",
             footer_text="",
             serverAddr = LiveECGServerAddr,
-            nodeName = name,
-        )  
-
-class LiveSIDsHandler(BaseHandler):
-    def get(self):  
-        try:
-            name = self.get_argument("name") # node's name, e.g., MAC addres
-        except Exception:
-            name = None   
-        self.render(
-            "live/sids.html",
-            page_title="Live SIDs Viewer",
-            header_text="Live SIDs Viewer",
-            footer_text="",
-            serverAddr = LiveSIDsServerAddr,
             nodeName = name,
         )  
 

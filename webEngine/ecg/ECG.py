@@ -107,6 +107,8 @@ class Ecg() :
 
     def peakDetect(self, ecg):
 
+        print('Finding R peak...')
+
         all_peaks = [i for i in range(1,len(ecg)-1)
                      if ecg[i-1] < ecg[i] > ecg[i+1]]
         peak_amplitudes = [ecg[peak] for peak in all_peaks]
@@ -131,6 +133,8 @@ class Ecg() :
 
             else:
                 pass
+
+        print('Completed to find R peaks..')
 
         return final_peaks
 

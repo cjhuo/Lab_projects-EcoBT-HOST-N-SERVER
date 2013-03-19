@@ -296,6 +296,20 @@
 					svgFile.close();
 					phantom.exit();
 				} else {
+					//convert to other format
+					// check every 50 ms if all images are loaded
+					timer = window.setInterval(function () {
+						if (!window.imagesLoaded) {
+							console.log('loading images...');
+						} else {
+							console.log('done loading images');
+							scaleAndClipPage(svg, pdfOutput);
+							page.render(output);
+							clearInterval(timer);
+							phantom.exit();
+						}
+					}, 50);
+					/*
 					// check every 50 ms if all images are loaded
 					window.setInterval(function () {
 						if (!window.imagesLoaded) {
@@ -311,7 +325,8 @@
 					// we have a 3 second timeframe..
 					timer = window.setTimeout(function () {
 						phantom.exit();
-					}, 3000);
+					}, 30000); //changed to 30 seconds for larger page rendering
+					*/
 				}
 			} catch (e) {
 				console.log(e);
@@ -345,10 +360,11 @@
 							width: svgElem.getAttribute("width"),
 							height: svgElem.getAttribute("height")
 						};
-					}, pdfOutput);
-
+					}, pdfOutput);				
 					scaleAndClipPage(svg, pdfOutput);
-					page.render(output);
+					
+					var t = page.render(output);
+					console.log(t);
 					phantom.exit();
 				}
 			});

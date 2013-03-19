@@ -10,35 +10,23 @@ import numpy
 
 def CalculateQtc(peakdata, Qpoint, Tpoint, samplingrate) :
     QTc = []
+    RR  = []
+
+#    DebugData = []
 
     Validated = ValidateData(peakdata, Qpoint, Tpoint)
 
-#    if peakdata[1]<Tpoint[0]<Qpoint[0] :
-#        newPeakdata = peakdata[1:]
-#        newTpoint = Tpoint[1:]
-#        newQpoint = Qpoint
-
-#    elif Tpoint[0]<Qpoint[0]<peakdata[1] :
-#        newPeakdata = peakdata
-#        newTpoint = Tpoint[1:]
-#        newQpoint = Qpoint
-#    else :
-#        newPeakdata = peakdata
-#        newTpoint = Tpoint
-#        newQpoint = Qpoint
-
-#    endpoint = min(len(newPeakdata)-2, len(newTpoint)+1, len(newQpoint)+1)
-
-#    for i in range(1,endpoint) :
-#        RR = float((newPeakdata[i] - newPeakdata[i-1]))/samplingrate
-#        QT = float((newTpoint[i-1] - newQpoint[i-1]))/samplingrate
-#        Qtc.append(float(QT/math.sqrt(RR)))
-
-    RR = []
-
     for i in range(0,len(Validated)) :
-        RR.append(float(Validated[i][1] - Validated[i][0])/samplingrate)
-        QTc.append((float(Validated[i][3]-Validated[i][2])/math.sqrt(RR[i]))/samplingrate)
+        IntervalRR = float(Validated[i][1] - Validated[i][0])/samplingrate
+        IntervalQTc = (float(Validated[i][3]-Validated[i][2])/math.sqrt(IntervalRR))/samplingrate
+
+        if (IntervalRR>0.33)&(IntervalRR<1.00) :
+            if (IntervalQTc>0.3)&(IntervalQTc<0.6) :
+                RR.append(IntervalRR)
+                QTc.append(IntervalQTc)
+#        if ((RR[i]>0.75)|(RR[i]<0.33))&((QTc[i]>0.6)|(QTc[i]<0.3)) :
+#        if RR[i]>0.85:
+#            DebugData.append(Validated[i])
 
     AvgHR = round( float(60) / numpy.mean(RR), 2 )
     LongQTc = round( max(QTc), 2 )
@@ -54,7 +42,7 @@ def ValidateData(peakdata, Qpoint, Tpoint) :
     validatedataset = list()
     for i in range(1,len(Tpoint)) :
         temp = []
-        if (Qpoint[i-1] != -1) and (Tpoint[i-1]!=-1) and (Tpoint[i] != -1) :
+        if (Qpoint[i-1] != -1) & (Tpoint[i-1]!=-1) & (Tpoint[i] != -1) :
             temp.append(peakdata[i-1])
             temp.append(peakdata[i])
             temp.append(Qpoint[i-1])
