@@ -388,7 +388,7 @@ $(function () {
 	        },
 	        credits: {
 	        	href: "http://cps.eng.uci.edu",
-	        	text: "UCI Embedded System Lab UI"
+	        	text: "UCI Embedded System Lab"
 	        },
 	        
 	        title:{
@@ -467,7 +467,7 @@ $(function () {
 	        },
 	        credits: {
 	        	href: "http://cps.eng.uci.edu",
-	        	text: "UCI Embedded System Lab UI"
+	        	text: "UCI Embedded System Lab"
 	        },
 	        
 	        title:{
