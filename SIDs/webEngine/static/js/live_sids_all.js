@@ -60,7 +60,24 @@ $(function () {
 		initChart();
 		initTemperatureChart();
 		initHumidityChart();
+		initSoundMonitor();
 		
+	}
+	
+	function initSoundMonitor(){
+		
+		var player = $('<div><audio autoplay="autoplay" \
+				src="http://cps.eng.uci.edu:8888/test.mp3" \
+				controls="controls" /></div>').css({
+				position: 'relative',
+				display: 'table',
+				top: '40%',
+			    margin: 'auto'
+				});
+		$('#sound').append(player);
+		
+
+		//$('audio,video').mediaelementplayer();
 	}
 	
 	function initLayout(){
