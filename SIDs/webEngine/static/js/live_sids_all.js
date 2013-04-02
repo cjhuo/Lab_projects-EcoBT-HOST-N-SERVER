@@ -1,6 +1,7 @@
 $(function () {
 	var url = $('#serverAddr').text(); 	//push url, need to change this to server's url, 
 	var name =  $('#name').text();
+	var soundUrl = $('#soundServerAddr').text();;
 		
     var datasets; //store datasets
 	function onDataReceived(data) { //setup plot after retrieving data
@@ -67,7 +68,7 @@ $(function () {
 	function initSoundMonitor(){
 		
 		var player = $('<div><audio autoplay="autoplay" \
-				src="http://cps.eng.uci.edu:8888/test.mp3" \
+				src='+ soundUrl +' \
 				controls="controls" /></div>').css({
 				position: 'relative',
 				display: 'table',
@@ -470,7 +471,7 @@ $(function () {
 	        },
 	        
 	        title:{
-	            text: 'Humidity Monitor'
+	            text: 'CO2 Density Monitor'
 	        },
 	        
 	        pane: {

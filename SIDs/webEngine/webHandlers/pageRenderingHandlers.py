@@ -108,6 +108,7 @@ class SIDsAllHandler(BaseHandler):
             header_text="Live SIDs Viewer",
             footer_text="",
             serverAddr = LiveSIDsServerAddr,
+            soundServerAddr = soundServerAddr,
             nodeName = name,
         )  
 
