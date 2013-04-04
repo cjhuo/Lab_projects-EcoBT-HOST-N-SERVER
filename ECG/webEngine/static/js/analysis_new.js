@@ -242,7 +242,6 @@ $(function () {
         });
     	diagram.appendTo("body");
     }
-
     
     function addChoices() {
         var i = 1;
