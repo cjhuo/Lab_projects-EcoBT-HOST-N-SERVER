@@ -12,20 +12,20 @@ from BaseHandler import BaseHandler
 
 # static page rendering handlers
 class MainHandler(BaseHandler):
-    @tornado.web.authenticated
+    #@tornado.web.authenticated
     def get(self):
         '''
         if not self.current_user:
             self.redirect("/login")
             return
         '''
-        username = tornado.escape.xhtml_escape(self.current_user["name"])
+        #username = tornado.escape.xhtml_escape(self.current_user["name"])
         self.render(
             "index_ecg.html",
             page_title="ECG Demo",
             header_text="ECG Demo",
             footer_text="ECG Demo",
-            username = username
+            #username = username
         )
         
 class LogOutHandler(BaseHandler):
