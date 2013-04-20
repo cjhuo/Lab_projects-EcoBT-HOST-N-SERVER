@@ -52,17 +52,28 @@ $(function () {
 					addStopButton();
 					stopButton.hide();
 					*/
-					plotEverything();
+
+					if(document.ontouchstart === undefined) //no real time drawing on mobile device
+						plotEverything();
+					else{
+						showSpinner();
+					}
 				}
 				else if(data.data.type == 'ECG'){ //state info
 					if(data.data.value.type == 'state'){
 						if(data.data.value.value == 0){
+							if(document.ontouchstart !== undefined){ //draw 10-sec perview on mobile device					
+								plotEverything();
+								hideSpinner();
+							}				
 							// ready to start real recording
 							if(startButton != null && redoButton != null){
 								plot.hideLoading();
 								startButton.button("enable");
-								redoButton.button("enable");
+								countDownButton.button("enable");
+								//redoButton.button("enable");
 							}
+
 						}
 					}
 					else if(data.data.value.type == 'progress'){
@@ -101,14 +112,14 @@ $(function () {
     var xGridInterval = 200; //0.2 second
     var yGridInterval = 500; // 0.5mV, assuming the unit of ECG output is micro volt
     var yAxisHeight = 200;
-    var yTickHeight = 20;
+    var yTickHeight = document.ontouchstart === undefined ? 20 : 40;
     
     var yAxisOptionsTemplate = {
         	lineColor: 'rgb(245, 149, 154)',
         	gridLineColor: 'rgb(245, 149, 154)', 
-        	gridLineWidth: 0.5,
+        	gridLineWidth: document.ontouchstart === undefined ? 0.5 : 2,
         	minorGridLineColor: 'rgb(245, 149, 154)',
-        	minorGridLineWidth: 0.2,
+        	minorGridLineWidth: document.ontouchstart === undefined ? 0.2 : 1,
         	
         	minorTickInterval: yGridInterval/5,
 	        //minorTickWidth: 2,
@@ -152,7 +163,9 @@ $(function () {
     chartOptions = {
             chart: {
                 renderTo: 'diagram',
-                zoomType: 'x',
+                //zoomType: 'x',
+                zoomType: '',
+                //panning: false,
                 
                 /*
                 animation: {
@@ -218,7 +231,7 @@ $(function () {
                 }
             },
             legend: {
-                enabled: true,
+                enabled: false,
                 align: 'right',
                 backgroundColor: '#FCFFC5',
                 borderColor: 'black',
@@ -235,18 +248,29 @@ $(function () {
             	xAxis: {
             		labels:{
             			enabled: true
-            		}
+            		},
+            		dateTimeLabelFormats: {
+            			millisecond: '%H:%M:%S',
+        	        	second: '%H:%M:%S',
+        	        	minute: '%H:%M:%S',
+        	        	hour: '%H:%M:%S',
+        	        	day: '%H:%M:%S',
+        	        	week: '%H:%M:%S',
+        	        	month: '%H:%M:%S',
+        	        	year: '%H:%M:%S'
+        	        },
             	}
             	//adaptToUpdatedData: false
             },
             scrollbar: {
-            	enabled: true
+            	enabled: true,
+            	liveRedraw: false
             },
             rangeSelector:{
             	enabled: true,
             	inputEnabled: false,
             	
-            	buttons: [{
+            	buttons: [/*{
             		type: 'millisecond',
             		count: 2500,
             		text: '2.5s'
@@ -256,6 +280,7 @@ $(function () {
             		count: 5000,
             		text: '5s'
             	},
+            	*/
             	{
             		type: 'all',
             		text: 'All'
@@ -274,21 +299,10 @@ $(function () {
                 	dataGrouping: {
                 		enabled: false
                 	},
-                	allowPointSelect: true,
+                	allowPointSelect: false,
                 	animation: false,
                 	color: 'black',	
                 	lineWidth: 0.7,
-                	marker: {
-                		enabled: false,
-                		states: {
-                			hover: {
-                				radius: 4
-                			},
-                			select: {
-                				radius: 10 //!!! not working!!!!!
-                			}
-                		}
-                	},
                     dataLabels: {
                         enabled: false
                     },
@@ -300,18 +314,6 @@ $(function () {
                     },
                     shadow: false,
                     enableMouseTracking: true,
-                    /*
-                    point: {
-                        events: {
-                            click: function(event) {
-    	    			    alert(this.name +' clicked\n'+
-                        	    'Alt: '+ event.altKey +'\n'+
-                            	'Control: '+ event.ctrlKey +'\n'+
-                              	'Shift: '+ event.shiftKey +'\n');
-                            }
-                        }
-                    }
-                    */
                 },
                 series: {
                 	//allowPointSelect: true,  
@@ -326,17 +328,6 @@ $(function () {
                             }
                         }
                     },
-                    /*
-                    point: {
-                    	events: {
-                    		click: function(event){
-                    			this.select(true, true);
-                    			//alert(this.series);
-                    			return false;
-                    		}
-                    	}
-                    }
-                    */
                 }
             },
             xAxis: {
@@ -346,33 +337,38 @@ $(function () {
 				},
 				*/
 				//minRange: 1000,
+            	max: document.ontouchstart === undefined ? null 
+                		: Date.UTC(0, 0, 0, 0, 0, 0, 0) + 5 * 1000,
             	lineColor: 'rgb(245, 149, 154)',
             	gridLineColor: 'rgb(245, 149, 154)',
-            	gridLineWidth: 0.5,
+            	gridLineWidth: document.ontouchstart === undefined ? 0.5 : 2,
             	minorGridLineColor: 'rgb(245, 149, 154)',
-            	minorGridLineWidth: 0.2,
+            	minorGridLineWidth: document.ontouchstart === undefined ? 0.2 : 1,
             	
-            	minorTickInterval: xGridInterval/5, //5 minor tick by default, exactlly what we want
+            	minorTickInterval: xGridInterval/5, //5 minor tick by default, exactly what we want
     	        minorTickWidth: 1,
     	        minorTickLength: 0,
     	        minorTickPosition: 'inside',
-    	        minorTickColor: 'red',
+    	        minorTickColor: 'rgb(245, 149, 154)',
     	
     	        //tickPixelInterval: 30,
     	        tickInterval: xGridInterval, //0.2 second
     	        tickWidth: 2,
     	        tickPosition: 'inside',
     	        tickLength: 0,
-    	        tickColor: 'red',
+    	        tickColor: 'rgb(245, 149, 154)',
     	        
     	        labels: {
     	        	enabled: false,
     	        	//step: 2
     	        },
     	        startOnTick: false,
-    	        endOnTick: false
+    	        endOnTick: true
             },
-            tooltip: {},
+            tooltip: {
+            	enabled: document.ontouchstart === undefined ? true : false,
+            	backgroundColor: 'rgba(255, 255, 255, 0.1)'
+            },
             yAxis: [],
             series: []
     };
@@ -513,12 +509,12 @@ $(function () {
 	        	});
 	            return s;
 	        };
-	        
+	        /*
 	        chartOptions.tooltip.positioner = function () {
 	        	return { x: 200, y: 20 };
 	        }
-	        
-			diagramHeight += 93; //93 is bottom padding
+	        */
+			diagramHeight += document.ontouchstart === undefined ? 93 : 100; //93 is bottom padding
 			
 	    	//plot all channels on one plot
 	    	diagram = $('<div id="diagram" ></div>').css( {
@@ -526,7 +522,6 @@ $(function () {
 	        });
 			
 	    	diagram.appendTo(innerResizer);
-	
 	    	plot = new Highcharts.StockChart(chartOptions);     
     		//showSpinner();
 	    	plot.showLoading("RECEIVING DATA...");
@@ -578,12 +573,13 @@ $(function () {
     	startButton.button();
     	startButton.button("disable");
     	startButton.click(startECG);
-    	startButton.insertBefore(diagram);
+    	startButton.insertAfter(redoButton);
     }
     function startECG() {
     	socket.send("startECG"+name.trim());
     	startButton.hide();
     	redoButton.hide();
+    	countDownButton.hide();
     	stopButton.show();
     	showSpinner();
     }
@@ -626,7 +622,7 @@ $(function () {
 		stopButton.button();
 		stopButton.button("enable");
 		stopButton.click(stopECG);
-		stopButton.insertBefore(diagram);
+		stopButton.insertAfter(redoButton);
     }
     function addCountDownButton() {
     	countDownButton = $('<button>SET TIMER</button>').css({
@@ -637,8 +633,9 @@ $(function () {
 			top: '0px'
 		});   	
     	countDownButton.button();
+    	countDownButton.button("disable");
     	countDownButton.click(countDownPopup);
-    	countDownButton.insertBefore(diagram);
+    	countDownButton.insertAfter(redoButton);
     }
     var countDownDiv;
     function addCountDownDiv() {
@@ -677,7 +674,7 @@ $(function () {
                 	startECG();
                 	countDownDiv.countdown({until: +t, format: 'MS', onExpiry:stopECG});
                 	countDownDiv.show();
-                	countDownButton.hide();
+                	//countDownButton.hide();
                     $( this ).dialog( "destroy" );
                 }
             }

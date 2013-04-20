@@ -327,7 +327,7 @@ $(function () {
 	    				group[0].attr('fill', "green");
 	    			}).mouseout(function(e) {
 	    				group[0].attr('fill', "");
-	    			}).dblclick(function(e) {
+	    			}).click(function(e) {
 	    				group[0].attr('fill', "red");
 	    				showSpinner();
 	    				startTestECG(peripheral.address);

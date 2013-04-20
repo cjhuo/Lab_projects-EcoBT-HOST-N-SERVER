@@ -103,14 +103,15 @@ class ECGAllInOneHandler(BaseHandler):
         callback = os.path.join(self.settings['static_path'], 'lib/highstock/callback.js')
         jsonFile = os.path.join(self.settings['static_path'], uploadPath, jsonFile)
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        svgFile = os.path.join(self.settings['static_path'], uploadPath, 'svg/chart_'+ timestamp +'.png')
+        returnPath = uploadPath + 'svg/chart_'+ timestamp +'.png'
+        svgFile = os.path.join(self.settings['static_path'], returnPath)
         command = "/usr/local/bin/phantomjs %s -infile %s -outfile %s -scale 1 -constr StockChart" % (convertTool, jsonFile, svgFile)
         rcode = subprocess.call(command, shell=True)
         print rcode
         if rcode == 0:
             #os.system('open "%s"' % os.path.dirname(svgFile))
             #self.write({'url': self.static_url(svgFile)})
-            self.write({'url': uploadPath + 'svg/chart_'+ timestamp +'.png'})
+            self.write({'url': returnPath})
             self.finish()
         else:
             self.write({'message': 'file generation failed!'})
@@ -222,10 +223,12 @@ def checkFileExistInPath(pathName, fileName, fileContent):
     path2 = os.path.join(pathName, os.pardir, os.pardir, 'data')
     
     path = None
+    '''
     if os.path.exists(os.path.join(path1,fileName)):
         path = path1
     elif os.path.exists(os.path.join(path2,fileName)):
         path = path2
+    '''
     
     if path == None:
         path = os.path.join(pathName, uploadPath)
