@@ -66,11 +66,7 @@
 			lines;
 			
 		if (csv) {
-    		
-			lines = csv
-				.replace(/\r\n/g, "\n") // Unix
-				.replace(/\r/g, "\n") // Mac
-				.split(options.lineDelimiter || "\n");
+			lines = csv.split(options.lineDelimiter || '\n');
 			
 			each(lines, function (line, rowNo) {
 				if (rowNo >= startRow && rowNo <= endRow) {
@@ -180,7 +176,7 @@
 					}					
 				
 				} else { // string, continue to determine if it is a date string or really a string
-					dateVal = this.parseDate(val);
+					dateVal = Date.parse(val);
 					
 					if (col === 0 && typeof dateVal === 'number' && !isNaN(dateVal)) { // is date
 						columns[col][row] = dateVal;
@@ -195,18 +191,6 @@
 		}		
 	},
 	
-	/**
-	 * Parse a date and return it as a number. Overridable through options.parseDate.
-	 */
-	parseDate: function (val) {
-		var parseDate = this.options.parseDate;
-		
-		return parseDate ? parseDate(val) : Date.parse(val);
-	},
-	
-	/**
-	 * A hook for working directly on the parsed columns
-	 */
 	parsed: function () {
 		if (this.options.parsed) {
 			this.options.parsed.call(this, this.columns);

@@ -222,10 +222,12 @@ def checkFileExistInPath(pathName, fileName, fileContent):
     path2 = os.path.join(pathName, os.pardir, os.pardir, 'data')
     
     path = None
+    '''
     if os.path.exists(os.path.join(path1,fileName)):
         path = path1
     elif os.path.exists(os.path.join(path2,fileName)):
         path = path2
+    '''
     
     if path == None:
         path = os.path.join(pathName, uploadPath)

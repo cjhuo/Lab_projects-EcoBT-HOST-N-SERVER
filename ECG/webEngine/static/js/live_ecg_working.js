@@ -110,7 +110,7 @@ $(function () {
         	minorGridLineColor: 'rgb(245, 149, 154)',
         	minorGridLineWidth: 0.2,
         	
-        	minorTickInterval: yGridInterval/5,
+        	minorTickInterval: document.ontouchstart === undefined ? yGridInterval/5 : null,
 	        //minorTickWidth: 2,
 	        minorTickLength: 0,
 	        //minorTickPosition: 'inside',
@@ -152,7 +152,8 @@ $(function () {
     chartOptions = {
             chart: {
                 renderTo: 'diagram',
-                zoomType: 'x',
+                //zoomType: 'x',
+                panning: false,
                 
                 /*
                 animation: {
@@ -274,7 +275,7 @@ $(function () {
                 	dataGrouping: {
                 		enabled: false
                 	},
-                	allowPointSelect: true,
+                	allowPointSelect: false,
                 	animation: false,
                 	color: 'black',	
                 	lineWidth: 0.7,
@@ -299,7 +300,7 @@ $(function () {
                     	}
                     },
                     shadow: false,
-                    enableMouseTracking: true,
+                    enableMouseTracking: false,
                     /*
                     point: {
                         events: {
@@ -352,18 +353,18 @@ $(function () {
             	minorGridLineColor: 'rgb(245, 149, 154)',
             	minorGridLineWidth: 0.2,
             	
-            	minorTickInterval: xGridInterval/5, //5 minor tick by default, exactlly what we want
+            	minorTickInterval: document.ontouchstart === undefined ? xGridInterval/5 : null, //5 minor tick by default, exactly what we want
     	        minorTickWidth: 1,
     	        minorTickLength: 0,
     	        minorTickPosition: 'inside',
-    	        minorTickColor: 'red',
+    	        minorTickColor: 'rgb(245, 149, 154)',
     	
     	        //tickPixelInterval: 30,
     	        tickInterval: xGridInterval, //0.2 second
     	        tickWidth: 2,
     	        tickPosition: 'inside',
     	        tickLength: 0,
-    	        tickColor: 'red',
+    	        tickColor: 'rgb(245, 149, 154)',
     	        
     	        labels: {
     	        	enabled: false,

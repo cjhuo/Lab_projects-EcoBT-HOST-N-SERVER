@@ -50,7 +50,7 @@ $(function () {
     var yGridInterval = 500; //0.5 mV
     var xPointInterval = 1000/frequency;
     
-    var yTickHeight = 20;
+    var yTickHeight = document.ontouchstart === undefined ? 20 : 40;
     
     var hOptions = { // //options settings for histogram plot
         chart: {
@@ -244,7 +244,7 @@ $(function () {
     var options = { //options settings for main plot
             chart: {
                 renderTo: 'diagram',
-                zoomType: 'x',
+                zoomType: document.ontouchstart === undefined ? 'x' : '',
                 /*animation: {
                     duration: 1000
                 },*/
@@ -273,7 +273,7 @@ $(function () {
             	enabled: false
             },
             rangeSelector:{
-            	enabled: true,
+            	enabled: false,
             	inputEnabled: false,
             	buttons: [{
             		type: 'millisecond',
@@ -287,33 +287,36 @@ $(function () {
             },
             subtitle: {
             	align: 'left',
-            	text: '*Please manually locate any Q point and any T point on the ECG plot<br> '
-            			+ 'and submit to server for QTC historgram generation<br>'
+            	text: '*Please manually locate any Q point and any T point on the ECG plot \
+            			and submit to server for QTC historgram generation<br>'
             			+ '*Click top-right button for reference of namings of ECG deflections<br>'
             			+ '*The ECG plot is zoomable. '
             			+ (document.ontouchstart === undefined ?
-                        'Click and drag in the plot area to zoom in' :
-                        'Drag your finger over the plot to zoom in')
+                                'Click and drag in the plot area to zoom in' :
+                                'Drag your finger over the plot to zoom in')
+
+            			+ '<br>*Only the first ' + (document.ontouchstart === undefined ? '2500' : '1250')
+            			+ ' points are diplayed for the purpose of getting Q/T inputs from user'
             },
             xAxis: {
             	lineColor: 'rgb(245, 149, 154)',
             	gridLineColor: 'rgb(245, 149, 154)',
-            	gridLineWidth: 0.5,
+            	gridLineWidth: document.ontouchstart === undefined ? 0.5 : 2.5,
             	minorGridLineColor: 'rgb(245, 149, 154)',
-            	minorGridLineWidth: 0.2,
+            	minorGridLineWidth: document.ontouchstart === undefined ? 0.2 : 1,
             	
             	minorTickInterval: xGridInterval/5, //a fifth of the tickInterval by default
     	        minorTickWidth: 1,
     	        minorTickLength: 0,
     	        minorTickPosition: 'inside',
-    	        minorTickColor: 'red',
+    	        minorTickColor: 'rgb(245, 149, 154)',
     	
     	        //tickPixelInterval: 30,
     	        tickInterval: xGridInterval,
     	        tickWidth: 2,
     	        tickPosition: 'inside',
     	        tickLength: 0,
-    	        tickColor: 'red',
+    	        tickColor: 'rgb(245, 149, 154)',
     	        
     	        labels: {
     	        	enabled: false,
@@ -325,22 +328,22 @@ $(function () {
             yAxis: {
             	lineColor: 'rgb(245, 149, 154)',
             	gridLineColor: 'rgb(245, 149, 154)', 
-            	gridLineWidth: 0.5,
+            	gridLineWidth: document.ontouchstart === undefined ? 0.5 : 2.5,
             	minorGridLineColor: 'rgb(245, 149, 154)',
-            	minorGridLineWidth: 0.2,
+            	minorGridLineWidth: document.ontouchstart === undefined ? 0.2 : 1,
             	
             	minorTickInterval: yGridInterval/5,
     	        minorTickWidth: 2,
     	        minorTickLength: 0,
     	        minorTickPosition: 'inside',
-    	        minorTickColor: 'red',
+    	        minorTickColor: 'rgb(245, 149, 154)',
     	
     	        //tickPixelInterval: 30,
     	        tickInterval: yGridInterval, //assume the unit of output is microVolt, 0.5milliVolt = 500microVolt
     	        tickWidth: 2,
     	        tickPosition: 'inside',
     	        tickLength: 0,
-    	        tickColor: 'red',
+    	        tickColor: 'rgb(245, 149, 154)',
     	        
     	        //height: 120,
     	        
@@ -690,8 +693,15 @@ $(function () {
         	key = $(this).attr("value");
         	label = $(this).attr("id");
 
-            if (key && datasets[key]){
-                data = datasets[key].data;
+            if (key && datasets[key]){                
+                if(document.ontouchstart === undefined){ 
+                	data = datasets[key].data;
+                }
+                else{ //only take half the data received to display on mobile device
+                	for(var i=0;i<datasets[key].data.length/2;i++){
+                		data.push(datasets[key].data[i]);
+                	}
+                }
                 min = datasets[key].min;
                 max = datasets[key].max;
             }
@@ -707,6 +717,12 @@ $(function () {
     	var diagramHeight = yTop + options.yAxis.height + 15;
         if (data.length > 0){
         	if(plot != null){
+          		//remove selected points if there is any, bug in new version
+        		var pList = plot.getSelectedPoints();      		
+        		for(var i=0; i<pList.length;i++){
+        			pList[i].select(false, false);
+        		}
+	        		
         		plot.destroy();
         		diagram.remove();
         	}
@@ -732,7 +748,7 @@ $(function () {
         	//plot all channels on one plot
         	diagram = $('<div id="diagram" ></div>').css( {
                 position: 'relative',
-                //width: '100%',
+                width: document.ontouchstart === undefined ? 'auto' : 'auto',
                 height: diagramHeight.toString() + 'px',
                 margin: '5px',
                 //marginRight: '10px',
