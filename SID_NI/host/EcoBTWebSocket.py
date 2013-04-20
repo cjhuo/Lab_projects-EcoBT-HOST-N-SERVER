@@ -18,7 +18,7 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
         self.ecoBTApp = ecoBTApp               
         
     def open(self):
-        if len(self.globalSockets) == 0: # allow only 1 socket to connect
+        if len(self.globalSockets) < 2: # allow only 2 socket (1 whole set) to connect
             self.globalSockets.append(self)
             self.ecoBTApp.managerWorker.sendState()                
             print "WebSocket opened"

@@ -36,10 +36,12 @@ $(function () {
 					}
 				});
 			}
+			/*
 			else if(data.data.type == 'ECG'){
 				enableECGButtonEvent(data.data);
 				//ready to scan
 			}
+			*/
 			else if(data.data.type == 'SIDs'){
 				enableSIDsButtonEvent(data.data);
 				//ready to scan
@@ -285,15 +287,18 @@ $(function () {
 				updateMac(value, p);
 			}
 			peripheralList.push(p);
+			/*
 			if(value.type == 'ECG'){
 				enableECGButtonEvent(value);
 			}
+			*/
 			if(value.type == 'SIDs'){
 				enableSIDsButtonEvent(value);
 			}
 			
 			toggleNode(p, true);
         },
+        /*
         enableECGButtonEvent = function(data) {
         	// find relative peripheral
         	var peripheral;
@@ -338,6 +343,7 @@ $(function () {
         		}
         	}
         },
+        */
         enableSIDsButtonEvent = function(data) {
         	// find relative peripheral
         	var peripheral;
@@ -425,9 +431,11 @@ $(function () {
         up = function () {
             this.p.instance.animate({"fill-opacity": 0}, 500);
         },
+        /*
         startTestECG = function(address) {
         	socket.send("startTestECG"+address);
         },
+        */
         updateMac = function(data, p) {
 			p.address = data.address;
 			x = p.instance.attr("x") + 10;

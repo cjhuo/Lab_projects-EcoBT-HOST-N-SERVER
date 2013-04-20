@@ -1,8 +1,7 @@
 /**
- * @license Data plugin for Highcharts
+ * @license Data plugin for Highcharts v0.1
  *
- * (c) 2012-2013 Torstein Hønsi
- * Last revision 2012-11-27
+ * (c) 2012 Torstein Hønsi
  *
  * License: www.highcharts.com/license
  */
@@ -45,14 +44,14 @@
  * A Google Spreadsheet key. See https://developers.google.com/gdata/samples/spreadsheet_sample
  * for general information on GS.
  *
- * - googleSpreadsheetWorksheet : String 
+ * - googleSpreadsheetKey : String 
  * The Google Spreadsheet worksheet. The available id's can be read from 
  * https://spreadsheets.google.com/feeds/worksheets/{key}/public/basic
  *
- * - itemDelimiter : String
+ * - itemDilimiter : String
  * Item or cell delimiter for parsing CSV. Defaults to ",".
  *
- * - lineDelimiter : String
+ * - lineDilimiter : String
  * Line delimiter for parsing CSV. Defaults to "\n".
  *
  * - parsed : Function
@@ -77,9 +76,7 @@
  * endRow, startColumn and endColumn to delimit what part of the table is used.
  */
 
-// JSLint options:
 /*global jQuery */
-
 (function (Highcharts) {	
 	
 	// Utilities
@@ -121,6 +118,7 @@
 	},
 
 	dataFound: function () {
+		
 		// Interpret the values into right types
 		this.parseTypes();
 		
@@ -139,16 +137,14 @@
 	 * Parse a CSV input string
 	 */
 	parseCSV: function () {
-		var self = this,
-			options = this.options,
+		var options = this.options,
 			csv = options.csv,
 			columns = this.columns,
 			startRow = options.startRow || 0,
 			endRow = options.endRow || Number.MAX_VALUE,
 			startColumn = options.startColumn || 0,
 			endColumn = options.endColumn || Number.MAX_VALUE,
-			lines,
-			activeRowNo = 0;
+			lines;
 			
 		if (csv) {
 			
@@ -158,26 +154,19 @@
 				.split(options.lineDelimiter || "\n");
 			
 			each(lines, function (line, rowNo) {
-				var trimmed = self.trim(line),
-					isComment = trimmed.indexOf('#') === 0,
-					isBlank = trimmed === '',
-					items;
-				
-				if (rowNo >= startRow && rowNo <= endRow && !isComment && !isBlank) {
-					items = line.split(options.itemDelimiter || ',');
+				if (rowNo >= startRow && rowNo <= endRow) {
+					var items = line.split(options.itemDelimiter || ',');
 					each(items, function (item, colNo) {
 						if (colNo >= startColumn && colNo <= endColumn) {
 							if (!columns[colNo - startColumn]) {
 								columns[colNo - startColumn] = [];					
 							}
 							
-							columns[colNo - startColumn][activeRowNo] = item;
+							columns[colNo - startColumn][rowNo - startRow] = item;
 						}
 					});
-					activeRowNo += 1;
 				}
-			});
-
+			}); 
 			this.dataFound();
 		}
 	},
@@ -224,18 +213,13 @@
 	/**
 	 * TODO: 
 	 * - switchRowsAndColumns
+	 * - startRow, endRow etc.
 	 */
 	parseGoogleSpreadsheet: function () {
 		var self = this,
 			options = this.options,
 			googleSpreadsheetKey = options.googleSpreadsheetKey,
-			columns = this.columns,
-			startRow = options.startRow || 0,
-			endRow = options.endRow || Number.MAX_VALUE,
-			startColumn = options.startColumn || 0,
-			endColumn = options.endColumn || Number.MAX_VALUE,
-			gr, // google row
-			gc; // google column
+			columns = this.columns;
 
 		if (googleSpreadsheetKey) {
 			jQuery.getJSON('https://spreadsheets.google.com/feeds/cells/' + 
@@ -261,28 +245,15 @@
 			
 				// Set up arrays containing the column data
 				for (i = 0; i < colCount; i++) {
-					if (i >= startColumn && i <= endColumn) {
-						// Create new columns with the length of either end-start or rowCount
-						columns[i - startColumn] = [];
-
-						// Setting the length to avoid jslint warning
-						columns[i - startColumn].length = Math.min(rowCount, endRow - startRow);
-					}
+					columns[i] = new Array(rowCount);
 				}
 				
 				// Loop over the cells and assign the value to the right
 				// place in the column arrays
 				for (i = 0; i < cellCount; i++) {
 					cell = cells[i];
-					gr = cell.gs$cell.row - 1; // rows start at 1
-					gc = cell.gs$cell.col - 1; // columns start at 1
-
-					// If both row and col falls inside start and end
-					// set the transposed cell value in the newly created columns
-					if (gc >= startColumn && gc <= endColumn &&
-						gr >= startRow && gr <= endRow) {
-						columns[gc - startColumn][gr - startRow] = cell.content.$t;
-					}
+					columns[cell.gs$cell.col - 1][cell.gs$cell.row - 1] = 
+						cell.content.$t;
 				}
 				self.dataFound();
 			});
@@ -308,6 +279,7 @@
 	 * Trim a string from whitespace
 	 */
 	trim: function (str) {
+		//return typeof str === 'number' ? str : str.replace(/^\s+|\s+$/g, ''); // fails with spreadsheet
 		return typeof str === 'string' ? str.replace(/^\s+|\s+$/g, '') : str;
 	},
 	
@@ -330,7 +302,6 @@
 				val = columns[col][row];
 				floatVal = parseFloat(val);
 				trimVal = this.trim(val);
-
 				/*jslint eqeq: true*/
 				if (trimVal == floatVal) { // is numeric
 				/*jslint eqeq: false*/
@@ -351,7 +322,7 @@
 						columns[col].isDatetime = true;
 					
 					} else { // string
-						columns[col][row] = trimVal === '' ? null : trimVal;
+						columns[col][row] = trimVal;
 					}
 				}
 				
@@ -379,7 +350,7 @@
 			match;
 
 		if (parseDate) {
-			ret = parseDate(val);
+			ret = parseDate;
 		}
 			
 		if (typeof val === 'string') {
@@ -515,17 +486,21 @@
 		if (userOptions && userOptions.data) {
 			Highcharts.data(Highcharts.extend(userOptions.data, {
 				complete: function (dataOptions) {
+					var datasets = []; 
 					
-					// Merge series configs
-					if (userOptions.series) {
-						each(userOptions.series, function (series, i) {
-							userOptions.series[i] = Highcharts.merge(series, dataOptions.series[i]);
-						});
-					}
-
+					// Don't merge the data arrays themselves
+					each(dataOptions.series, function (series, i) {
+						datasets[i] = series.data;
+						series.data = null;
+					});
+					
 					// Do the merge
 					userOptions = Highcharts.merge(dataOptions, userOptions);
-
+					
+					// Re-insert the data
+					each(datasets, function (data, i) {
+						userOptions.series[i].data = data;
+					});
 					proceed.call(chart, userOptions, callback);
 				}
 			}));

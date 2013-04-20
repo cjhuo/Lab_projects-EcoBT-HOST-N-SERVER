@@ -53,7 +53,6 @@ Highcharts.theme = {
 		alternateGridColor: null,
 		minorTickInterval: null,
 		gridLineColor: 'rgba(255, 255, 255, .1)',
-		minorGridLineColor: 'rgba(255,255,255,0.07)',
 		lineWidth: 0,
 		tickWidth: 0,
 		labels: {
@@ -101,9 +100,6 @@ Highcharts.theme = {
 
 
 	plotOptions: {
-		series: {
-			shadow: true
-		},
 		line: {
 			dataLabels: {
 				color: '#CCC'
@@ -135,17 +131,26 @@ Highcharts.theme = {
 
 	navigation: {
 		buttonOptions: {
-			symbolStroke: '#DDDDDD',
-			hoverSymbolStroke: '#FFFFFF',
-			theme: {
-				fill: {
-					linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
-					stops: [
-						[0.4, '#606060'],
-						[0.6, '#333333']
-					]
-				},
-				stroke: '#000000'
+			backgroundColor: {
+				linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+				stops: [
+					[0.4, '#606060'],
+					[0.6, '#333333']
+				]
+			},
+			borderColor: '#000000',
+			symbolStroke: '#C0C0C0',
+			hoverSymbolStroke: '#FFFFFF'
+		}
+	},
+
+	exporting: {
+		buttons: {
+			exportButton: {
+				symbolFill: '#55BE3B'
+			},
+			printButton: {
+				symbolFill: '#7797BE'
 			}
 		}
 	},
