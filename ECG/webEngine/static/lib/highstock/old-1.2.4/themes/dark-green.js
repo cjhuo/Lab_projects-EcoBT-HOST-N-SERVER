@@ -8,9 +8,9 @@ Highcharts.theme = {
 		"#55BF3B", "#DF5353", "#7798BF", "#aaeeee"],
 	chart: {
 		backgroundColor: {
-			linearGradient: { x1: 0, y1: 0, x2: 1, y2: 1 },
+			linearGradient: [0, 0, 250, 500],
 			stops: [
-				[0, 'rgb(48, 48, 96)'],
+				[0, 'rgb(48, 96, 48)'],
 				[1, 'rgb(0, 0, 0)']
 			]
 		},
@@ -132,17 +132,26 @@ Highcharts.theme = {
 
 	navigation: {
 		buttonOptions: {
-			symbolStroke: '#DDDDDD',
-			hoverSymbolStroke: '#FFFFFF',
-			theme: {
-				fill: {
-					linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
-					stops: [
-						[0.4, '#606060'],
-						[0.6, '#333333']
-					]
-				},
-				stroke: '#000000'
+			backgroundColor: {
+				linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+				stops: [
+					[0.4, '#606060'],
+					[0.6, '#333333']
+				]
+			},
+			borderColor: '#000000',
+			symbolStroke: '#C0C0C0',
+			hoverSymbolStroke: '#FFFFFF'
+		}
+	},
+
+	exporting: {
+		buttons: {
+			exportButton: {
+				symbolFill: '#55BE3B'
+			},
+			printButton: {
+				symbolFill: '#7797BE'
 			}
 		}
 	},

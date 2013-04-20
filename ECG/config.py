@@ -10,8 +10,12 @@ frequency = 250
 
 import socket
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-s.connect(("gmail.com",80))
-ipAddr = s.getsockname()[0]
+try:
+    s.connect(("gmail.com",80))
+    ipAddr = s.getsockname()[0]
+except:
+    ipAddr = 'localhost' # no internet access available
+print ipAddr
 s.close()
 # addresses where live pages are going to fetch data from
 #'ws://cps.eng.uci.edu:8000/socket' 

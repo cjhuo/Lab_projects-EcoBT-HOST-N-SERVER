@@ -18,18 +18,18 @@ $(function () {
     var xGridInterval = 200; //0.2 second
     var yGridInterval = 500; //0.5 mV, assuming the unit of ECG output is microvolt
     //var yAxisHeight = 100;
-    var yTickHeight = 20;
-    var xTickHeight = 20;
+    var yTickHeight = document.ontouchstart === undefined ? 20 : 30;
+    var xTickHeight = document.ontouchstart === undefined ? 20 : 30;
     
     var yAxisOptionsTemplate = {
     		
         	lineColor: 'rgb(245, 149, 154)',
         	gridLineColor: 'rgb(245, 149, 154)', 
-        	gridLineWidth: 0.5,
+        	gridLineWidth: document.ontouchstart === undefined ? 0.5 : 2,
         	minorGridLineColor: 'rgb(245, 149, 154)',
-        	minorGridLineWidth: 0.2,
+        	minorGridLineWidth: document.ontouchstart === undefined ? 0.2 : 1,
         	
-        	minorTickInterval: document.ontouchstart === undefined ? yGridInterval/5 : null,
+        	minorTickInterval: yGridInterval/5,
 	        //minorTickWidth: 2,
 	        minorTickLength: 0,
 	        //minorTickPosition: 'inside',
@@ -63,7 +63,7 @@ $(function () {
                     duration: 1000
                 },*/
                 type: 'line',
-                zoomType: 'x',
+                zoomType: document.ontouchstart === undefined ? 'x': '',
                 alignTicks: false,
                 marginRight: 50,
             },
@@ -144,18 +144,19 @@ $(function () {
             			millisecond: '%H:%M:%S',
         	        	second: '%H:%M:%S',
         	        	minute: '%H:%M:%S',
-        	        	hour: '%H:%M',
-        	        	day: '%e. %b',
-        	        	week: '%e. %b',
-        	        	month: '%b \'%y',
-        	        	year: '%Y'
+        	        	hour: '%H:%M:%S',
+        	        	day: '%H:%M:%S',
+        	        	week: '%H:%M:%S',
+        	        	month: '%H:%M:%S',
+        	        	year: '%H:%M:%S'
         	        },
         	        startOnTick: true,
         	        endOnTick: true
             	}
             },
             scrollbar: {
-            	enabled: true
+            	enabled: true,
+    			liveRedraw: false
             },
             rangeSelector:{
             	enabled: true,
@@ -201,20 +202,9 @@ $(function () {
                 		enabled: false
                 	},
                 	allowPointSelect: false,
-                	animation: true,
+                	animation: false,
                 	color: 'black',	
                 	lineWidth: 0.7,
-                	marker: {
-                		enabled: false,
-                		states: {
-                			hover: {
-                				radius: 4
-                			},
-                			select: {
-                				radius: 10 //!!! not working!!!!!
-                			}
-                		}
-                	},
                     dataLabels: {
                         enabled: false
                     },
@@ -226,18 +216,6 @@ $(function () {
                     },
                     shadow: false,
                     enableMouseTracking: true,
-                    /*
-                    point: {
-                        events: {
-                            click: function(event) {
-    	    			    alert(this.name +' clicked\n'+
-                        	    'Alt: '+ event.altKey +'\n'+
-                            	'Control: '+ event.ctrlKey +'\n'+
-                              	'Shift: '+ event.shiftKey +'\n');
-                            }
-                        }
-                    }
-                    */
                 },
                 series: {
                 	//allowPointSelect: true,  
@@ -252,17 +230,6 @@ $(function () {
                             }
                         }
                     },
-                    /*
-                    point: {
-                    	events: {
-                    		click: function(event){
-                    			this.select(true, true);
-                    			//alert(this.series);
-                    			return false;
-                    		}
-                    	}
-                    }
-                    */
                 }
             },
             xAxis: {
@@ -271,7 +238,8 @@ $(function () {
                 minRange: 1000,
                 //setting the scrollbar's position to the left
                 min: Date.UTC(0, 0, 0, 0, 0, 0, 0),
-                max: Date.UTC(0, 0, 0, 0, 0, 0, 0) + 10* 1000,
+                max: document.ontouchstart === undefined ? Date.UTC(0, 0, 0, 0, 0, 0, 0) + 10* 1000 
+                		: Date.UTC(0, 0, 0, 0, 0, 0, 0) + 5 * 1000,
                 events: {
 					afterSetExtremes : afterSetExtremes,
                 	setExtremes: setExtremes
@@ -279,11 +247,11 @@ $(function () {
             	
             	lineColor: 'rgb(245, 149, 154)',
             	gridLineColor: 'rgb(245, 149, 154)',
-            	gridLineWidth: 0.5,
+            	gridLineWidth: document.ontouchstart === undefined ? 0.5 : 2,
             	minorGridLineColor: 'rgb(245, 149, 154)',
-            	minorGridLineWidth: 0.2,
+            	minorGridLineWidth: document.ontouchstart === undefined ? 0.2 : 1,
             	
-            	minorTickInterval: document.ontouchstart === undefined ? xGridInterval/5 : null, //5 minor tick by default, exactlly what we want
+            	minorTickInterval: xGridInterval/5, //5 minor tick by default, exactlly what we want
     	        minorTickWidth: 1,
     	        minorTickLength: 0,
     	        minorTickPosition: 'inside',
@@ -300,11 +268,11 @@ $(function () {
         			millisecond: '%H:%M:%S',
     	        	second: '%H:%M:%S',
     	        	minute: '%H:%M:%S',
-    	        	hour: '%H:%M',
-    	        	day: '%e. %b',
-    	        	week: '%e. %b',
-    	        	month: '%b \'%y',
-    	        	year: '%Y'
+    	        	hour: '%H:%M:%S',
+    	        	day: '%H:%M:%S',
+    	        	week: '%H:%M:%S',
+    	        	month: '%H:%M:%S',
+    	        	year: '%H:%M:%S'
     	        },
     	        
     	        labels: {
@@ -315,13 +283,16 @@ $(function () {
     	        startOnTick: true,
     	        endOnTick: true
             },
-            tooltip: {},
+            tooltip: {
+            	enabled: document.ontouchstart === undefined ? true : false,
+            	backgroundColor: 'rgba(255, 255, 255, 0.1)'
+            },
             yAxis: [],
             series: []
     };
     
     function setExtremes(e){
-        var maxDistance = 10 * 1000; //10 seconds
+        var maxDistance = document.ontouchstart === undefined ? 10 * 1000 : 5 * 1000; //10 seconds
         var xaxis = this;
         if ((e.max - e.min) > maxDistance) {
             var min = e.max - maxDistance;
@@ -602,7 +573,7 @@ $(function () {
         });
     	fileInput.appendTo(innerResizer);
     }
-    
+    /*
     var overViewButton;
     function addOverViewButton(){
     	var minCount = parseInt(datasets[0].data.length*pointInterval/1000/60);
@@ -617,7 +588,7 @@ $(function () {
     	overViewButton.appendTo(innerResizer);
     	
     }
-    
+    */
     function plotLarge(){
     	window.open('plotLarge', '_blank', false);
     	return false;
@@ -633,9 +604,9 @@ $(function () {
         	var yAxisOptions = $.extend(true, {}, yAxisOptionsTemplate); //!!!deep copy JSON object
         	yAxisOptions.title = {
         			text: datasets[i].label,
-        			align: 'high',
+        			align: 'middle',
         			rotation: 0,
-        			y: 15
+        			//y: 15
         	};   	
         	//yAxisOptions.min = datasets[i].min-0.5;
         	//yAxisOptions.max = datasets[i].max+0.5;
@@ -713,10 +684,11 @@ $(function () {
         	});
             return s;
         };
-        
+        /*
         chartOptions.tooltip.positioner = function () {
         	return { x: 200, y: 20 };
         }
+        */
         
         chartOptions.navigator.series = {
         		type: 'areaspline',
@@ -735,7 +707,7 @@ $(function () {
                 pointInterval: pointInterval
         		};
         
-		diagramHeight += 93;//93; //93 is bottom padding
+		diagramHeight += document.ontouchstart === undefined ? 93 : 100;//93; //93 is bottom padding
 		var diagramLength; //= datasets[0].data.length * pointInterval * xTickHeight / xGridInterval;
 		console.log(diagramLength);
 	    addResizer(diagramLength);
@@ -785,7 +757,13 @@ $(function () {
 				hideSpinner();
 				if(data.url != null){
 					console.log(data.url);
-					open(data.url, '_blank', false);
+					generateButton.remove();
+					generateButton = $("<a target='_blank'>GENERATION DONE, CLICK TO VIEW/DOWNLOAD</a>")
+									.attr('href', data.url)
+									.button().css({
+										fontSize: 'small',
+									}).insertBefore(diagram);
+					//window.open(data.url);				
 				}
 				else{// failure
 					alert(data.message);
@@ -930,9 +908,9 @@ $(function () {
         	var yAxisOptions = $.extend(true, {}, lyAxisOptionsTemplate); //!!!deep copy JSON object
         	yAxisOptions.title = {
         			text: datasets[i].label,
-        			align: 'high',
+        			align: 'middle',
         			rotation: 0,
-        			y: 15
+        			//y: 15
         	};   	
         	var min = datasets[i].min;
         	var max = datasets[i].max;

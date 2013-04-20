@@ -295,21 +295,21 @@ $(function () {
                                 'Click and drag in the plot area to zoom in' :
                                 'Drag your finger over the plot to zoom in')
 
-            			+ '<br>*Only the first ' + (document.ontouchstart === undefined ? '2500' : '1250')
-            			+ ' points are diplayed for the purpose of getting Q/T inputs from user'
+            			+ '<br>*Only the first ' + (document.ontouchstart === undefined ? '10' : '5')
+            			+ ' seconds data are diplayed for the purpose of getting Q/T inputs from user'
             },
             xAxis: {
-            	lineColor: 'rgb(245, 149, 154)',
-            	gridLineColor: 'rgb(245, 149, 154)',
-            	gridLineWidth: document.ontouchstart === undefined ? 0.5 : 2.5,
-            	minorGridLineColor: 'rgb(245, 149, 154)',
+            	lineColor: '#F5959A',
+            	gridLineColor: '#F5959A',
+            	gridLineWidth: document.ontouchstart === undefined ? 0.5 : 2,
+            	minorGridLineColor: '#F5959A',
             	minorGridLineWidth: document.ontouchstart === undefined ? 0.2 : 1,
             	
             	minorTickInterval: xGridInterval/5, //a fifth of the tickInterval by default
     	        minorTickWidth: 1,
     	        minorTickLength: 0,
     	        minorTickPosition: 'inside',
-    	        minorTickColor: 'rgb(245, 149, 154)',
+    	        minorTickColor: '#F5959A',
     	
     	        //tickPixelInterval: 30,
     	        tickInterval: xGridInterval,
@@ -320,7 +320,7 @@ $(function () {
     	        
     	        labels: {
     	        	enabled: false,
-    	        	//step: 2
+    	        	step: 2
     	        },
     	        startOnTick: false,
     	        endOnTick: false
@@ -328,7 +328,7 @@ $(function () {
             yAxis: {
             	lineColor: 'rgb(245, 149, 154)',
             	gridLineColor: 'rgb(245, 149, 154)', 
-            	gridLineWidth: document.ontouchstart === undefined ? 0.5 : 2.5,
+            	gridLineWidth: document.ontouchstart === undefined ? 0.5 : 2,
             	minorGridLineColor: 'rgb(245, 149, 154)',
             	minorGridLineWidth: document.ontouchstart === undefined ? 0.2 : 1,
             	
@@ -362,8 +362,9 @@ $(function () {
                     this.x/(1000/frequency) +': '+ this.y;
                 },
                 positioner: function () {
-                	return { x: 500, y: 50 };
-                }
+                	return { x: 550, y: 50 };
+                },
+                backgroundColor: 'rgba(255, 255, 255, 0.1)'
             },
             plotOptions: {
             	dataGrouping: {
@@ -785,7 +786,7 @@ $(function () {
 			tPoint = null; 
 		}
 		else { //add Q/T point base on pop-up selection
-			pointPopup(this);
+			pointPopup(this, event);
 		}
 		makeQTText();
 		return false;
@@ -815,14 +816,15 @@ $(function () {
     
     /* Q/T point selection pop-up window */
     var popUpDiv;
-    function pointPopup(point) { 
+    function pointPopup(point, event) { 
     	var pSelection = null;
     	popUpDiv = $('<div id="popUpBox"><div>');
     	popUpDiv.html('<p>Please choose the type for the point: </p>');
+    	
     	popUpDiv.dialog({
     		position: {
     			my: "top",
-    			at: "bottom",
+    			at: "top",
     			of: $("#diagram")
     		},
             height: 200,
@@ -848,6 +850,7 @@ $(function () {
     	$('.ui-button').css({
     		fontSize: 'small'
     	});
+    	popUpDiv.focus();
     	//return pSelection;
     }
     
