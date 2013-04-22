@@ -83,6 +83,7 @@ $(function () {
                 text: 'ECG Viewer (Maximum time slot: 10 seconds)'
             },
             exporting:{
+            	enabled: false, //disable exporting due to bug on invoking destroying chart object for now
                 buttons: {
                     exportButton: {
                         menuItems: [{
@@ -522,8 +523,10 @@ $(function () {
 		else
 			diagramLength = diagramLength.toString() + 'px';
     	resizer = $('<div id="resizer" />').css( {
-            width: diagramLength,
+            //width: diagramLength,
+            width: '100%',
             minHeight: '400px',
+            margin: 'auto',
             //border: '1px solid silver'
 
         });	
@@ -549,7 +552,7 @@ $(function () {
             dataType: 'json',
             send: function (e, data) {
             	showSpinner();
-            	plot.destroy();
+            	//plot.destroy();
             	plot = null;
             	diagram.remove();
             	resizer.remove();
@@ -843,11 +846,11 @@ $(function () {
         			millisecond: '%H:%M:%S',
     	        	second: '%H:%M:%S',
     	        	minute: '%H:%M:%S',
-    	        	hour: '%H:%M',
-    	        	day: '%e. %b',
-    	        	week: '%e. %b',
-    	        	month: '%b \'%y',
-    	        	year: '%Y'
+    	        	hour: '%H:%M:%S',
+    	        	day: '%H:%M:%S',
+    	        	week: '%H:%M:%S',
+    	        	month: '%H:%M:%S',
+    	        	year: '%H:%M:%S'
     	        },
     	        
     	        labels: {

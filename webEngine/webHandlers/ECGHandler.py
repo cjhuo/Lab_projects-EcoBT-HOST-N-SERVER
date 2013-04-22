@@ -25,8 +25,17 @@ arrayLength = 2500 # if sample count is greater than this number, start compress
 ECG_CHANNELLABELS = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6']
 
 class ECGAllInOneHandler(BaseHandler):
-    def initialize(self, ecg):
-        self.ecg = ecg
+    def initialize(self):
+        if not self.session.get('ecgAll'):
+            print 'Initializing ECG_reader'
+            self.session.set('ecgAll', ECG_reader())   
+        self.ecg = self.session.get('ecgAll')
+        
+        if not self.get_secure_cookie('PYCKET_ID'):
+            self.redirect("/")
+        else:
+            print 'Session ID: ', self.get_secure_cookie('PYCKET_ID')
+        #self.ecg = ecg
         
     def get(self): # asynchronous loading handler    
         minVal = self.get_argument("min", default=None)       
@@ -117,7 +126,7 @@ class ECGAllInOneHandler(BaseHandler):
             self.write({'message': 'file generation failed!'})
             self.finish()        
         
-            
+    @tornado.web.asynchronous        
     def post(self): # file upload handler
         try:
             if len(self.request.files) != 0: #user uploaded file from UI 
@@ -134,6 +143,8 @@ class ECGAllInOneHandler(BaseHandler):
                 print >> sys.stderr, 'FINISH READING ECG DATA IN ECG MODULE..' 
             val = self.getDataFromDicomFile()
             self.write(val)
+            self.finish()
+            self.session.set('ecgAll', self.ecg)            
         except Exception as e:
             self.send_error(302) # 302: invalid file
             print e
@@ -241,9 +252,18 @@ def checkFileExistInPath(pathName, fileName, fileContent):
     return os.path.join(path, fileName)
   
 class ECGHandler(BaseHandler):
-    def initialize(self, ecg):
-        self.ecg = ecg
-    
+    def initialize(self):
+        if not self.session.get('ecg'):
+            print 'Initializing ECG_reader'
+            self.session.set('ecg', ECG_reader())   
+        self.ecg = self.session.get('ecg')
+        
+        if not self.get_secure_cookie('PYCKET_ID'):
+            self.redirect("/")
+        else:
+            print "Session ID: ", self.get_secure_cookie('PYCKET_ID')
+        
+    @tornado.web.asynchronous            
     def post(self):
         try:
             if len(self.request.files) != 0: #user uploaded file from UI 
@@ -260,6 +280,8 @@ class ECGHandler(BaseHandler):
                 print >> sys.stderr, 'FINISH READING ECG DATA IN ECG MODULE..' 
             val = self.getDataFromDicomFile()
             self.write(val)
+            self.finish()
+            self.session.set('ecg', self.ecg)
         except:
             self.send_error(302) # 302: invalid file
             
