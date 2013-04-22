@@ -12,12 +12,11 @@ from host.Sockets import Sockets
 from host.EcoBTWebSocket import EcoBTWebSocket
 
 from db.Models import DataSource, Device, DataLog
-from ecg.ECG_reader import ECG_reader
+import redis
 
 class Application(tornado.web.Application):
     def __init__(self, ecoBTApp):
         self.ds = DataSource()
-        self.ecg = ECG_reader()
         self.globalSockets = Sockets()
         self.ecoBTApp = ecoBTApp
         
@@ -28,13 +27,31 @@ class Application(tornado.web.Application):
                 os.path.dirname(__file__), "static"),
             debug=True,
             cookie_secret="BlaBlaBlaBlaBlaBlaBlaBlaBlaBlaBlaBlaBla",
-            login_url="/login",        
+            login_url="/login",  
+            pycket = {
+                        'engine': 'redis',
+                        'storage': {
+                            'connection_pool': redis.ConnectionPool(max_connections=2 ** 31),
+                            'host': 'localhost',
+                            'port': 6379,
+                            'db_sessions': 10,
+                            'db_notifications': 11,
+                       },       
+                       # unable to use memcached due to 1Mb object size limit              
+                       #'engine': 'memcached',
+                       #'storage': {
+                       #            'servers': ('localhost:11211',)
+                       #            },
+                       #'cookies': {
+                       #            'expires_days': 120,
+                       #            },
+                       }                       
         )        
         
         self.handlers = [
                 (r'/', MainHandler),          
-                (r'/ecgHandler', ECGHandler, dict(ecg = self.ecg)),
-                (r'/ecgAllInOne', ECGAllInOneHandler, dict(ecg = self.ecg)),            
+                (r'/ecgHandler', ECGHandler),
+                (r'/ecgAllInOne', ECGAllInOneHandler),            
                 (r'/cardReader', CardReaderHandler),
                 (r'/analysis_allInOne', AnalysisAllInOnceHandler),   
                 (r'/liveECG', LiveECGHandler),
