@@ -5,21 +5,37 @@ Created on Feb 17, 2013
 '''
 
 import tornado.web
+import functools
 
 from config import *
 
 from BaseHandler import BaseHandler
 
+# tweak to add cookie at the very beginning due to the set_secure_cookie bug
+def initPycketCookie(method):
+    
+    @functools.wraps(method)
+    def wrapper(self, *args, **kwargs):
+        if not self.session.get('init'):
+            print 'Initializing pycket cookie'
+            self.session.set('init', 'init')
+        return method(self, *args, **kwargs)
+    return wrapper    
+
 # static page rendering handlers
 class MainHandler(BaseHandler):
     #@tornado.web.authenticated
+    @initPycketCookie
     def get(self):
         '''
         if not self.current_user:
             self.redirect("/login")
             return
+        username = tornado.escape.xhtml_escape(self.current_user["name"])
+        if not self.session.get('username'):
+            self.session.set('username', username)
+        print self.session.get('username')
         '''
-        #username = tornado.escape.xhtml_escape(self.current_user["name"])
         self.render(
             "index_ecg.html",
             page_title="ECG Demo",
@@ -36,8 +52,6 @@ class LogOutHandler(BaseHandler):
 
 class AnalysisHandler(BaseHandler):
     def get(self):
-        if self.get_arguments("test"):
-            print self.get_argument("test")
         self.render(
             "analysis.html",
             page_title="ECG Analysis Viewer",

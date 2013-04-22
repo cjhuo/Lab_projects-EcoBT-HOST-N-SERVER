@@ -83,6 +83,7 @@ $(function () {
                 text: 'ECG Viewer (Maximum time slot: 10 seconds)'
             },
             exporting:{
+            	enabled: false, //disable exporting due to bug on invoking destroying chart object for now
                 buttons: {
                     exportButton: {
                         menuItems: [{
@@ -551,7 +552,7 @@ $(function () {
             dataType: 'json',
             send: function (e, data) {
             	showSpinner();
-            	plot.destroy();
+            	//plot.destroy();
             	plot = null;
             	diagram.remove();
             	resizer.remove();
