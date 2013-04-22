@@ -3,3 +3,4 @@ log.txt
 *.pyc
 .DS_Store
 config.py
+
