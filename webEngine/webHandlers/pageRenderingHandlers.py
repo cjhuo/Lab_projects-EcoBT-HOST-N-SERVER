@@ -5,6 +5,7 @@ Created on Feb 17, 2013
 '''
 
 import tornado.web
+import tornado
 
 from config import *
 
@@ -18,8 +19,11 @@ class MainHandler(BaseHandler):
             self.redirect("/login")
             return
         username = tornado.escape.xhtml_escape(self.current_user["name"])
-        if self.session.get('username'):
+        print tornado.version
+        if not self.session.get('username'):
             self.session.set('username', username)
+            self.redirect("/")
+            return
         print self.session.get('username')
         self.render(
             "index.html",
