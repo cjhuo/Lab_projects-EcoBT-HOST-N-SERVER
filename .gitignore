@@ -2,4 +2,3 @@
 log.txt
 *.pyc
 .DS_Store
-ECG/config.py
