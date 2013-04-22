@@ -2,6 +2,4 @@
 log.txt
 *.pyc
 .DS_Store
-/NIH_host/ECG/webEngine/ecg/Uploads/*
-/NIH_host/SIDs/webEngine/ecg/Uploads/*
-*/config.py
+config.py
