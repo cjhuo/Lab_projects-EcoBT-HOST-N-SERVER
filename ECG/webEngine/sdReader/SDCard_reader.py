@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 
 import threading
 from DICOM_Constructor import *
-
+sys.dont_write_bytecode = True
 
 dev = '/dev/disk1'
 block = 512
