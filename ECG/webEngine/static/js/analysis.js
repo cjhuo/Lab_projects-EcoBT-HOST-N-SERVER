@@ -509,7 +509,7 @@ $(function () {
     			of: $("#spinner")[0]
     		},
     		width: 500,
-            modal: true,
+            modal: false,
             resizable: false,
             dialogClass: 'alert',
             closeOnEscape: false,

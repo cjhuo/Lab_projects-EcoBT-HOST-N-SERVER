@@ -200,7 +200,7 @@ $(function () {
             plotOptions: {
                 line: {
                 	dataGrouping: {
-                		enabled: false
+                		enabled: document.ontouchstart === undefined ? false : true
                 	},
                 	allowPointSelect: false,
                 	animation: false,
@@ -471,7 +471,7 @@ $(function () {
     			of: $("#spinner")[0]
     		},
     		width: 500,
-            modal: true,
+            modal: false,
             resizable: false,
             dialogClass: 'alert',
             closeOnEscape: false,

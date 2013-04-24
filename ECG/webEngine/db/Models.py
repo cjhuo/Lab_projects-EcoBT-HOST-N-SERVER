@@ -27,7 +27,7 @@ class DataSource(Singleton):    #to acchieve singleton of datasource
         self.scopedSession = scoped_session(sessionmaker(bind=self.engine, autoflush=False))
 
     def getSession(self):
-        return self.scopedSession
+        return self.scopedSession()
 
     def getEngine(self):
         return self.engine
