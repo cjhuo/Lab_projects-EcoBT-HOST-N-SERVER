@@ -8,6 +8,7 @@ webGUIPort = 8000
 isWriteToLog = True # True to have std output write to log.txt
 frequency = 250
 
+# detecting self's IP address
 import socket
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 try:

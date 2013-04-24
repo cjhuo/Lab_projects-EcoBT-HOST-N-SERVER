@@ -14,7 +14,6 @@ block = 512
 outfile = "ecg_data.txt"
 wfd = None
 
-
 class SDCard_Reader:
     def __init__(self, dev = '/dev/disk', outfile = None):
         self.blocksize = 512
@@ -243,7 +242,47 @@ class SDCard_Reader:
             self.wfd.write(fout + "\n")
             self.wfd_all.write(fout + "\n")
 
+import logging    
+import tornado
+from tornado.options import define, options
+sys.path.append(".")
+try:
+    from config import isWriteToLog
+except:
+    isWriteToLog = False
 
+def writeToLog(flag):
+    class LogFile(object):
+        """File-like object to log text using the `logging` module."""
+    
+        def __init__(self, name=None):
+            self.logger = logging.getLogger(name)
+            self.msg = ''
+            #self.formatStdoutLog(name)
+    
+        def write(self, msg, level=logging.INFO):
+            if msg != '\n': # keep information until hit line return mark
+                self.msg += msg
+            else:
+                self.logger.log(level, self.msg)
+                self.msg = ''
+    
+        def flush(self):
+            for handler in self.logger.handlers:
+                handler.flush()
+                
+        def formatStdoutLog(self, name):
+            tornado.log.enable_pretty_logging(logger=logging.getLogger(name))
+
+                
+    if flag == True:
+        tornado.options.options.log_file_prefix = "log.txt"
+        tornado.options.options.log_to_stderr = False
+        tornado.options.parse_command_line()
+        sys.stdout = LogFile('stdout')
+        sys.stderr = LogFile('stderr')
+        
 if __name__ == "__main__":
+    writeToLog(True)
     reader = SDCard_Reader(sys.argv[1], sys.argv[2])
     ecg_data = reader.read_data()
