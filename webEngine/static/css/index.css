@@ -19,7 +19,7 @@ body{
 nav {
 	position: relative;
 	float: left;
-	width:150px
+	width:150px;
 	min-width:150px;
 }
 
@@ -75,19 +75,21 @@ p {
 /*Smartphone*/
 @media only screen and (max-width : 768px) {
 	body{
-		min-width: 870px;
+		min-width: 768px;
 	}
 
 	nav {
 		width: 100%;
 	}
 	ul.nav {
-		top: 5px;
+		top: 0px;
 		display: inline-block;
-		padding: 0px 20px 0px 65px;
-		width: 80%;
-		background: url('images/shad2.png') no-repeat;
-		-webkit-background-size: 80% 100%;
+		padding: 0px 0px 0px 0px;
+		width: 480px;
+		/*background: url('images/shad2.png') no-repeat;*/
+		/*-webkit-background-size:100% 100%;*/
+		background: none;
+		
 	}
 	ul.nav li {
 		float: left;
@@ -108,7 +110,6 @@ p {
  		-webkit-background-size: 100% 100%;
 	}
 
-	
 	ul.nav li a:hover {
 		overflow: hidden;
 		padding: 17px 5px 7px 5px;

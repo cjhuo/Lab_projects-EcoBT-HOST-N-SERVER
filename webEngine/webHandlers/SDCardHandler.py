@@ -19,9 +19,9 @@ class SDCardHandler(BaseHandler):
     def readDataFromCard(self):
         try:
             dataPath = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir, "data/record"))
-            dev="/dev/disk1"
+            dev = None
             command = """osascript -e 'do shell script "sudo python %s %s %s" with administrator privileges'""" % \
-                ((os.path.join(os.path.dirname(__file__), os.path.pardir,"sdReader/SDCard_reader.py"),  dev, dataPath))
+                ((os.path.join(os.path.dirname(__file__), os.path.pardir,"sdReader/SDCard_reader.py"),  dev, "data/record"))
             result = subprocess.call(command, shell=True)
             #print result
             #self.readeSD(os.path.join(dataPath, "records"))

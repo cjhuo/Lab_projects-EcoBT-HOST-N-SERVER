@@ -210,7 +210,7 @@ $(function () {
 		    </tbody>\
 		  </table>').css({
 			  fontSize: 'small',
-			  width: '99.5%',
+			  //width: '99.5%',
 			  //margin: 'auto',
 			  marginLeft: '5px',
 			  marginRight: '5px'
@@ -509,7 +509,7 @@ $(function () {
     			of: $("#spinner")[0]
     		},
     		width: 500,
-            modal: true,
+            modal: false,
             resizable: false,
             dialogClass: 'alert',
             closeOnEscape: false,

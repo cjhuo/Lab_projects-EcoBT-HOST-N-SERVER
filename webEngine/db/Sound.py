@@ -29,12 +29,16 @@ class Sound():
     
         
     def __exit__(self, type, value, traceback):
-        conn = self.session.connection()
-        self.session.remove()
-        conn.close()
+        #conn = self.session.connection()
+        #self.session.remove()
+        #conn.close()
+        self.session.close()
         
 #testcase    
 if __name__ == '__main__':
     from datetime import datetime
-    with Sound() as sound:
+    s = Sound()
+    with s as sound:
+        sound.insert(1, datetime.now(), '12345')
+    with s as sound:
         sound.insert(1, datetime.now(), '12345')

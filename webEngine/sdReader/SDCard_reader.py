@@ -9,15 +9,13 @@ import threading
 from DICOM_Constructor import *
 sys.dont_write_bytecode = True
 
-
 dev = '/dev/disk1'
 block = 512
 outfile = "ecg_data.txt"
 wfd = None
 
-
 class SDCard_Reader:
-    def __init__(self, dev = '/dev/disk1', outfile = None):
+    def __init__(self, dev = '/dev/disk', outfile = None):
         self.blocksize = 512
         self.dev = dev
         self.samplerate = 250
@@ -46,10 +44,15 @@ class SDCard_Reader:
 
     def read_data(self):
         if self.readDev:
-            print "read from SD card"
-            self.read_data_from_SD_card(dump_to_file=True)
+            if self.dev == str(None):
+                for i in range(1, 10): # try to read device from dev1 to dev9
+                    self.dev = '/dev/disk' + str(i)
+                    print "read from SD card at dev %s" % self.dev
+                    self.read_data_from_SD_card(dump_to_file=True)
+            else:
+                self.read_data_from_SD_card(dump_to_file=True)
         else:
-            print "read from file"
+            #print "read from file"
             self.read_data_from_file()
         return self.ecg_data
 
@@ -93,13 +96,18 @@ class SDCard_Reader:
                 print "Record End  : ", end
 
     def read_data_from_SD_card(self, dump_to_file=False):
-        fd = open(self.dev, 'rb')
+        try: # try to open device
+            fd = open(self.dev, 'rb')
+        except:
+            print "No device name %s found!" % self.dev
+            return
         fd.seek(1 * self.blocksize, os.SEEK_SET)
         raw = fd.read(40)
         fields = raw.split('|')
         if fields[0] != "EcoBT ECG":
             print "Not valid EcoBT ECG Reading"
-            exit(0)
+            return
+            #exit(0)
         (self.lastBLock,) = struct.unpack("<I", fields[1])
         self.ecg_data['start_time'] = self.ecg_timestamp(fields[2])
         self.ecg_data['end_time'] = self.ecg_timestamp(fields[3])
@@ -155,6 +163,7 @@ class SDCard_Reader:
                 self.wfd.write(foot)
                 self.wfd.close()
                 #constructDicom(fname)
+                print "Constructing 5-min dicom"
                 t = threading.Thread(target=constructDicom, args = (fname, ))
                 t.start()
                 t.join()
@@ -179,6 +188,7 @@ class SDCard_Reader:
             self.wfd_all.write(foot)
             self.wfd_all.close()
             #constructDicom(fname)
+            print "Constructing overall dicom"           
             t = threading.Thread(target=constructDicom, args = (fname, ))
             t.start()
             t.join()
@@ -190,7 +200,7 @@ class SDCard_Reader:
     def ecg_timestamp(self, timestamp):
         tmp = []
         for e in timestamp:
-#            print "%02X" % ord(e)
+            #print "%02X" % ord(e)
             tmp.append(ord(e))
         year = 2000 + tmp[0] * 100 + tmp[1]
         mon = ((tmp[2] & 0xF0) >> 4) * 10 + (tmp[2] & 0x0F)
@@ -227,12 +237,52 @@ class SDCard_Reader:
         fout += "%8d  " % self.ecg_data['aVR'][-1]
         fout += "%8d  " % self.ecg_data['aVL'][-1]
         fout += "%8d  " % self.ecg_data['aVF'][-1]
-#        print output
+        #print output
         if dump_to_file:
             self.wfd.write(fout + "\n")
             self.wfd_all.write(fout + "\n")
 
+import logging    
+import tornado
+from tornado.options import define, options
+sys.path.append(".")
+try:
+    from config import isWriteToLog
+except:
+    isWriteToLog = False
 
+def writeToLog(flag):
+    class LogFile(object):
+        """File-like object to log text using the `logging` module."""
+    
+        def __init__(self, name=None):
+            self.logger = logging.getLogger(name)
+            self.msg = ''
+            #self.formatStdoutLog(name)
+    
+        def write(self, msg, level=logging.INFO):
+            if msg != '\n': # keep information until hit line return mark
+                self.msg += msg
+            else:
+                self.logger.log(level, self.msg)
+                self.msg = ''
+    
+        def flush(self):
+            for handler in self.logger.handlers:
+                handler.flush()
+                
+        def formatStdoutLog(self, name):
+            tornado.log.enable_pretty_logging(logger=logging.getLogger(name))
+
+                
+    if flag == True:
+        tornado.options.options.log_file_prefix = "log.txt"
+        tornado.options.options.log_to_stderr = False
+        tornado.options.parse_command_line()
+        sys.stdout = LogFile('stdout')
+        sys.stderr = LogFile('stderr')
+        
 if __name__ == "__main__":
+    writeToLog(True)
     reader = SDCard_Reader(sys.argv[1], sys.argv[2])
     ecg_data = reader.read_data()

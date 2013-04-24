@@ -54,18 +54,18 @@ function init() {
 		complete: hideSpinner,
 		dataType: 'json',
 		success: function(data){
-			alert(data.message);
+			$('#result').html(data.message);
 			
 		},
 		error: function(data){
-			alert("Loading SD Card Failed");
+			$('#result').html("Loading SD Card Failed");
 		}
 	});
 }
 
 init();
 </script>
-
+<div id="result"></div>
 {% end %}
 
 {% block footer %}
