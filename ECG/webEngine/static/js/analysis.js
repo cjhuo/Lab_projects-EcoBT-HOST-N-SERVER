@@ -210,7 +210,7 @@ $(function () {
 		    </tbody>\
 		  </table>').css({
 			  fontSize: 'small',
-			  width: '99.5%',
+			  //width: '99.5%',
 			  //margin: 'auto',
 			  marginLeft: '5px',
 			  marginRight: '5px'

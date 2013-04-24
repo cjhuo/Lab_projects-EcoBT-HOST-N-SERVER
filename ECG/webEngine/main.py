@@ -35,6 +35,7 @@ def main():
     #t.daemon = True
     t.start()
     print "Running on localhost: %s" % webGUIPort
+    print "Self IP Addres: %s" % ipAddr
     ecoBTApp.start()
     
     

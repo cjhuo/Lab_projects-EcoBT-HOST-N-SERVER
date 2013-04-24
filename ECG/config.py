@@ -16,7 +16,6 @@ try:
     ipAddr = s.getsockname()[0]
 except:
     ipAddr = 'localhost' # no internet access available
-print ipAddr
 s.close()
 # addresses where live pages are going to fetch data from
 #'ws://cps.eng.uci.edu:8000/socket' 
