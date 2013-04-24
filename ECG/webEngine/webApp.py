@@ -31,7 +31,7 @@ class Application(tornado.web.Application):
             pycket = {
                         'engine': 'redis',
                         'storage': {
-                            #'connection_pool': redis.ConnectionPool(max_connections=2 ** 31),
+                            'connection_pool': redis.ConnectionPool(max_connections=2 ** 31),
                             'host': 'localhost',
                             'port': 6379,
                             'db_sessions': 10,
