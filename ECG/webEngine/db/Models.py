@@ -30,13 +30,14 @@ class DataSource(Singleton):    #to acchieve singleton of datasource
         return self.scopedSession
 
     def getEngine(self):
-            return self.engine
+        return self.engine
     
     def setEngine(self, engine):
         self.engine = engine
         
     def hasEngine(self):
         return self.engine != None
+    
     def getDBPATH(self):
         return DB_PATH
     
