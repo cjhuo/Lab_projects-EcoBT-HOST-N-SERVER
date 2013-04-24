@@ -190,7 +190,7 @@ class SDCard_Reader:
     def ecg_timestamp(self, timestamp):
         tmp = []
         for e in timestamp:
-            print "%02X" % ord(e)
+#            print "%02X" % ord(e)
             tmp.append(ord(e))
         year = 2000 + tmp[0] * 100 + tmp[1]
         mon = ((tmp[2] & 0xF0) >> 4) * 10 + (tmp[2] & 0x0F)
@@ -227,7 +227,7 @@ class SDCard_Reader:
         fout += "%8d  " % self.ecg_data['aVR'][-1]
         fout += "%8d  " % self.ecg_data['aVL'][-1]
         fout += "%8d  " % self.ecg_data['aVF'][-1]
-        print output
+#        print output
         if dump_to_file:
             self.wfd.write(fout + "\n")
             self.wfd_all.write(fout + "\n")
