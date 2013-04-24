@@ -51,9 +51,13 @@ function show(item){
 		$('#iframe1').removeAttr('srcdoc');
 		$('#iframe1').attr('src', "liveECG");
 	}
-	else if(item=='sdCard'){
+	else if(item=='sdCard' && document.ontouchstart === undefined){
 		$('#iframe1').removeAttr('srcdoc');
 		$('#iframe1').attr('src', "sdCard");
+	}
+	else if(item=='sdCard' && document.ontouchstart !== undefined){
+		//$('#iframe1').removeAttr('srcdoc');
+		$('#iframe1').attr('srcdoc', "SD Card Reading Functionality NOT available in touch device");
 	}
 	return false;
 }
