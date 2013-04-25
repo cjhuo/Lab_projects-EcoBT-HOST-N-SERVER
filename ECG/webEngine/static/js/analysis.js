@@ -239,6 +239,7 @@ $(function () {
     function onBinDataReceived(data) {
     	drawTable(data);
 		drawHistogram(data);
+		plotAccordingToChoices();
     }
     
     var options = { //options settings for main plot
@@ -455,7 +456,8 @@ $(function () {
 	
 	function chooseFileSource(){
     	var popUpDiv = $('<div id="fileChooser"/>');
-    	$('<p>Please choose choose a dicom file: </p>').appendTo(popUpDiv);
+    	$('<p>Please choose choose a dicom file: </p>')
+    		.appendTo(popUpDiv);
     	var defButton = $('<button>Use sample dicom file</button>').css({
     		float: 'left',
     		fontSize: 'small',
@@ -470,6 +472,7 @@ $(function () {
                 <input type="file" name="uploaded_files" >\
             </span>').css({
     		float: 'right',
+            marginLeft: '5px',
     		fontSize: 'small',
     	});
     	fileInput.button();
@@ -508,7 +511,7 @@ $(function () {
     			at: "bottom",
     			of: $("#spinner")[0]
     		},
-    		width: 500,
+    		width: 450,
             modal: false,
             resizable: false,
             dialogClass: 'alert',
@@ -559,7 +562,7 @@ $(function () {
             //width: '10%',
             cssFloat: 'center',
 			fontWeight: 'bold',
-			margin: '10px 10px 10px 10px'
+			margin: '10px 5px 10px 5px'
             //textAlign: 'center'
         });
         var checked = 0;
@@ -681,6 +684,30 @@ $(function () {
     	diagram.appendTo("body");
     }
     */
+    
+    function clearAndPlot(){
+    	if(plot != null){
+      		//remove selected points if there is any, bug in new version
+    		var pList = plot.getSelectedPoints();      		
+    		for(var i=0; i<pList.length;i++){
+    			pList[i].select(false, false);
+    		}
+        		
+    		plot.destroy();
+    		diagram.remove();
+    	}
+    		
+    	/* re-initialize every parameter */
+    	//diagram.unbind();
+    	qPoint = null;
+    	tPoint = null;
+		/* remove peakText button if any */
+		if(peakText)
+			peakText.remove();
+		/* remove submit button if any */
+		if(submit)
+			submit.remove();
+    }
 	
     
     function plotAccordingToChoices() {
@@ -717,27 +744,7 @@ $(function () {
         options.yAxis.top = yTop;
     	var diagramHeight = yTop + options.yAxis.height + 15;
         if (data.length > 0){
-        	if(plot != null){
-          		//remove selected points if there is any, bug in new version
-        		var pList = plot.getSelectedPoints();      		
-        		for(var i=0; i<pList.length;i++){
-        			pList[i].select(false, false);
-        		}
-	        		
-        		plot.destroy();
-        		diagram.remove();
-        	}
-        		
-        	/* re-initialize every parameter */
-        	//diagram.unbind();
-        	qPoint = null;
-        	tPoint = null;
-    		/* remove peakText button if any */
-    		if(peakText)
-    			peakText.remove();
-    		/* remove submit button if any */
-    		if(submit)
-    			submit.remove();
+        	clearAndPlot();
 			/* re-plot everything */
         	options.series = [];
         	options.series.push({
@@ -749,7 +756,8 @@ $(function () {
         	//plot all channels on one plot
         	diagram = $('<div id="diagram" ></div>').css( {
                 position: 'relative',
-                width: document.ontouchstart === undefined ? 'auto' : 'auto',
+                //width: document.ontouchstart === undefined ? 'auto' : 'auto',
+                //width: 'auto',
                 height: diagramHeight.toString() + 'px',
                 margin: '5px',
                 //marginRight: '10px',
@@ -818,16 +826,17 @@ $(function () {
     var popUpDiv;
     function pointPopup(point, event) { 
     	var pSelection = null;
-    	popUpDiv = $('<div id="popUpBox"><div>');
-    	popUpDiv.html('<p>Please choose the type for the point: </p>');
+    	popUpDiv = $('<div id="popUpBox">Please choose the type for the point: </div>');
+    	//popUpDiv.html('');
     	
     	popUpDiv.dialog({
     		position: {
-    			my: "top",
-    			at: "top",
+    			my: "center",
+    			at: "center",
     			of: $("#diagram")
     		},
             height: 200,
+            width: 250,
             modal: true,
             resizable: false,
             buttons: {
@@ -845,12 +854,18 @@ $(function () {
                 }
             }
         }).css({
-        	fontSize: 'small'
+        	fontSize: 'small',
+        	zoom: document.ontouchstart === undefined ? '1' : '0.2'
         });
-    	$('.ui-button').css({
-    		fontSize: 'small'
+    	$('.ui-dialog-buttonset').css({
+    		fontSize: 'small',
+    		zoom: document.ontouchstart === undefined ? '1' : '0.5'
     	});
-    	popUpDiv.focus();
+    	$('.ui-dialog-titlebar').css({
+    		fontSize: 'small',
+    		zoom: document.ontouchstart === undefined ? '1' : '0.5'
+    	});
+    	$('.ui-dialog-buttonset').focus();
     	//return pSelection;
     }
     
@@ -928,7 +943,7 @@ $(function () {
     			'bin': parseInt(bin.val()),
     			'lead': choice.find('input').filter('[checked=checked]').attr("value")	
     			};
-		plotAccordingToChoices();
+
 		$.ajax({
 			type: 'GET',
 			url: submitUrl,
@@ -953,6 +968,7 @@ $(function () {
 		    		hPlot.destroy();
 		    		hPlot = null;
 		    	}
+		    	plotAccordingToChoices();
 			}
 		});
     }
