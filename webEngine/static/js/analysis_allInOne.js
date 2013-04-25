@@ -281,8 +281,8 @@ $(function () {
     	        	step: 10,
     	        	overflow: false
     	        },
-    	        startOnTick: true,
-    	        endOnTick: true
+    	        startOnTick: false,
+    	        endOnTick: false
             },
             tooltip: {
             	enabled: document.ontouchstart === undefined ? true : false,

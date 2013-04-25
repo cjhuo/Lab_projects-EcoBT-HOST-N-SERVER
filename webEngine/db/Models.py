@@ -97,12 +97,15 @@ class SoundLog(Base):
 # one to many relationship between Patient and Record
 class Patient(Base):
     __tablename__ = 'patients'
-    id = Column(Integer, primary_key=True)
+    id = Column(BigInteger, primary_key=True)
     name = Column(String(255), nullable=True)
     gender = Column(Boolean, nullable=True)
     age = Column(Integer, nullable=True) # number of weeks
-    records = relationship("Record", backref="patient")   
-    def __init__(self, name=None, gender=None, age=None): 
+    records = relationship("Record", backref="patient", cascade="save-update")   
+
+    def __init__(self, name=None, gender=None, age=None, id=None): 
+        if id != None:
+            self.id = id
         self.name = name
         self.gender = gender
         self.age = age
@@ -111,7 +114,7 @@ class Record(Base):
     __tablename__ = 'records'
     #id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False, primary_key=True, autoincrement=False)
-    patient_id = Column(Integer, ForeignKey('patients.id'), primary_key=True, autoincrement=False)
+    patient_id = Column(BigInteger, ForeignKey('patients.id'), primary_key=True, autoincrement=False)
     
     def __init__(self, name, patient_id):
         self.name = name
