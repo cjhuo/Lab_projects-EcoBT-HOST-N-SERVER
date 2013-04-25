@@ -924,6 +924,7 @@ $(function () {
 				submit.button();
 				submit.appendTo(choice);
 				submit.click(doSubmit);
+				submit.focus();
 	    	}
 
 		}
