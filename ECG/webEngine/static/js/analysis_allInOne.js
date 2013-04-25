@@ -430,7 +430,7 @@ $(function () {
     	
     	var fileInput = $('<span class="file-wrapper">\
     			<span>Submit your own Dicom file</span>\
-                <input type="file" name="uploaded_files" >\
+                <input style="width:100%" type="file" name="uploaded_files" >\
             </span>').css({
     		float: 'right',
     		fontSize: 'small',
@@ -541,7 +541,7 @@ $(function () {
     function addFileUploadDiv() {
     	var fileInput = $('<span class="file-wrapper" title="Submit a different Dicom file">\
     			<span>File</span>\
-                <input type="file" name="uploaded_files" >\
+                <input style="width:100%" type="file" name="uploaded_files" >\
             </span>').css({
     		float: 'left',
     		fontSize: 'small',

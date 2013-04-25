@@ -467,10 +467,23 @@ $(function () {
     	defButton.click(chooseTestFile);
     	popUpDiv.append(defButton);
     	
-    	var fileInput = $('<span class="file-wrapper">\
+    	var fileButton = $('<button>Use sample dicom file</button>').css({
+    		float: 'left',
+    		fontSize: 'small',
+    	});  
+    	
+    	fileButton.button({
+    		  text: false,
+              icons: {
+                primary: "ui-icon-triangle-1-s"
+              }
+    	});
+    	popUpDiv.append(fileButton);
+    	
+    	var fileInput = $('<div class="file-wrapper">\
     			<span>Submit your own Dicom file</span>\
-                <input type="file" name="uploaded_files" >\
-            </span>').css({
+                <input style="width:100%" type="file" name="uploaded_files" >\
+            </div>').css({
     		float: 'right',
             marginLeft: '5px',
     		fontSize: 'small',
@@ -511,7 +524,7 @@ $(function () {
     			at: "bottom",
     			of: $("#spinner")[0]
     		},
-    		width: 450,
+    		width: 500,
             modal: false,
             resizable: false,
             dialogClass: 'alert',
@@ -594,7 +607,7 @@ $(function () {
     function addFileUploadDiv() {
     	var fileInput = $('<span class="file-wrapper" title="Submit a different Dicom file">\
     			<span>File</span>\
-                <input type="file" name="uploaded_files" >\
+                <input style="width:100%" type="file" name="uploaded_files" >\
             </span>').css({
     		float: 'right',
     		fontSize: 'small',
