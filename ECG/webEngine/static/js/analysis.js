@@ -471,14 +471,16 @@ $(function () {
     		float: 'left',
     		fontSize: 'small',
     	});  
-    	
+    	/*
     	fileButton.button({
     		  text: false,
               icons: {
                 primary: "ui-icon-triangle-1-s"
               }
     	});
+    	fileButton.click(getDicomList);
     	popUpDiv.append(fileButton);
+    	*/
     	
     	var fileInput = $('<div class="file-wrapper">\
     			<span>Submit your own Dicom file</span>\
@@ -524,7 +526,7 @@ $(function () {
     			at: "bottom",
     			of: $("#spinner")[0]
     		},
-    		width: 500,
+    		width: 450,
             modal: false,
             resizable: false,
             dialogClass: 'alert',
