@@ -283,6 +283,6 @@ def writeToLog(flag):
         sys.stderr = LogFile('stderr')
         
 if __name__ == "__main__":
-    writeToLog(True)
+    writeToLog(isWriteToLog)
     reader = SDCard_Reader(sys.argv[1], sys.argv[2])
     ecg_data = reader.read_data()
