@@ -299,7 +299,8 @@ class ECGHandler(BaseHandler):
                         'info': info
                         #'info': [an array of additional information]
                         }) #format of bins json: {'data': bins info}
-        except Exception:
+        except Exception as e:
+            print e
             self.send_error(302)
               
             
