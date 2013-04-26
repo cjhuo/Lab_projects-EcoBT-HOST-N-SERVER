@@ -42,10 +42,12 @@ $(function () {
 				*/
 		}
 		else if(data.from == 'central') {
+			
 			if(data.data.type == 'message'){
 				alert(data.data.value);
 				open('/administration', '_self', true);
 			}
+			
 		}
 	}
 	
@@ -58,14 +60,12 @@ $(function () {
 		addFileUploadDiv();
 		addStartButton();
 		addStopButton();
+		addClearTableButton();
 		startButton.button("enable");
 		stopButton.hide();
 
 	}
 	
-	function onFileReceived(){
-
-	}
 	/*
     var settings = [
                     {name: 'setting1', value: '0'},
@@ -157,7 +157,21 @@ $(function () {
     }
     
     function updateDataTable(data){
+    	/*
     	$("#dataTable tbody").append("<tr>" +
+                "<td>" + data[0]+ ":" + data[1] +":"+ data[2] + "</td>" +
+                "<td>" + data[3] + "</td>" +
+                "<td>" + data[4] + "</td>" +
+                "<td>" + data[5] + "</td>" +
+                "<td>" + data[6] + "</td>" +
+                "<td>" + data[7] + "</td>" +
+                "<td>" + data[8] + "</td>" +
+                "<td>" + data[9] + "</td>" +
+                "<td>" + data[10] + "</td>" +
+
+              "</tr>" );
+        */
+    	$("#dataTable tbody").prepend("<tr>" +
                 "<td>" + data[0]+ ":" + data[1] +":"+ data[2] + "</td>" +
                 "<td>" + data[3] + "</td>" +
                 "<td>" + data[4] + "</td>" +
@@ -209,6 +223,24 @@ $(function () {
     	showCompleteDialog();
     	//startButton.show();
     	*/
+    }
+    
+    function clearTable() {
+    	$("#dataTable tbody > tr").remove();
+    }
+    
+    var clearButton;
+    function addClearTableButton() {
+    	clearButton = $('<button>CLEAR TABLE</button>').css({
+    		float: 'right',
+    		fontSize: '30%',
+    		position: 'relative',
+    		//right: '0px',
+    		top: '0px'
+    	});
+    	clearButton.button();
+    	clearButton.click(clearTable);
+    	clearButton.insertBefore("#dataContainer");
     }
 	
     var startButton, stopButton;
@@ -264,7 +296,6 @@ $(function () {
             	//console.log(data.result);
             	hideSpinner();
             	alert("Update sent to Node successfully!");
-            	//onFileReceived(data.result);
             },
             fail: function (e, data) {
             	alert('invalid file');

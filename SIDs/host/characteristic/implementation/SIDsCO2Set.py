@@ -42,9 +42,9 @@ typedef union{
 '''
 
 SETTING_NAMES = ['TIME BETWEEN DATA (s) (1~65535)', 'SAMPLE COUNT (1~255)', 'SAMPLE CACULATION', \
-                 'LED1 POWER (0~255)', 'LED1 PD1 POWER (0~255)', 'LED1 PD2 POWER (0~255)', 'LED1 DELAY (ms) (10~65535)', \
-                 'LED2 POWER (0~255)', 'LED2 PD1 POWER (0~255)', 'LED2 PD2 POWER (0~255)', 'LED2 DELAY (ms) (10~65535)', \
-                 'AMBIENT PD1 POWER (0~255)', 'AMBIENT PD2 POWER (0~255)','AMBIENT DELAY (ms) (10~65535)']
+                 'LED1 GAIN (0~255)', 'LED1 PD1 GAIN (0~255)', 'LED1 PD2 GAIN (0~255)', 'LED1 DELAY (ms) (10~65535)', \
+                 'LED2 GAIN (0~255)', 'LED2 PD1 GAIN (0~255)', 'LED2 PD2 GAIN (0~255)', 'LED2 DELAY (ms) (10~65535)', \
+                 'AMBIENT PD1 GAIN (0~255)', 'AMBIENT PD2 GAIN (0~255)','AMBIENT DELAY (ms) (10~65535)']
 
 class SIDsCO2Set(Characteristic):
     def __init__(self):
