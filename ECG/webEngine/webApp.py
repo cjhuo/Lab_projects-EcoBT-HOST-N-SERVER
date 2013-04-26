@@ -51,7 +51,8 @@ class Application(tornado.web.Application):
         self.handlers = [
                 (r'/', MainHandler),          
                 (r'/ecgHandler', ECGHandler),
-                (r'/ecgAllInOne', ECGAllInOneHandler),            
+                (r'/ecgAllInOne', ECGAllInOneHandler),    
+                (r'/dicomList', DicomListHandler),        
                 (r'/cardReader', CardReaderHandler),
                 (r'/analysis_allInOne', AnalysisAllInOnceHandler),   
                 (r'/liveECG', LiveECGHandler),

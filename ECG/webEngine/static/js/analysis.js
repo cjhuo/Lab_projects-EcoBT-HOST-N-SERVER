@@ -454,6 +454,22 @@ $(function () {
 		$('#fileChooser').dialog( "destroy" );
 	}
 	
+	var dicomList;
+	function getDicomList() {
+		$.ajax({
+			url: '/dicomList',
+			cache: false,
+			type: 'GET',
+			async: false,
+			dataType: 'json',
+			success: function(data) {
+				dicomList = data.fileList;
+				console.log(dicomList);
+			}
+		});
+	}
+	
+	var dicomListMenu;
 	function chooseFileSource(){
     	var popUpDiv = $('<div id="fileChooser"/>');
     	$('<p>Please choose choose a dicom file: </p>')
@@ -461,27 +477,42 @@ $(function () {
     	var defButton = $('<button>Use sample dicom file</button>').css({
     		float: 'left',
     		fontSize: 'small',
-    	});   	
+    	});
 
-    	defButton.button();
-    	defButton.click(chooseTestFile);
-    	popUpDiv.append(defButton);
-    	
-    	var fileButton = $('<button>Use sample dicom file</button>').css({
-    		float: 'left',
-    		fontSize: 'small',
-    	});  
-    	/*
-    	fileButton.button({
-    		  text: false,
-              icons: {
+    	defButton.button({
+            icons: {
                 primary: "ui-icon-triangle-1-s"
               }
     	});
-    	fileButton.click(getDicomList);
-    	popUpDiv.append(fileButton);
-    	*/
+    	//defButton.click(chooseTestFile);
+    	popUpDiv.append(defButton);
     	
+    	getDicomList();
+    	dicomListMenu = $('<ul>').appendTo('body').css({
+    		z-index: '1010'
+    	}).hide();
+    	$.each(dicomList, function(key, val) {
+    		var lnk = $('<li><a href="#">' + val + '</a></li>');
+    		lnk.appendTo(dicomListMenu);
+    	});
+    	
+    	dicomListMenu.hide().menu();
+    	defButton.click(function(event){
+    		console.log(dicomListMenu);
+    		//dicomListMenu.appendTo('body').show();
+    		
+    		dicomListMenu.show().position({
+                my: "left top",
+                at: "left bottom",
+                of: this
+              });
+            
+            $( document ).one( "click", function() {
+            	dicomListMenu.hide();
+              });
+            return false;
+    	});
+    	    	
     	var fileInput = $('<div class="file-wrapper">\
     			<span>Submit your own Dicom file</span>\
                 <input style="width:100%" type="file" name="uploaded_files" >\

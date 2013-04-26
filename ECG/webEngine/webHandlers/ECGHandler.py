@@ -250,7 +250,16 @@ def checkFileExistInPath(pathName, fileName, fileContent):
     else:
         print >> sys.stderr, 'FILE EXISTS, OPENING DIRECTLY'
     return os.path.join(path, fileName)
-  
+
+class DicomListHandler(BaseHandler):
+    def get(self):
+        fList = []
+        for fname in os.listdir("./data"):
+            prefix, suffix = fname.split(".")
+            if suffix == 'dcm':
+                fList.append(fname)
+        self.write({'fileList': fList})
+
 class ECGHandler(BaseHandler):
     def initialize(self):
         if not self.session.get('ecg'):
