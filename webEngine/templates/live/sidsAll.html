@@ -9,6 +9,7 @@
 <div style="font-size: small; float: right">Node Name: </div>
 <br>
 <div id="serverAddr" style="display:none">{{ serverAddr }}</div>
+<div id="soundServerAddr" style="display:none">{{ soundServerAddr }}</div>
 
 
 <!-- <div class="ui-layout-north">Outer North</div> -->
@@ -38,7 +39,9 @@
 
 		<!-- <div class="ui-layout-east">Inner East</div> -->
 
-		<div id='sound' class="ui-layout-center">Sound</div>
+		<div id='sound' class="ui-layout-center"><!-- Sound -->	
+			
+		</div>
 
 
 
@@ -86,17 +89,20 @@
 <script language="javascript" type="text/javascript" src="{{ static_url("lib/highcharts/highcharts-more.js") }}"></script>
 <script language="javascript" type="text/javascript" src="{{ static_url("lib/highcharts/modules/exporting.js") }}"></script>
 
+<!-- library for generating audio player -->
+<link rel="stylesheet" href="{{ static_url("lib/mediaelementplayer/mediaelementplayer.css") }}" />
+<script language="javascript" type="text/javascript" src="{{ static_url("lib/mediaelementplayer/mediaelement-and-player.js") }}"></script>
 
 <script language="javascript" type="text/javascript" src="{{ static_url("lib/spin.min.js") }}"></script>
 
 <script language="javascript" type="text/javascript" src="{{ static_url("js/live_sids_all.js") }}"></script>
 
- <script type="text/javascript">
- 
-	$(document).ready(function () {
+<script type="text/javascript">
 
-	});
-
+$(document).ready(function () {
+	
+});
 </script>
+
 {% end %}
 

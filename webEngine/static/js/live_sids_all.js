@@ -1,6 +1,7 @@
 $(function () {
 	var url = $('#serverAddr').text(); 	//push url, need to change this to server's url, 
 	var name =  $('#name').text();
+	var soundUrl = $('#soundServerAddr').text();;
 		
     var datasets; //store datasets
 	function onDataReceived(data) { //setup plot after retrieving data
@@ -60,7 +61,24 @@ $(function () {
 		initChart();
 		initTemperatureChart();
 		initHumidityChart();
+		initSoundMonitor();
 		
+	}
+	
+	function initSoundMonitor(){
+		
+		var player = $('<div><audio autoplay="autoplay" \
+				src='+ soundUrl +' \
+				controls="controls" /></div>').css({
+				position: 'relative',
+				display: 'table',
+				top: '40%',
+			    margin: 'auto'
+				});
+		$('#sound').append(player);
+		
+
+		//$('audio,video').mediaelementplayer();
 	}
 	
 	function initLayout(){
@@ -370,7 +388,7 @@ $(function () {
 	        },
 	        credits: {
 	        	href: "http://cps.eng.uci.edu",
-	        	text: "CECS Lab UI"
+	        	text: "UCI Embedded System Lab"
 	        },
 	        
 	        title:{
@@ -385,8 +403,8 @@ $(function () {
 	           
 	        // the value axis
 	        yAxis: {
-	            min: 10,
-	            max: 45,
+	            min: 34,
+	            max: 42,
 	            
 	            minorTickInterval: 'auto',
 	            minorTickWidth: 1,
@@ -394,7 +412,7 @@ $(function () {
 	            minorTickPosition: 'inside',
 	            minorTickColor: '#666',
 	    
-	            tickInterval: 5,
+	            tickInterval: 1,
 	            tickWidth: 2,
 	            tickPosition: 'inside',
 	            tickLength: 10,
@@ -407,23 +425,27 @@ $(function () {
 	                text: '°C'
 	            },
 	            plotBands: [{
-	                from: 30,
-	                to: 35,
+	                from: 34,
+	                to: 35.5,
+	                color: '#DDDF0D' // green
+	            },{
+	                from: 35.5,
+	                to: 37.5,
 	                color: '#55BF3B' // green
 	            }, {
-	                from: 35,
-	                to: 37,
+	                from: 37.5,
+	                to: 39,
 	                color: '#DDDF0D' // yellow
 	            }, {
-	                from: 37,
-	                to: 45,
+	                from: 39,
+	                to: 42,
 	                color: '#DF5353' // red
 	            }]
 	        },
 	    
 	        series: [{
 	            name: 'Skin',
-	            data: [0],
+	            data: [34],
 	            yAxis: 0,
 	            tooltip: {
 	                valueSuffix: ' Degree'
@@ -449,11 +471,11 @@ $(function () {
 	        },
 	        credits: {
 	        	href: "http://cps.eng.uci.edu",
-	        	text: "CECS Lab UI"
+	        	text: "UCI Embedded System Lab"
 	        },
 	        
 	        title:{
-	            text: 'Humidity Monitor'
+	            text: 'CO2 Density Monitor'
 	        },
 	        
 	        pane: {
@@ -465,7 +487,7 @@ $(function () {
 	        // the value axis
 	        yAxis: {
 	            min: 0,
-	            max: 100,
+	            max: 6,
 	            
 	            minorTickInterval: 'auto',
 	            minorTickWidth: 1,
@@ -473,7 +495,7 @@ $(function () {
 	            minorTickPosition: 'inside',
 	            minorTickColor: '#666',
 	    
-	            tickInterval: 10,
+	            tickInterval: 1,
 	            tickWidth: 1,
 	            tickPosition: 'inside',
 	            tickLength: 10,
@@ -486,16 +508,16 @@ $(function () {
 	                text: '%'
 	            },
 	            plotBands: [{
-	                from: -10,
-	                to: 10,
+	                from: 0,
+	                to: 2,
 	                color: '#55BF3B' // green
 	            }, {
-	                from: 10,
-	                to: 30,
+	                from: 2,
+	                to: 4,
 	                color: '#DDDF0D' // yellow
 	            }, {
-	                from: 30,
-	                to: 45,
+	                from: 4,
+	                to: 6,
 	                color: '#DF5353' // red
 	            }]
 	        },

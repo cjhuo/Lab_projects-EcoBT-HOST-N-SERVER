@@ -14,16 +14,18 @@ from BaseHandler import BaseHandler
 class MainHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
+        '''
         if not self.current_user:
             self.redirect("/login")
             return
         username = tornado.escape.xhtml_escape(self.current_user["name"])
+        '''
         self.render(
             "index_sids.html",
             page_title="SIDs Demo",
             header_text="SIDs Demo",
             footer_text="SIDs Demo",
-            username = username
+            #username = username
         )
         
 class LogOutHandler(BaseHandler):
@@ -108,6 +110,7 @@ class SIDsAllHandler(BaseHandler):
             header_text="Live SIDs Viewer",
             footer_text="",
             serverAddr = LiveSIDsServerAddr,
+            soundServerAddr = soundServerAddr,
             nodeName = name,
         )  
 

@@ -365,6 +365,7 @@ $(function () {
 	    			group.push(text);
 	    			//group.peripheral = peripheral;
 	    			var sidsUrl = "/sidsAll?name="+data.address;//"/liveSIDs?name="+data.address;
+	    			//var sidsUrl = "/liveSIDs?name="+data.address;//"/liveSIDs?name="+data.address;
 	    			group.attr({
 	    			    cursor: 'pointer',
 	    			}).mouseover(function(e) {
