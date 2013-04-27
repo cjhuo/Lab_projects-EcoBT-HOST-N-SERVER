@@ -20,8 +20,8 @@ from config import *
 from BaseHandler import BaseHandler
 from ecg.ECG_reader import ECG_reader
 
-uploadPath = "Uploads/"
-arrayLength = 2500 # if sample count is greater than this number, start compression
+UPLOAD_PATH = "Uploads/"
+ARRAY_LENGTH_WITH_NO_COMPRESSION_NEED = 2500 # if sample count is greater than this number, start compression
 #fake the labels for each channels for demo purpose, 
 #eventually label information should be passed from ecg module
 ECG_CHANNELLABELS = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6']
@@ -55,12 +55,11 @@ class ECGAllInOneHandler(BaseHandler):
             maxVal = int(maxVal)
             for i in range(len(self.ecg.wavech)):
                 wavech.append([self.ecg.wavech[i][j] for j in range(minVal, maxVal)])
-            if len(wavech[0]) > arrayLength: # compress it
+            if len(wavech[0]) > ARRAY_LENGTH_WITH_NO_COMPRESSION_NEED: # compress it
                 print >> sys.stderr, 'TOO MANY SAMPLES, CAN\'T DRAW DIRECTLY, START COMPRESSING'
-                dataSetsCompression(wavech, wavech, arrayLength)
+                dataSetsCompression(wavech, wavech, ARRAY_LENGTH_WITH_NO_COMPRESSION_NEED)
                 print >> sys.stderr, 'COMPRESSION COMPLETE, SENDING COMPRESSED DATA FOR DRAWING' 
-            pointInterval = (1000/frequency) * int(round(float(len(self.ecg.wavech[0]))/float(arrayLength)))
-
+            pointInterval = (1000/frequency) * int(round(float(len(self.ecg.wavech[0]))/float(ARRAY_LENGTH_WITH_NO_COMPRESSION_NEED)))
         else: # plot along the entire time period      
             # interval is 8, frequency 125, draw 5 samples in every small block(4px)
             # original frequency / lowered frequency === integer 
@@ -91,7 +90,7 @@ class ECGAllInOneHandler(BaseHandler):
         options = self.get_argument("data")
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         jsonFile = 'options_' + timestamp + '.json'
-        with open(os.path.join(self.settings['static_path'], uploadPath, jsonFile), 'w') as outfile:
+        with open(os.path.join(self.settings['static_path'], UPLOAD_PATH, jsonFile), 'w') as outfile:
             outfile.write(options)
         
         t = threading.Thread(target=self.generateSVG, args=(jsonFile,))
@@ -102,9 +101,9 @@ class ECGAllInOneHandler(BaseHandler):
     def generateSVG(self, jsonFile):
         convertTool = os.path.join(self.settings['static_path'], 'lib/highstock/highcharts-convert.js')
         callback = os.path.join(self.settings['static_path'], 'lib/highstock/callback.js')
-        jsonFile = os.path.join(self.settings['static_path'], uploadPath, jsonFile)
+        jsonFile = os.path.join(self.settings['static_path'], UPLOAD_PATH, jsonFile)
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        returnPath = uploadPath + 'svg/chart_'+ timestamp +'.png'
+        returnPath = UPLOAD_PATH + 'svg/chart_'+ timestamp +'.png'
         svgFile = os.path.join(self.settings['static_path'], returnPath)
         command = "/usr/local/bin/phantomjs %s -infile %s -outfile %s -scale 1 -constr StockChart" % (convertTool, jsonFile, svgFile)
         rcode = subprocess.call(command, shell=True)
@@ -132,6 +131,41 @@ class ECGAllInOneHandler(BaseHandler):
         def _callback(val):
             self.write(val)
             self.finish()   
+        def _getDataFromDicomFile():
+            wavech = self.ecg.wavech
+            
+            #create dataset dict to be sent to web server and fill in data
+            datasets = []
+            pointInterval = 1000/frequency
+            if len(wavech[0]) > ARRAY_LENGTH_WITH_NO_COMPRESSION_NEED:
+                print >> sys.stderr, 'TOO MANY SAMPLES, CAN\'T DRAW DIRECTLY, START COMPRESSING'
+                base = []
+                base = compressList(ARRAY_LENGTH_WITH_NO_COMPRESSION_NEED, wavech[0])
+                print >> sys.stderr, 'COMPRESSION COMPLETE, SENDING COMPRESSED DATA FOR DRAWING'
+                pointInterval = (1000/frequency) * int(round(float(len(wavech[0]))/float(ARRAY_LENGTH_WITH_NO_COMPRESSION_NEED)))
+                tmpWavech = []
+                for i in range(len(wavech)):
+                    tmpWavech.append([wavech[i][j] for j in range(ARRAY_LENGTH_WITH_NO_COMPRESSION_NEED)]) # only pick the first 2500 samples for the first time
+                wavech = tmpWavech
+            else:
+                base = wavech[0]
+    
+            for i in range(len(wavech)):
+                data = wavech[i]
+                label = ECG_CHANNELLABELS[i]            
+                datasets.append(dict())
+                datasets[i]['data'] = data 
+                datasets[i]['label'] = label
+                datasets[i]['min'] = min(data)
+                datasets[i]['max'] = max(data)
+                
+            print 'pointInterval: ', pointInterval
+            val = {
+                   'dspData': datasets, 
+                   'pointInterval': pointInterval, 
+                   'base': base
+                   }
+            return val       
         if len(self.request.files) != 0: #user uploaded file from UI 
             f = self.request.files['uploaded_files'][0]
             orig_fname = f['filename']
@@ -144,45 +178,9 @@ class ECGAllInOneHandler(BaseHandler):
             print >> sys.stderr, 'START READING ECG DATA IN ECG MODULE..'
             self.ecg.setFile()               
             print >> sys.stderr, 'FINISH READING ECG DATA IN ECG MODULE..' 
-        val = self.getDataFromDicomFile()
+        val = _getDataFromDicomFile()
         IOLoop.instance().add_callback(lambda: _callback(val))
 
-            
-    def getDataFromDicomFile(self):
-        wavech = self.ecg.wavech
-        
-        #create dataset dict to be sent to web server and fill in data
-        datasets = []
-        pointInterval = 1000/frequency
-        if len(wavech[0]) > arrayLength:
-            print >> sys.stderr, 'TOO MANY SAMPLES, CAN\'T DRAW DIRECTLY, START COMPRESSING'
-            base = []
-            base = compressList(arrayLength, wavech[0])
-            print >> sys.stderr, 'COMPRESSION COMPLETE, SENDING COMPRESSED DATA FOR DRAWING'
-            pointInterval = (1000/frequency) * int(round(float(len(wavech[0]))/float(arrayLength)))
-            tmpWavech = []
-            for i in range(len(wavech)):
-                tmpWavech.append([wavech[i][j] for j in range(arrayLength)]) # only pick the first 2500 samples for the first time
-            wavech = tmpWavech
-        else:
-            base = wavech[0]
-
-        for i in range(len(wavech)):
-            data = wavech[i]
-            label = ECG_CHANNELLABELS[i]            
-            datasets.append(dict())
-            datasets[i]['data'] = data 
-            datasets[i]['label'] = label
-            datasets[i]['min'] = min(data)
-            datasets[i]['max'] = max(data)
-            
-        print 'pointInterval: ', pointInterval
-        val = {
-               'dspData': datasets, 
-               'pointInterval': pointInterval, 
-               'base': base
-               }
-        return val       
     
 def compressList(outputLength, inputList):
     outputList = []
@@ -201,7 +199,7 @@ def compressList(outputLength, inputList):
             
         
 def dataSetsCompression(wavech, output, arrayLength): # compress data into length of arrayLength by averaging
-    '''
+    ''' multi-threaded way of doing compression
     paralFunc = partial(compressList, arrayLength)
     tmpList = multiprocessing.pool.Pool().map(paralFunc, wavech)
     for l in tmpList:
@@ -215,11 +213,11 @@ def dataSetsCompression(wavech, output, arrayLength): # compress data into lengt
             
 def checkFileExistInPath(pathName, fileName, fileContent):
     # search locally by the filename, if existed, use it instead of uploading
-    path1 = os.path.join(pathName, uploadPath)
+    path1 = os.path.join(pathName, UPLOAD_PATH)
     path2 = os.path.join(pathName, os.pardir, os.pardir, 'data')
     
     path = None
-    '''
+    ''' checking if file exists in different predefined locations
     if os.path.exists(os.path.join(path1,fileName)):
         path = path1
     elif os.path.exists(os.path.join(path2,fileName)):
@@ -227,7 +225,7 @@ def checkFileExistInPath(pathName, fileName, fileContent):
     '''
     
     if path == None:
-        path = os.path.join(pathName, uploadPath)
+        path = os.path.join(pathName, UPLOAD_PATH)
         ofd = open(path + fileName, 'w')
         ofd.write(fileContent)
         ofd.close()
@@ -275,7 +273,42 @@ class ECGHandler(BaseHandler):
             import pickle
             print sys.getsizeof(pickle.dumps(self.ecg.wavech))
             self.write(val)
-            self.finish()    
+            self.finish() 
+               
+        '''           
+        The datasets dict should have the structure as below:
+        datasets = [
+                        {
+                            label: "channel",
+                            #data: [array of [x, y]]
+                            data: [array of y]
+                        },
+                        {
+                            label: "channel2",
+                            #data: [array of [x, y]]
+                            data: [array of y]
+                        },
+                    ]
+        '''
+        def _getDataFromDicomFile():
+            #wavech, peaks = ecg.ECG_reader.getTestData()
+            wavech = self.ecg.getTestData()
+            
+            #create dataset dict to be sent to web server and fill in data
+            datasets = []
+            for i in range(len(wavech)):
+                data = wavech[i] #[wavech[i][j] for j in range(len(wavech[i]))]
+                label = ECG_CHANNELLABELS[i]            
+                #label = "channel " + str(i)
+                datasets.append(dict())
+                datasets[i]['data'] = data 
+                datasets[i]['label'] = label
+                datasets[i]['min'] = min(data)
+                datasets[i]['max'] = max(data)            
+                
+            val = {'dspData': datasets}
+            #print val
+            return val
         if len(self.request.files) != 0: #user uploaded file from UI 
             f = self.request.files['uploaded_files'][0]
             orig_fname = f['filename']
@@ -288,7 +321,7 @@ class ECGHandler(BaseHandler):
             print >> sys.stderr, 'START READING ECG DATA IN ECG MODULE..'
             self.ecg.setFile()               
             print >> sys.stderr, 'FINISH READING ECG DATA IN ECG MODULE..' 
-        val = self.getDataFromDicomFile()
+        val = _getDataFromDicomFile()
         IOLoop.instance().add_callback(lambda: _callback(val))
 
     def get(self): 
@@ -308,44 +341,6 @@ class ECGHandler(BaseHandler):
         except Exception as e:
             print e
             self.send_error(302)
-              
-            
-    '''           
-    The datasets dict should have the structure as below:
-    datasets = [
-                    {
-                        label: "channel",
-                        #data: [array of [x, y]]
-                        data: [array of y]
-                    },
-                    {
-                        label: "channel2",
-                        #data: [array of [x, y]]
-                        data: [array of y]
-                    },
-                ]
-    '''
-    def getDataFromDicomFile(self):
-        #wavech, peaks = ecg.ECG_reader.getTestData()
-        wavech = self.ecg.getTestData()
-        
-        #create dataset dict to be sent to web server and fill in data
-        datasets = []
-        for i in range(len(wavech)):
-            data = wavech[i] #[wavech[i][j] for j in range(len(wavech[i]))]
-            label = ECG_CHANNELLABELS[i]            
-            #label = "channel " + str(i)
-            datasets.append(dict())
-            datasets[i]['data'] = data 
-            datasets[i]['label'] = label
-            datasets[i]['min'] = min(data)
-            datasets[i]['max'] = max(data)            
-            
-        val = {'dspData': datasets}
-        #print val
-        return val
-
 
 if __name__ == "__main__":
-    print ECGHandler().getDataFromDicomFile()
-       
+    print ECGHandler().handleUpload()
