@@ -20,12 +20,17 @@ from config import *
 from BaseHandler import BaseHandler
 from ecg.ECG_reader import ECG_reader
 
+DATA_PATH = "./data"
 UPLOAD_PATH = "Uploads/"
 ARRAY_LENGTH_WITH_NO_COMPRESSION_NEED = 2500 # if sample count is greater than this number, start compression
 #fake the labels for each channels for demo purpose, 
 #eventually label information should be passed from ecg module
 ECG_CHANNELLABELS = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6']
 
+
+'''
+Handler for ecg viewing page
+'''
 class ECGAllInOneHandler(BaseHandler):
     def initialize(self, ecgList):
         if not self.get_secure_cookie('PYCKET_ID'):
@@ -169,15 +174,19 @@ class ECGAllInOneHandler(BaseHandler):
         if len(self.request.files) != 0: #user uploaded file from UI 
             f = self.request.files['uploaded_files'][0]
             orig_fname = f['filename']
-            filePath = checkFileExistInPath(self.settings['static_path'], orig_fname, f['body'])
-            
-            print >> sys.stderr, 'START READING ECG DATA IN ECG MODULE..'
-            self.ecg.setFile(filePath)              
-            print >> sys.stderr, 'FINISH READING ECG DATA IN ECG MODULE..' 
+            filePath = checkFileExistInPath(self.settings['static_path'], orig_fname, f['body'])            
+        elif self.get_argument("filename", default=None):
+            filePath = os.path.join(DATA_PATH, self.get_argument("filename", default=None))
         else: #user user the default test file
-            print >> sys.stderr, 'START READING ECG DATA IN ECG MODULE..'
-            self.ecg.setFile()               
-            print >> sys.stderr, 'FINISH READING ECG DATA IN ECG MODULE..' 
+            filePath = None
+        
+        print >> sys.stderr, 'START READING ECG DATA IN ECG MODULE..'
+        if filePath is not None:
+            self.ecg.setFile(filePath)
+        else:
+            self.ecg.setFile()
+        print >> sys.stderr, 'FINISH READING ECG DATA IN ECG MODULE..' 
+        
         val = _getDataFromDicomFile()
         IOLoop.instance().add_callback(lambda: _callback(val))
 
@@ -197,6 +206,124 @@ def compressList(outputLength, inputList):
         outputList.append(int(tmpSum/tmpLen))
     return outputList
             
+'''
+Handler for getting existing dicom files
+'''
+class DicomListHandler(BaseHandler):
+    def get(self):
+        fList = []
+        for fname in os.listdir(DATA_PATH):
+            prefix, suffix = fname.split(".")
+            if suffix == 'dcm':
+                fList.append(fname)
+        self.write({'fileList': fList})
+
+'''
+Handler for analysis page
+'''
+class ECGHandler(BaseHandler):
+    def initialize(self, ecgList):
+        if not self.get_secure_cookie('PYCKET_ID'):
+            self.redirect("/")
+        else:
+            print 'Session ID: ', self.get_secure_cookie('PYCKET_ID')        
+        sId = self.get_secure_cookie('PYCKET_ID')
+        if not ecgList.has_key(sId):
+            ecgList[sId] = dict()
+        if not ecgList[sId].has_key('ecg'):
+            ecgList[sId]['ecg'] = ECG_reader()
+        self.ecg = ecgList[sId]['ecg']
+        
+    @tornado.web.asynchronous         
+    def post(self):
+        try:  
+            '''       
+                using thread for concurrency (preventing blocking other request IO)
+            '''
+            t = threading.Thread(target=self.handleUpload) 
+            t.setDaemon(True)
+            t.start()
+        except:
+            self.send_error(302) # 302: invalid file
+            
+    def handleUpload(self):
+        def _callback(val):
+            self.write(val)
+            self.finish() 
+               
+        '''           
+        The datasets dict should have the structure as below:
+        datasets = [
+                        {
+                            label: "channel",
+                            #data: [array of [x, y]]
+                            data: [array of y]
+                        },
+                        {
+                            label: "channel2",
+                            #data: [array of [x, y]]
+                            data: [array of y]
+                        },
+                    ]
+        '''
+        def _getDataFromDicomFile():
+            wavech = self.ecg.getTestData()
+            
+            #create dataset dict to be sent to web server and fill in data
+            datasets = []
+            for i in range(len(wavech)):
+                data = wavech[i] #[wavech[i][j] for j in range(len(wavech[i]))]
+                label = ECG_CHANNELLABELS[i]            
+                #label = "channel " + str(i)
+                datasets.append(dict())
+                datasets[i]['data'] = data 
+                datasets[i]['label'] = label
+                datasets[i]['min'] = min(data)
+                datasets[i]['max'] = max(data)            
+                
+            val = {'dspData': datasets}
+            #print val
+            return val
+        if len(self.request.files) != 0: #user uploaded file from UI 
+            f = self.request.files['uploaded_files'][0]
+            orig_fname = f['filename']
+            filePath = checkFileExistInPath(self.settings['static_path'], orig_fname, f['body'])            
+        elif self.get_argument("filename", default=None):    
+            filePath = os.path.join(DATA_PATH, self.get_argument("filename", default=None))
+        else: #user user the default test file
+            filePath = None
+        
+        print >> sys.stderr, 'START READING ECG DATA IN ECG MODULE..'
+        if filePath is not None:
+            self.ecg.setFile(filePath)
+        else:
+            self.ecg.setFile()
+        print >> sys.stderr, 'FINISH READING ECG DATA IN ECG MODULE..' 
+        
+        val = _getDataFromDicomFile()
+        IOLoop.instance().add_callback(lambda: _callback(val))
+
+    def get(self): 
+        data = json.loads(self.get_argument("data"))
+        print data
+        
+        try:
+            #format of getBinInfo(): [[min, max, value],[min,max,value],...]
+            bins, info = self.ecg.getBinInfo(data['qPoint'][0], data['tPoint'][0], data['bin'], data['lead']);
+            
+            print bins, info
+            self.write({
+                        'data': bins,
+                        'info': info
+                        #'info': [an array of additional information]
+                        }) #format of bins json: {'data': bins info}
+        except Exception as e:
+            print e
+            self.send_error(302)
+
+'''
+Utilities methods
+'''
         
 def dataSetsCompression(wavech, output, arrayLength): # compress data into length of arrayLength by averaging
     ''' multi-threaded way of doing compression
@@ -234,113 +361,6 @@ def checkFileExistInPath(pathName, fileName, fileContent):
         print >> sys.stderr, 'FILE EXISTS, OPENING DIRECTLY'
     return os.path.join(path, fileName)
 
-class DicomListHandler(BaseHandler):
-    def get(self):
-        fList = []
-        for fname in os.listdir("./data"):
-            prefix, suffix = fname.split(".")
-            if suffix == 'dcm':
-                fList.append(fname)
-        self.write({'fileList': fList})
-
-class ECGHandler(BaseHandler):
-    def initialize(self, ecgList):
-        if not self.get_secure_cookie('PYCKET_ID'):
-            self.redirect("/")
-        else:
-            print 'Session ID: ', self.get_secure_cookie('PYCKET_ID')        
-        sId = self.get_secure_cookie('PYCKET_ID')
-        if not ecgList.has_key(sId):
-            ecgList[sId] = dict()
-        if not ecgList[sId].has_key('ecg'):
-            ecgList[sId]['ecg'] = ECG_reader()
-        self.ecg = ecgList[sId]['ecg']
-        
-    @tornado.web.asynchronous         
-    def post(self):
-        try:  
-            '''       
-                using thread for concurrency (preventing blocking other request IO)
-            '''
-            t = threading.Thread(target=self.handleUpload) 
-            t.setDaemon(True)
-            t.start()
-        except:
-            self.send_error(302) # 302: invalid file
-            
-    def handleUpload(self):
-        def _callback(val):
-            import pickle
-            print sys.getsizeof(pickle.dumps(self.ecg.wavech))
-            self.write(val)
-            self.finish() 
-               
-        '''           
-        The datasets dict should have the structure as below:
-        datasets = [
-                        {
-                            label: "channel",
-                            #data: [array of [x, y]]
-                            data: [array of y]
-                        },
-                        {
-                            label: "channel2",
-                            #data: [array of [x, y]]
-                            data: [array of y]
-                        },
-                    ]
-        '''
-        def _getDataFromDicomFile():
-            #wavech, peaks = ecg.ECG_reader.getTestData()
-            wavech = self.ecg.getTestData()
-            
-            #create dataset dict to be sent to web server and fill in data
-            datasets = []
-            for i in range(len(wavech)):
-                data = wavech[i] #[wavech[i][j] for j in range(len(wavech[i]))]
-                label = ECG_CHANNELLABELS[i]            
-                #label = "channel " + str(i)
-                datasets.append(dict())
-                datasets[i]['data'] = data 
-                datasets[i]['label'] = label
-                datasets[i]['min'] = min(data)
-                datasets[i]['max'] = max(data)            
-                
-            val = {'dspData': datasets}
-            #print val
-            return val
-        if len(self.request.files) != 0: #user uploaded file from UI 
-            f = self.request.files['uploaded_files'][0]
-            orig_fname = f['filename']
-            filePath = checkFileExistInPath(self.settings['static_path'], orig_fname, f['body'])
-            
-            print >> sys.stderr, 'START READING ECG DATA IN ECG MODULE..'
-            self.ecg.setFile(filePath)              
-            print >> sys.stderr, 'FINISH READING ECG DATA IN ECG MODULE..' 
-        else: #user user the default test file
-            print >> sys.stderr, 'START READING ECG DATA IN ECG MODULE..'
-            self.ecg.setFile()               
-            print >> sys.stderr, 'FINISH READING ECG DATA IN ECG MODULE..' 
-        val = _getDataFromDicomFile()
-        IOLoop.instance().add_callback(lambda: _callback(val))
-
-    def get(self): 
-        data = json.loads(self.get_argument("data"))
-        print data
-        
-        try:
-            #format of getBinInfo(): [[min, max, value],[min,max,value],...]
-            bins, info = self.ecg.getBinInfo(data['qPoint'][0], data['tPoint'][0], data['bin'], data['lead']);
-            
-            print bins, info
-            self.write({
-                        'data': bins,
-                        'info': info
-                        #'info': [an array of additional information]
-                        }) #format of bins json: {'data': bins info}
-        except Exception as e:
-            print e
-            self.send_error(302)
 
 if __name__ == "__main__":
     print ECGHandler().handleUpload()

@@ -439,6 +439,7 @@ $(function () {
 
 	/* issue ajax call and further process the data on sucess */
 	function getAndProcessData() { 
+    	getDicomList();
 		chooseFileSource();
 	}
 	
@@ -455,6 +456,7 @@ $(function () {
 	}
 	
 	var dicomList;
+	var dicomListMenu;
 	function getDicomList() {
 		$.ajax({
 			url: '/dicomList',
@@ -466,60 +468,69 @@ $(function () {
 				dicomList = data.fileList;
 			}
 		});
+    	
+    	dicomListMenu = $('<ul>').css({
+    		zIndex: '2000'
+    	}).appendTo('body');
+    	$.each(dicomList, function(key, val) {
+    		var lnk = $('<li><a href="#">' + val + '</a></li>').click(function() {
+    			$.ajax({
+					url: fileHandlerUrl,
+					cache: false,
+					type: 'POST',
+					dataType: 'json',
+					data: {"filename": val},
+					beforeSend: function() {
+						showSpinner();
+						$('#fileChooser').dialog( "destroy" );
+						dicomListMenu.hide();						
+					},
+					success: onDataReceived
+				});
+    		});
+    		lnk.appendTo(dicomListMenu);
+    	});
+    	dicomListMenu.hide().menu();
 	}
 	
-	var dicomListMenu;
 	function chooseFileSource(){
     	var popUpDiv = $('<div id="fileChooser"/>');
     	$('<p>Please choose choose a dicom file: </p>')
     		.appendTo(popUpDiv);
-    	var defButton = $('<button>Use sample dicom file</button>').css({
+    	var fileListButton = $('<button>Select Recorded Files</button>').css({
     		float: 'left',
     		fontSize: 'small',
     	});
 
-    	defButton.button({
+    	fileListButton.button({
             icons: {
                 primary: "ui-icon-triangle-1-s"
               }
     	});
-    	//defButton.click(chooseTestFile);
-    	popUpDiv.append(defButton);
-    	
-    	getDicomList();
-    	dicomListMenu = $('<ul>').css({
-    		zIndex: '2000'
-    	}).appendTo('body').hide();
-    	$.each(dicomList, function(key, val) {
-    		var lnk = $('<li><a href="#">' + val + '</a></li>');
-    		lnk.appendTo(dicomListMenu);
-    	});
-    	
-    	dicomListMenu.hide().menu();
-    	defButton.click(function(event){
-    		console.log(dicomListMenu);
-    		//dicomListMenu.appendTo('body').show();
-    		
+    	//fileListButton.click(chooseTestFile);
+    	popUpDiv.append(fileListButton);
+
+    	fileListButton.click(function(event){    		
     		dicomListMenu.show().position({
                 my: "left top",
                 at: "left bottom",
                 of: this
-              });
-            
+              });           
             $( document ).one( "click", function() {
             	dicomListMenu.hide();
               });
             return false;
     	});
-    	    	
     	var fileInput = $('<div class="file-wrapper">\
-    			<span>Submit your own Dicom file</span>\
-                <input style="width:100%" type="file" name="uploaded_files" >\
-            </div>').css({
-    		float: 'right',
-            marginLeft: '5px',
-    		fontSize: 'small',
-    	});
+    					<span>Submit your own Dicom file</span>\
+                		<input style="width:100%" type="file" \
+    					name="uploaded_files" ></div>')
+            			.css({
+				    		float: 'right',
+				            marginLeft: '5px',
+				    		fontSize: 'small',
+				    	});
+
     	fileInput.button();
     	fileInput.fileupload({
     		url: fileHandlerUrl,
@@ -543,11 +554,6 @@ $(function () {
         });
     	
     	popUpDiv.append(fileInput);
-    	
-    	
-    	//add two button, one for file input handler directed to jquery upload
-    	//, one for default file handler
-    	//TBD
     	
     	popUpDiv.dialog({
             //height: 200,
