@@ -40,9 +40,9 @@ class ECGAllInOneHandler(BaseHandler):
         sId = self.get_secure_cookie('PYCKET_ID')
         if not ecgList.has_key(sId):
             ecgList[sId] = dict()
-        if not ecgList[sId].has_key('ecgAll'):
-            ecgList[sId]['ecgAll'] = ECG_reader()
-        self.ecg = ecgList[sId]['ecgAll']
+        if not ecgList[sId].has_key('ecg'):
+            ecgList[sId]['ecg'] = ECG_reader()
+        self.ecg = ecgList[sId]['ecg']
         '''
         if not self.session.get('ecgAll'):
             print 'Initializing ECG_reader'
@@ -145,7 +145,8 @@ class ECGAllInOneHandler(BaseHandler):
             if len(wavech[0]) > ARRAY_LENGTH_WITH_NO_COMPRESSION_NEED:
                 print >> sys.stderr, 'TOO MANY SAMPLES, CAN\'T DRAW DIRECTLY, START COMPRESSING'
                 base = []
-                base = compressList(ARRAY_LENGTH_WITH_NO_COMPRESSION_NEED, wavech[0])
+                dataSetsCompression(wavech, base, ARRAY_LENGTH_WITH_NO_COMPRESSION_NEED)
+                #base = compressList(ARRAY_LENGTH_WITH_NO_COMPRESSION_NEED, wavech[0])
                 print >> sys.stderr, 'COMPRESSION COMPLETE, SENDING COMPRESSED DATA FOR DRAWING'
                 pointInterval = (1000/frequency) * int(round(float(len(wavech[0]))/float(ARRAY_LENGTH_WITH_NO_COMPRESSION_NEED)))
                 tmpWavech = []
@@ -153,8 +154,8 @@ class ECGAllInOneHandler(BaseHandler):
                     tmpWavech.append([wavech[i][j] for j in range(ARRAY_LENGTH_WITH_NO_COMPRESSION_NEED)]) # only pick the first 2500 samples for the first time
                 wavech = tmpWavech
             else:
-                base = wavech[0]
-    
+                base = wavech
+            
             for i in range(len(wavech)):
                 data = wavech[i]
                 label = ECG_CHANNELLABELS[i]            
@@ -190,22 +191,6 @@ class ECGAllInOneHandler(BaseHandler):
         val = _getDataFromDicomFile()
         IOLoop.instance().add_callback(lambda: _callback(val))
 
-    
-def compressList(outputLength, inputList):
-    outputList = []
-    step = int(len(inputList)/outputLength)    
-    for i in range(outputLength):
-        tmpSum = 0
-        tmpLen = 0
-        for j in range(i*step, (i+1)*step):
-            if j >= len(inputList): # hit the end of the list
-                break
-            else:
-                tmpSum += inputList[j]
-                tmpLen += 1
-        outputList.append(int(tmpSum/tmpLen))
-    return outputList
-            
 '''
 Handler for getting existing dicom files
 '''
@@ -324,7 +309,21 @@ class ECGHandler(BaseHandler):
 '''
 Utilities methods
 '''
-        
+def compressList(outputLength, inputList):
+    outputList = []
+    step = int(len(inputList)/outputLength)    
+    for i in range(outputLength):
+        tmpSum = 0
+        tmpLen = 0
+        for j in range(i*step, (i+1)*step):
+            if j >= len(inputList): # hit the end of the list
+                break
+            else:
+                tmpSum += inputList[j]
+                tmpLen += 1
+        outputList.append(int(tmpSum/tmpLen))
+    return outputList
+                    
 def dataSetsCompression(wavech, output, arrayLength): # compress data into length of arrayLength by averaging
     ''' multi-threaded way of doing compression
     paralFunc = partial(compressList, arrayLength)
@@ -332,7 +331,10 @@ def dataSetsCompression(wavech, output, arrayLength): # compress data into lengt
     for l in tmpList:
         output.append(l)
     '''
-    for data in wavech:
+    import copy
+    wavechTmp = copy.deepcopy(wavech) #clone input list first
+    del output[:] #clear output list
+    for data in wavechTmp:
         tmpList = []
         tmpList = compressList(arrayLength, data)
         output.append(tmpList)

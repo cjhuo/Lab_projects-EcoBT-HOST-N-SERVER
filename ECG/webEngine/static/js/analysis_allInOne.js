@@ -357,47 +357,7 @@ $(function () {
 				plot.hideLoading();
 			},
 		});
-		/*
-    	var newData = [];
-    	var minVal = datasets[0].data[min];
-    	var maxVal = datasets[0].data[min];
-    	for(var j=min; j<=max; j++){
-    		newData.push([e.min+(j-min)*4, datasets[0].data[j]]);
-    		if(datasets[0].data[j]<minVal)
-    			minVal = datasets[0].data[j]
-    		if(datasets[0].data[j]>maxVal)
-    			maxVal = datasets[0].data[j]
-    	}
-    	
-    	plot.series[0].yAxis.setExtremes(minVal, maxVal);
-    	console.log(minVal, maxVal);
-		plot.series[0].setData(newData);
-		 */
-    	/*
-    	for(var i=0; i<datasets.length; i++){
-    		var newData = [];
-        	for(var j=min; j<=max; j++){
-        		newData.push(datasets[i].data[j]);
-        	}
-        	console.log(newData);
-    		plot.series[i].setData(newData);
-    	}
-    	*/
-    	//plot.redraw();
-    	
     }
-    /*
-	function getAndProcessData() { //issue ajax call and further process the data on sucess
-		showSpinner();
-		$.ajax({
-			url: dataurl,
-			cache: false,
-			type: 'POST',
-			dataType: 'json',
-			success: onDataReceived
-		});
-	}
-	*/
 
 	/* issue ajax call and further process the data on sucess */
 	function getAndProcessData() { 
@@ -764,7 +724,7 @@ $(function () {
         			enabled: false
         		},
         		shadow: false,
-                data: base,
+                data: base[0],
                 pointStart: Date.UTC(0, 0, 0, 0, 0, 0, 0),
                 pointInterval: pointInterval
         		};
