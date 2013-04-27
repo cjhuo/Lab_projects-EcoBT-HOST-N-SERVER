@@ -210,10 +210,9 @@ $(function () {
 		    </tbody>\
 		  </table>').css({
 			  fontSize: 'small',
-			  //width: '99.5%',
-			  //margin: 'auto',
-			  marginLeft: '5px',
-			  marginRight: '5px'
+			  marginLeft: 'auto',
+			  marginRight: 'auto',
+			  textAlign: 'center'
 		  });
 		dTable = tableDom.dataTable({
 	        "bPaginate": false,
@@ -390,6 +389,7 @@ $(function () {
                 series: {
                 	allowPointSelect: true,  
                     marker: {
+                    	enabled: true,
                     	radius: 0.1,
                         states: {
                 			hover: {
@@ -488,9 +488,9 @@ $(function () {
     	popUpDiv.append(defButton);
     	
     	getDicomList();
-    	dicomListMenu = $('<ul>').appendTo('body').css({
-    		z-index: '1010'
-    	}).hide();
+    	dicomListMenu = $('<ul>').css({
+    		zIndex: '2000'
+    	}).appendTo('body').hide();
     	$.each(dicomList, function(key, val) {
     		var lnk = $('<li><a href="#">' + val + '</a></li>');
     		lnk.appendTo(dicomListMenu);

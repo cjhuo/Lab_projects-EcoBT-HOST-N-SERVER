@@ -4,6 +4,8 @@ Created on Feb 9, 2013
 @author: cjhuo
 '''
 import tornado.web
+import tornado.gen
+from tornado.ioloop import IOLoop
 import sys
 import os.path
 import json
@@ -25,7 +27,14 @@ arrayLength = 2500 # if sample count is greater than this number, start compress
 ECG_CHANNELLABELS = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6']
 
 class ECGAllInOneHandler(BaseHandler):
-    def initialize(self):
+    def initialize(self, ecgList):
+        sId = self.get_secure_cookie('PYCKET_ID')
+        if not ecgList.has_key(sId):
+            ecgList[sId] = dict()
+        if not ecgList[sId].has_key('ecgAll'):
+            ecgList[sId]['ecgAll'] = ECG_reader()
+        self.ecg = ecgList[sId]['ecgAll']
+        '''
         if not self.session.get('ecgAll'):
             print 'Initializing ECG_reader'
             self.session.set('ecgAll', ECG_reader())   
@@ -35,6 +44,7 @@ class ECGAllInOneHandler(BaseHandler):
             self.redirect("/")
         else:
             print 'Session ID: ', self.get_secure_cookie('PYCKET_ID')
+        '''
         #self.ecg = ecg
         
     def get(self): # asynchronous loading handler    
@@ -126,28 +136,39 @@ class ECGAllInOneHandler(BaseHandler):
             self.write({'message': 'file generation failed!'})
             self.finish()        
         
-    @tornado.web.asynchronous        
-    def post(self): # file upload handler
-        try:
-            if len(self.request.files) != 0: #user uploaded file from UI 
-                f = self.request.files['uploaded_files'][0]
-                orig_fname = f['filename']
-                filePath = checkFileExistInPath(self.settings['static_path'], orig_fname, f['body'])
-                
-                print >> sys.stderr, 'START READING ECG DATA IN ECG MODULE..'
-                self.ecg.setFile(filePath)              
-                print >> sys.stderr, 'FINISH READING ECG DATA IN ECG MODULE..' 
-            else: #user user the default test file
-                print >> sys.stderr, 'START READING ECG DATA IN ECG MODULE..'
-                self.ecg.setFile()               
-                print >> sys.stderr, 'FINISH READING ECG DATA IN ECG MODULE..' 
-            val = self.getDataFromDicomFile()
-            self.write(val)
-            self.finish()
-            self.session.set('ecgAll', self.ecg)            
-        except Exception as e:
+    @tornado.web.asynchronous         
+    def post(self):
+        try:         
+            '''       
+                using thread for concurrency (preventing blocking other request IO)
+            '''
+            t = threading.Thread(target=self.handleUpload)
+            t.setDaemon(True)
+            t.start()
+            #self.session.set('ecg', self.ecg)
+        except:
             self.send_error(302) # 302: invalid file
-            print e
+            
+    def handleUpload(self):
+        if len(self.request.files) != 0: #user uploaded file from UI 
+            f = self.request.files['uploaded_files'][0]
+            orig_fname = f['filename']
+            filePath = checkFileExistInPath(self.settings['static_path'], orig_fname, f['body'])
+            
+            print >> sys.stderr, 'START READING ECG DATA IN ECG MODULE..'
+            self.ecg.setFile(filePath)              
+            print >> sys.stderr, 'FINISH READING ECG DATA IN ECG MODULE..' 
+        else: #user user the default test file
+            print >> sys.stderr, 'START READING ECG DATA IN ECG MODULE..'
+            self.ecg.setFile()               
+            print >> sys.stderr, 'FINISH READING ECG DATA IN ECG MODULE..' 
+        val = self.getDataFromDicomFile()
+        IOLoop.instance().add_callback(lambda: self._callback(val))
+        #self._callback(val)
+        
+    def _callback(self, val):
+        self.write(val)
+        self.finish()   
             
     def getDataFromDicomFile(self):
         #wavech, peaks = ecg.ECG_reader.getTestData()
@@ -261,39 +282,51 @@ class DicomListHandler(BaseHandler):
         self.write({'fileList': fList})
 
 class ECGHandler(BaseHandler):
-    def initialize(self):
-        if not self.session.get('ecg'):
-            print 'Initializing ECG_reader'
-            self.session.set('ecg', ECG_reader())   
-        self.ecg = self.session.get('ecg')
+    def initialize(self, ecgList):
+        sId = self.get_secure_cookie('PYCKET_ID')
+        if not ecgList.has_key(sId):
+            ecgList[sId] = dict()
+        if not ecgList[sId].has_key('ecg'):
+            ecgList[sId]['ecg'] = ECG_reader()
+        self.ecg = ecgList[sId]['ecg']
         
-        if not self.get_secure_cookie('PYCKET_ID'):
-            self.redirect("/")
-        else:
-            print "Session ID: ", self.get_secure_cookie('PYCKET_ID')
         
-    @tornado.web.asynchronous            
+    @tornado.web.asynchronous         
     def post(self):
-        try:
-            if len(self.request.files) != 0: #user uploaded file from UI 
-                f = self.request.files['uploaded_files'][0]
-                orig_fname = f['filename']
-                filePath = checkFileExistInPath(self.settings['static_path'], orig_fname, f['body'])
-                
-                print >> sys.stderr, 'START READING ECG DATA IN ECG MODULE..'
-                self.ecg.setFile(filePath)              
-                print >> sys.stderr, 'FINISH READING ECG DATA IN ECG MODULE..' 
-            else: #user user the default test file
-                print >> sys.stderr, 'START READING ECG DATA IN ECG MODULE..'
-                self.ecg.setFile()               
-                print >> sys.stderr, 'FINISH READING ECG DATA IN ECG MODULE..' 
-            val = self.getDataFromDicomFile()
-            self.write(val)
-            self.finish()
-            self.session.set('ecg', self.ecg)
+        try:  
+            '''       
+                using thread for concurrency (preventing blocking other request IO)
+            '''
+            t = threading.Thread(target=self.handleUpload) 
+            t.setDaemon(True)
+            t.start()
+            #self.session.set('ecg', self.ecg)
         except:
             self.send_error(302) # 302: invalid file
             
+    def handleUpload(self):
+        if len(self.request.files) != 0: #user uploaded file from UI 
+            f = self.request.files['uploaded_files'][0]
+            orig_fname = f['filename']
+            filePath = checkFileExistInPath(self.settings['static_path'], orig_fname, f['body'])
+            
+            print >> sys.stderr, 'START READING ECG DATA IN ECG MODULE..'
+            self.ecg.setFile(filePath)              
+            print >> sys.stderr, 'FINISH READING ECG DATA IN ECG MODULE..' 
+        else: #user user the default test file
+            print >> sys.stderr, 'START READING ECG DATA IN ECG MODULE..'
+            self.ecg.setFile()               
+            print >> sys.stderr, 'FINISH READING ECG DATA IN ECG MODULE..' 
+        val = self.getDataFromDicomFile()
+        IOLoop.instance().add_callback(lambda: self._callback(val))
+        #self._callback(val)
+        
+    def _callback(self, val):
+        import pickle
+        print sys.getsizeof(pickle.dumps(self.ecg.wavech))
+        self.write(val)
+        self.finish()            
+
     def get(self): 
         data = json.loads(self.get_argument("data"))
         print data
@@ -351,51 +384,6 @@ class ECGHandler(BaseHandler):
         #print val
         return val
 
-    '''    
-    def get(self):        
-        #val = self.fakeData()  #should be replaced by ecg dsp data generation module
-        f = self.get_argument("file")      
-#        print f
-        self.ecg.setFile(f)
-        val = self.getDataFromDicomFile()
-        self.write(val)
-    '''  
-
-''' 
-class DSPHandler(BaseHandler):
-    def initialize(self, ecg):
-        self.ecg = ecg
-             
-    def post(self): 
-        data = json.loads(self.get_argument("data"))
-        print data
-        
-        #format of getBinInfo(): [[min, max, value],[min,max,value],...]
-        bins = self.ecg.getBinInfo(data['qPoint'][0], data['tPoint'][0], data['bin']);
-        
-        print bins
-        self.write({'data': bins}) #format of bins json: {'data': bins info}
-          
-    
-    def get(self):        
-        val = self.fakeData()  #should be replaced by ecg dsp data generation module
-        print val
-        self.write({'dspData': val})   
-    
-    #generate data for n channels with 100 data each, ranged from (-100, 100)
-    def fakeData(self, n=2):
-        datasets = dict()
-        for i in range(n):
-            #data = [[j, random.randint(-100, 100)] for j in range(100)]  
-            data = [random.randint(-100, 100) for j in range(100)]           
-            #label = "channel " + str(i)
-            label = ECG_CHANNELLABELS[i]
-            #print label
-            datasets[i] = dict()
-            datasets[i]['data'] = data 
-            datasets[i]['label'] = label
-        return datasets
-'''  
 
 if __name__ == "__main__":
     print ECGHandler().getDataFromDicomFile()
