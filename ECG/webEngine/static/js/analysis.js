@@ -464,7 +464,6 @@ $(function () {
 			dataType: 'json',
 			success: function(data) {
 				dicomList = data.fileList;
-				console.log(dicomList);
 			}
 		});
 	}

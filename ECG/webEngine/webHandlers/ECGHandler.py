@@ -150,6 +150,9 @@ class ECGAllInOneHandler(BaseHandler):
             self.send_error(302) # 302: invalid file
             
     def handleUpload(self):
+        def _callback(val):
+            self.write(val)
+            self.finish()   
         if len(self.request.files) != 0: #user uploaded file from UI 
             f = self.request.files['uploaded_files'][0]
             orig_fname = f['filename']
@@ -163,12 +166,9 @@ class ECGAllInOneHandler(BaseHandler):
             self.ecg.setFile()               
             print >> sys.stderr, 'FINISH READING ECG DATA IN ECG MODULE..' 
         val = self.getDataFromDicomFile()
-        IOLoop.instance().add_callback(lambda: self._callback(val))
+        IOLoop.instance().add_callback(lambda: _callback(val))
         #self._callback(val)
-        
-    def _callback(self, val):
-        self.write(val)
-        self.finish()   
+
             
     def getDataFromDicomFile(self):
         #wavech, peaks = ecg.ECG_reader.getTestData()
@@ -305,6 +305,11 @@ class ECGHandler(BaseHandler):
             self.send_error(302) # 302: invalid file
             
     def handleUpload(self):
+        def _callback(val):
+            import pickle
+            print sys.getsizeof(pickle.dumps(self.ecg.wavech))
+            self.write(val)
+            self.finish()    
         if len(self.request.files) != 0: #user uploaded file from UI 
             f = self.request.files['uploaded_files'][0]
             orig_fname = f['filename']
@@ -318,14 +323,8 @@ class ECGHandler(BaseHandler):
             self.ecg.setFile()               
             print >> sys.stderr, 'FINISH READING ECG DATA IN ECG MODULE..' 
         val = self.getDataFromDicomFile()
-        IOLoop.instance().add_callback(lambda: self._callback(val))
+        IOLoop.instance().add_callback(lambda: _callback(val))
         #self._callback(val)
-        
-    def _callback(self, val):
-        import pickle
-        print sys.getsizeof(pickle.dumps(self.ecg.wavech))
-        self.write(val)
-        self.finish()            
 
     def get(self): 
         data = json.loads(self.get_argument("data"))
