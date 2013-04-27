@@ -28,6 +28,10 @@ ECG_CHANNELLABELS = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V
 
 class ECGAllInOneHandler(BaseHandler):
     def initialize(self, ecgList):
+        if not self.get_secure_cookie('PYCKET_ID'):
+            self.redirect("/")
+        else:
+            print 'Session ID: ', self.get_secure_cookie('PYCKET_ID')
         sId = self.get_secure_cookie('PYCKET_ID')
         if not ecgList.has_key(sId):
             ecgList[sId] = dict()
@@ -39,11 +43,6 @@ class ECGAllInOneHandler(BaseHandler):
             print 'Initializing ECG_reader'
             self.session.set('ecgAll', ECG_reader())   
         self.ecg = self.session.get('ecgAll')
-        
-        if not self.get_secure_cookie('PYCKET_ID'):
-            self.redirect("/")
-        else:
-            print 'Session ID: ', self.get_secure_cookie('PYCKET_ID')
         '''
         #self.ecg = ecg
         
@@ -62,39 +61,22 @@ class ECGAllInOneHandler(BaseHandler):
                 print >> sys.stderr, 'COMPRESSION COMPLETE, SENDING COMPRESSED DATA FOR DRAWING' 
             pointInterval = (1000/frequency) * int(round(float(len(self.ecg.wavech[0]))/float(arrayLength)))
 
-        else: # plot along the entire time period
-            '''
-            if len(self.ecg.wavech[0]) > sampleCountToBeSent: # down sampling by compress it
-                sampleCountToBeSent = len(self.ecg.wavech[0]) * 5 / 2 # interval is 10, draw 4 samples in every small block(4px)
-                print >> sys.stderr, 'TOO MANY SAMPLES, CAN\'T DRAW DIRECTLY, START COMPRESSING'
-                self.dataSetsCompression(self.ecg.wavech, wavech, sampleCountToBeSent)
-                print >> sys.stderr, 'COMPRESSION COMPLETE, SENDING COMPRESSED DATA FOR DRAWING'   
-            else: 
-                sampleCountToBeSent = len(self.ecg.wavech[0])
-                wavech = self.ecg.wavech          
-            '''      
+        else: # plot along the entire time period      
             # interval is 8, frequency 125, draw 5 samples in every small block(4px)
             # original frequency / lowered frequency === integer 
             sampleCountToBeSent = int(len(self.ecg.wavech[0]) / 2) # set to 1 to disable down sampling
             print >> sys.stderr, 'TOO MANY SAMPLES, CAN\'T DRAW DIRECTLY, START COMPRESSING'
             dataSetsCompression(self.ecg.wavech, wavech, sampleCountToBeSent)
             print >> sys.stderr, 'COMPRESSION COMPLETE, SENDING COMPRESSED DATA FOR DRAWING'  
-            ''' 
-            sampleCountToBeSent = len(self.ecg.wavech[0])
-            wavech = self.ecg.wavech 
-            '''   
             pointInterval = int((1000/frequency) * float(len(self.ecg.wavech[0]))/float(sampleCountToBeSent))
 
         print 'pointInterval: ', pointInterval
         datasets = []
         for i in range(len(wavech)):
-            #data = wavech[i] #[wavech[i][j] for j in range(len(wavech[i]))]
             data = wavech[i]
             label = ECG_CHANNELLABELS[i]            
-            #label = "channel " + str(i)
             datasets.append(dict())
             datasets[i]['data'] = data 
-            #print len(data)
             datasets[i]['label'] = label
             datasets[i]['min'] = min(data)
             datasets[i]['max'] = max(data)
@@ -128,8 +110,6 @@ class ECGAllInOneHandler(BaseHandler):
         rcode = subprocess.call(command, shell=True)
         print rcode
         if rcode == 0:
-            #os.system('open "%s"' % os.path.dirname(svgFile))
-            #self.write({'url': self.static_url(svgFile)})
             self.write({'url': returnPath})
             self.finish()
         else:
@@ -145,7 +125,6 @@ class ECGAllInOneHandler(BaseHandler):
             t = threading.Thread(target=self.handleUpload)
             t.setDaemon(True)
             t.start()
-            #self.session.set('ecg', self.ecg)
         except:
             self.send_error(302) # 302: invalid file
             
@@ -167,11 +146,9 @@ class ECGAllInOneHandler(BaseHandler):
             print >> sys.stderr, 'FINISH READING ECG DATA IN ECG MODULE..' 
         val = self.getDataFromDicomFile()
         IOLoop.instance().add_callback(lambda: _callback(val))
-        #self._callback(val)
 
             
     def getDataFromDicomFile(self):
-        #wavech, peaks = ecg.ECG_reader.getTestData()
         wavech = self.ecg.wavech
         
         #create dataset dict to be sent to web server and fill in data
@@ -179,8 +156,6 @@ class ECGAllInOneHandler(BaseHandler):
         pointInterval = 1000/frequency
         if len(wavech[0]) > arrayLength:
             print >> sys.stderr, 'TOO MANY SAMPLES, CAN\'T DRAW DIRECTLY, START COMPRESSING'
-            
-            #base = self.dataSetsCompression(wavech, arrayLength)
             base = []
             base = compressList(arrayLength, wavech[0])
             print >> sys.stderr, 'COMPRESSION COMPLETE, SENDING COMPRESSED DATA FOR DRAWING'
@@ -193,21 +168,14 @@ class ECGAllInOneHandler(BaseHandler):
             base = wavech[0]
 
         for i in range(len(wavech)):
-            #data = wavech[i] #[wavech[i][j] for j in range(len(wavech[i]))]
             data = wavech[i]
             label = ECG_CHANNELLABELS[i]            
-            #label = "channel " + str(i)
             datasets.append(dict())
             datasets[i]['data'] = data 
-            #print len(data)
             datasets[i]['label'] = label
             datasets[i]['min'] = min(data)
             datasets[i]['max'] = max(data)
-            #print min(data), data.index(min(data))
             
-        #add peak information to structure to be sent to frontend
-        # format of peaks: "peaks": [index of 1st peak, index of 2nd peak, ...]
-
         print 'pointInterval: ', pointInterval
         val = {
                'dspData': datasets, 
@@ -220,18 +188,14 @@ def compressList(outputLength, inputList):
     outputList = []
     step = int(len(inputList)/outputLength)    
     for i in range(outputLength):
-        #tmpSum = -999999 # start with small enough number
         tmpSum = 0
         tmpLen = 0
         for j in range(i*step, (i+1)*step):
             if j >= len(inputList): # hit the end of the list
                 break
             else:
-                #if inputList[j] > tmpSum:
-                #    tmpSum = inputList[j]
                 tmpSum += inputList[j]
                 tmpLen += 1
-        #outputList.append(tmpSum) # pick the max number
         outputList.append(int(tmpSum/tmpLen))
     return outputList
             
@@ -283,13 +247,16 @@ class DicomListHandler(BaseHandler):
 
 class ECGHandler(BaseHandler):
     def initialize(self, ecgList):
+        if not self.get_secure_cookie('PYCKET_ID'):
+            self.redirect("/")
+        else:
+            print 'Session ID: ', self.get_secure_cookie('PYCKET_ID')        
         sId = self.get_secure_cookie('PYCKET_ID')
         if not ecgList.has_key(sId):
             ecgList[sId] = dict()
         if not ecgList[sId].has_key('ecg'):
             ecgList[sId]['ecg'] = ECG_reader()
         self.ecg = ecgList[sId]['ecg']
-        
         
     @tornado.web.asynchronous         
     def post(self):
@@ -300,7 +267,6 @@ class ECGHandler(BaseHandler):
             t = threading.Thread(target=self.handleUpload) 
             t.setDaemon(True)
             t.start()
-            #self.session.set('ecg', self.ecg)
         except:
             self.send_error(302) # 302: invalid file
             
@@ -324,7 +290,6 @@ class ECGHandler(BaseHandler):
             print >> sys.stderr, 'FINISH READING ECG DATA IN ECG MODULE..' 
         val = self.getDataFromDicomFile()
         IOLoop.instance().add_callback(lambda: _callback(val))
-        #self._callback(val)
 
     def get(self): 
         data = json.loads(self.get_argument("data"))
@@ -376,9 +341,6 @@ class ECGHandler(BaseHandler):
             datasets[i]['min'] = min(data)
             datasets[i]['max'] = max(data)            
             
-        #add peak information to structure to be sent to frontend
-        # format of peaks: "peaks": [index of 1st peak, index of 2nd peak, ...]
-
         val = {'dspData': datasets}
         #print val
         return val
