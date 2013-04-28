@@ -15,24 +15,23 @@ Node Name: <div id="name" style="display: inline">{% if nodeName==None %}Demo{% 
     <thead>
       <tr class="ui-widget-header ">
         <th>Time</th>
-        <th>LED 1 Signal 1</th>
-        <th>LED 1 Signal 2</th>        
-        <th>LED 2 Signal 1</th>        
-        <th>LED 2 Signal 2</th>        
-        <th>Ambient 1</th>       
-        <th>Ambient 2</th>    
+        <th>LED 1 Signal</th>     
+        <th>LED 2 Signal</th>                    
+        <th>Ambient</th>    
         <th>RH</th>       
         <th>T</th>
       </tr>
     </thead>
     <tbody>
+    <!-- 
       <tr>
-      <!-- 
+
         <td>John Doe</td>
         <td>john.doe@example.com</td>
         <td>johndoe1</td>
-       -->
+
       </tr>
+       -->
     </tbody>
   </table>
 </div>
@@ -58,14 +57,9 @@ Node Name: <div id="name" style="display: inline">{% if nodeName==None %}Demo{% 
 <script language="javascript" type="text/javascript" src="{{ static_url("js/live_sids.js") }}"></script>
 
  <style>
- 
- body{
- 	padding: 10px 10px 10px 0px;
- }
- 
 
-div#dataContainer { font-size: small; width: 100%; margin: 20px 0; }
-div#dataContainer table { margin: 1em 0; border-collapse: collapse; width: 100%; }
+div#dataContainer { font-size: small; width: auto; margin-left: auto; margin-right: auto; }
+div#dataContainer table { margin: auto; border-collapse: collapse; width: 100%; }
 div#dataContainer table td, div#dataContainer table th { border: 1px solid #eee; padding: .6em 10px; text-align: middle; }
  </style>
 {% end %}

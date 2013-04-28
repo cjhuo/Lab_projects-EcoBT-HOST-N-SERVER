@@ -24,6 +24,7 @@ class Application(tornado.web.Application):
                 (r'/orientation', OrientationHandler),
                 (r'/temperature', TemperatureHandler),
                 (r'/liveSIDs', LiveSIDsHandler),
+                (r'/sidsDual', SIDsDualHandler),
                 (r'/sidsAll', SIDsAllHandler),
                 (r'/administration', AdministrationHandler),
                 (r"/login", AuthHandler),

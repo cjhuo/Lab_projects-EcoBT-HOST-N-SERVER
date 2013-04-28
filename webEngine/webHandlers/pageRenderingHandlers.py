@@ -97,6 +97,21 @@ class LiveSIDsHandler(BaseHandler):
             serverAddr = LiveSIDsServerAddr,
             nodeName = name,
         )  
+        
+class SIDsDualHandler(BaseHandler):
+    def get(self):  
+        try:
+            name = self.get_argument("name") # node's name, e.g., MAC addres
+        except Exception:
+            name = None   
+        self.render(
+            "live/sids_dual.html",
+            page_title="Live SIDs Viewer",
+            header_text="Live SIDs Viewer",
+            footer_text="",
+            serverAddr = LiveSIDsServerAddr,
+            nodeName = name,
+        )  
 
 class SIDsAllHandler(BaseHandler):
     def get(self):  

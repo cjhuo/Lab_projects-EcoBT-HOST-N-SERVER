@@ -44,8 +44,8 @@ $(function () {
 		else if(data.from == 'central') {
 			
 			if(data.data.type == 'message'){
-				alert(data.data.value);
-				open('/administration', '_self', true);
+				//alert(data.data.value);
+				//window.parent.open('/administration', '_self', true);
 			}
 			
 		}
@@ -60,7 +60,7 @@ $(function () {
 		addFileUploadDiv();
 		addStartButton();
 		addStopButton();
-		addClearTableButton();
+		//addClearTableButton();
 		startButton.button("enable");
 		stopButton.hide();
 
