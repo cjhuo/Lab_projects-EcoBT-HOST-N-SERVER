@@ -5,21 +5,21 @@
 {% end %}
 
 {% block body %}
-<div id="name0" style="display: inline">{% if nodeName==None %}Demo{% else %}{{ nodeName }} {% end %}</div>
-<div id="name1" style="display: inline">{% if nodeName==None %}Demo{% else %}{{ nodeName }} {% end %}</div>
+<div id="name0" style="display: none">{% if nodeNameL==None %}Demo{% else %}{{ nodeNameL }} {% end %}</div>
+<div id="name1" style="display: none">{% if nodeNameR==None %}Demo{% else %}{{ nodeNameR }} {% end %}</div>
 
 <br>
 <div id="serverAddr" style="display:none">{{ serverAddr }}</div>
 
 <div class="ui-layout-north">
 	<div id='node1' class="ui-layout-center">
-		<iframe width=100% height=100% src="/liveSIDs" seamless="seamless" frameborder="no" scrolling="auto"></iframe>
+		<iframe width=100% height=100% src="/liveSIDs?name={{nodeNameL}}&side=left" seamless="seamless" frameborder="no" scrolling="auto"></iframe>
 	</div>
 
 	<!-- <div class="ui-layout-east">Inner East</div> -->
 
 	<div id='node2' class="ui-layout-east">	
-		<iframe width=100% height=100% src="/liveSIDs" seamless="seamless" frameborder="no" scrolling="auto"></iframe>
+		<iframe width=100% height=100% src="/liveSIDs?name={{nodeNameR}}&side=right" seamless="seamless" frameborder="no" scrolling="auto"></iframe>
 	</div>
 </div>
 <div id="simulation" class="ui-layout-center">

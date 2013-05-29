@@ -68,8 +68,8 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
                 self.ecoBTApp.managerWorker.state = 4
                 #self.ecoBTApp.managerWorker.sendState()
                 # cancel all other connection
-                self.ecoBTApp.managerWorker.cancelAllConnectionExcept(\
-                                self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).peripheral)
+                #self.ecoBTApp.managerWorker.cancelAllConnectionExcept(\
+                #                self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).peripheral)
             elif message.startswith("startSIDs"):
                 address = message[9:]
                 self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsStatus().startSIDs()

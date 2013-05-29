@@ -5,23 +5,42 @@
 {% end %}
 
 {% block body %}
-Node Name: <div id="name" style="display: inline">{% if nodeName==None %}Demo{% else %}{{ nodeName }} {% end %}</div>
+<div id="side" style="display: inline">{% if side==None %} {% else %}{{ side.capitalize() }} {% end %}</div> 
+<div style="display: inline">Node:</div> 
+<div id="name" style="display: inline">{% if nodeName==None %}Demo{% else %}{{ nodeName }} {% end %}</div>
 <br>
 <div id="serverAddr" style="display:none">{{ serverAddr }}</div>
 
 
 <div id="dataContainer" class="ui-widget">
   <table id="dataTable" class="ui-widget ui-widget-content">
+  {% if side=='left' %} 
     <thead>
       <tr class="ui-widget-header ">
         <th>Time</th>
-        <th>LED 1 Signal</th>     
-        <th>LED 2 Signal</th>                    
-        <th>Ambient</th>    
+        <th>LED 1 Signal 1</th>
+        <th>LED 1 Signal 2</th>        
+        <th>LED 2 Signal 1</th>        
+        <th>LED 2 Signal 2</th>        
+        <th>Ambient 1</th>       
+        <th>Ambient 2</th>    
         <th>RH</th>       
         <th>T</th>
       </tr>
     </thead>
+   {% else %}
+    <thead>
+      <tr class="ui-widget-header ">
+        <th>Time</th>
+        <th>LED 1 Signal 1</th>
+        <th>LED 1 Signal 2</th>        
+        <th>LED 2 Signal 1</th>        
+        <th>LED 2 Signal 2</th>        
+        <th>Ambient 1</th>       
+        <th>Ambient 2</th>    
+      </tr>
+    </thead>   
+   {% end %}
     <tbody>
     <!-- 
       <tr>
@@ -58,7 +77,7 @@ Node Name: <div id="name" style="display: inline">{% if nodeName==None %}Demo{% 
 
  <style>
 
-div#dataContainer { font-size: small; width: auto; margin-left: auto; margin-right: auto; }
+div#dataContainer { font-size: 0.6em; width: auto; margin-left: auto; margin-right: auto; }
 div#dataContainer table { margin: auto; border-collapse: collapse; width: 100%; }
 div#dataContainer table td, div#dataContainer table th { border: 1px solid #eee; padding: .6em 10px; text-align: middle; }
  </style>

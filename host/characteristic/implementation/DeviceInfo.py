@@ -26,5 +26,5 @@ class DeviceInfo(Characteristic):
         a1, a2, a3, a4, a5, a6 = struct.unpack('cccxxccc', value)
         address = str(binascii.hexlify(a6) + '-' + binascii.hexlify(a5) + '-' + binascii.hexlify(a4) + '-' + \
          binascii.hexlify(a3) + '-' + binascii.hexlify(a2) + '-' + binascii.hexlify(a1))
-        print 'MAC Address: ', address
+        print "Peripheral No.", self.peripheralWorker.peripheral.number, "-" , 'MAC Address: ', address
         return address

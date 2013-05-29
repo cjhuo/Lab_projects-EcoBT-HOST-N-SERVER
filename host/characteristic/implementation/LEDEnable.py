@@ -22,7 +22,7 @@ class LEDEnable(Characteristic):
     def process(self):
         hex_str = binascii.hexlify(self.instance._.value)
         self.enable = int(hex_str, base=16) # 1: enabled; 0: disabled
-        print "EPL LED Enable?(%s) %d" % (self.UUID, self.enable)
+        print "Peripheral No.", self.peripheralWorker.peripheral.number, "-" , "EPL LED Enable?(%s) %d" % (self.UUID, self.enable)
         
         '''
         t = None

@@ -38,8 +38,10 @@ class LiveSIDsHandler(BaseHandler):
     def get(self):  
         try:
             name = self.get_argument("name") # node's name, e.g., MAC addres
+            side = self.get_argument("side") # node's location on the board
         except Exception:
             name = None   
+            side = None
         self.render(
             "live/sids.html",
             page_title="Live SIDs Viewer",
@@ -47,12 +49,14 @@ class LiveSIDsHandler(BaseHandler):
             footer_text="",
             serverAddr = LiveSIDsServerAddr,
             nodeName = name,
+            side = side
         )  
                 
 class SIDsDualHandler(BaseHandler):
     def get(self):  
         try:
-            name = self.get_argument("name") # node's name, e.g., MAC addres
+            nameL = self.get_argument("nameL") # node's name, e.g., MAC addres
+            nameR = self.get_argument("nameR") # node's name, e.g., MAC addres
         except Exception:
             name = None   
         self.render(
@@ -61,7 +65,8 @@ class SIDsDualHandler(BaseHandler):
             header_text="Live SIDs Viewer",
             footer_text="",
             serverAddr = LiveSIDsServerAddr,
-            nodeName = name,
+            nodeNameL = nameL,
+            nodeNameR = nameR
         )  
 
 

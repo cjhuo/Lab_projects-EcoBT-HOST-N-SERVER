@@ -79,7 +79,7 @@ $(function () {
 	//UI handler
     var mousedown = function () {
         this.animate({"fill-opacity": .2}, 500);
-    },
+    	},
         mouseup = function() {
             this.animate({"fill-opacity": 1}, 500);
         },
@@ -201,7 +201,7 @@ $(function () {
         		y = 20;
         		$.each(plist, function(index, value){ //name, rssi, number
         			addNode(x, y, value);
-        			y+=150;
+        			y+=100;
         		});
         	}
         	else{ 	// compare the list, if doesn't in plist then disabled, 
@@ -239,11 +239,24 @@ $(function () {
         			}
         			if(foundInLocal == false) { // didn't find in local plist, add it to list
         				x = peripheralList[peripheralList.length-1].instance.attr("x");
-        				y = peripheralList[peripheralList.length-1].instance.attr("y")+150;
+        				y = peripheralList[peripheralList.length-1].instance.attr("y")+100;
         				addNode(x, y, plist[i]);
         			}
         		}
         	}
+        	
+        },
+        checkPair = function(){
+        	$.each(peripheralList, function(index, value) {
+        		if(value.belongs == null){ //not assigned pair
+        			if(index % 2 == 0){ // first one of the pair, assign self to belongs
+        				value.belongs = value; 
+        			}
+        			else{
+        				value.belongs = peripheralList[index-1];
+        			}
+        		}
+        	});
         },
         toggleNode = function(peripheral, value) {
         	if(value==false){
@@ -258,6 +271,7 @@ $(function () {
 				stroke: "orange",
 				"stroke-width": 5
 			});
+			peripheral.attr('fill', "orange");
 			var conn = r.connection(peripheral, centralManager, "#000");
 			var text = r.text(x+30, y-10, value.name).attr({
     			opacity: 1, 
@@ -278,13 +292,20 @@ $(function () {
 					'services': [],
 					'text': text,
 					'readyInstance': null,
-					'addrInstance': null
+					'addrInstance': null,
+					'side': value.side, // either 'left' or 'right'
+					'belongs': null,
+					'startGroup': null,
+					'startConn': null
 			};
 			peripheral.drag(move, dragger, up);
 			if(value.address != null){
 				updateMac(value, p);
 			}
 			peripheralList.push(p);
+			
+        	checkPair();
+			
 			if(value.type == 'ECG'){
 				enableECGButtonEvent(value);
 			}
@@ -340,21 +361,22 @@ $(function () {
         },
         enableSIDsButtonEvent = function(data) {
         	// find relative peripheral
-        	var peripheral;
+        	var peripheral, index;
         	$.each(peripheralList, function(key, val){
         		if(val.number == data.number){
         			peripheral = val;
+        			index = key;
         		}
         	})
         	
         	if(peripheral != null){
         		if(peripheral.readyInstance == null){
-	        		peripheral.instance.attr({cursor: "pointer"});
+	        		//peripheral.instance.attr({cursor: "pointer"});
 	        		
 	        		// draw ready text
 	    			x = peripheral.instance.attr("x") + 10;
 	    			y = peripheral.instance.attr("y") + 30;
-	    			var text = r.text(x+20, y-10, "START").attr({
+	    			var text = r.text(x+20, y-10, "NODE").attr({ //should change text to either 'left' or 'right'
 	        			opacity: 1, 
 	        			fill: 'black', 
 	        			"stroke-width": 2,
@@ -363,24 +385,59 @@ $(function () {
 	    			var group = r.set();
 	    			group.push(peripheral.instance);
 	    			group.push(text);
-	    			//group.peripheral = peripheral;
-	    			//var sidsUrl = "/sidsAll?name="+data.address;//"/liveSIDs?name="+data.address;
-	    			var sidsUrl = "/liveSIDs?name="+data.address;//"/liveSIDs?name="+data.address;
+        		}        		
+        		if(peripheral.belongs != null && peripheral.belongs.belongs != null && peripheral.belongs != peripheral){
+        			var x = peripheral.instance.attr("x") + 150;
+        			var y = peripheral.instance.attr("y") > peripheral.belongs.instance.attr("y") ? 
+        					(peripheral.instance.attr("y") - peripheral.belongs.instance.attr("y"))/2 + peripheral.belongs.instance.attr("y") : 
+        						(peripheral.belongs.instance.attr("y") - peripheral.instance.attr("y"))/2 + peripheral.instance.attr("y");
+        			
+        			var p = r.rect(x, y, 60, 40, 10).attr({
+        				stroke: "orange",
+        				cursor: 'pointer',
+        				"stroke-width": 5
+        			});
+        			p.attr('fill', "orange");
+        			
+        			var text = r.text(x+30, y+20, "START").attr({
+            			opacity: 1, 
+            			fill: 'black', 
+            			"stroke-width": 2,
+            			"font-weight":900});
+	    			var group = r.set();
+	    			group.push(p);
+	    			group.push(text);
+	    			var nameL, nameR;
+	    			if(peripheral.side == 'left'){
+	    				nameL = peripheral.address;
+	    				nameR = peripheral.belongs.address;
+	    			}
+	    			else{
+	    				nameL = peripheral.belongs.address;
+	    				nameR = peripheral.address;
+	    			}
+	    			var sidsUrl = "/sidsDual?nameL="+nameL+"&nameR="+nameR;//"/liveSIDs?name="+data.address;
 	    			group.attr({
 	    			    cursor: 'pointer',
 	    			}).mouseover(function(e) {
 	    				group[0].attr('fill', "green");
 	    			}).mouseout(function(e) {
-	    				group[0].attr('fill', "");
+	    				group[0].attr('fill', "orange");
 	    			}).dblclick(function(e) {
 	    				group[0].attr('fill', "red");
 	    				showSpinner();
-	    				//startTestECG(peripheral.address);
 	    				enterSIDsPage(peripheral.address);
-	    				this.undblclick();
-	    				//this.remove();
-	    				window.open(sidsUrl, '_self', false);
+	    				//this.undblclick();
+	    				window.parent.open(sidsUrl, '_self', false);
 	    			}); 
+	    			peripheral.startGroup = group;
+
+        			var conn = r.connection(peripheral.instance, p, "green");    			 
+        			conn.line.toBack();
+        			peripheral.startConn = conn;
+        			var conn = r.connection(peripheral.belongs.instance, p, "green");    			 
+        			conn.line.toBack();
+        			peripheral.belongs.startConn = conn;      
         		}
         	}
         },
@@ -405,7 +462,7 @@ $(function () {
         		this.xRdy = this.p.readyInstance.attr("x");
         		this.yRdy = this.p.readyInstance.attr("y");
         	}
-            this.p.instance.animate({"fill-opacity": .2}, 500);
+            //this.p.instance.animate({"fill-opacity": .2}, 500); // disable to avoid incompatibility of mouserover event
         },
         move = function (dx, dy) {
         	var att = {x: this.xIns + dx, y: this.yIns + dy};
@@ -420,11 +477,12 @@ $(function () {
         		var attRdy = {x: this.xRdy + dx, y: this.yRdy + dy};
         		this.p.readyInstance.attr(attRdy);
         	}
-            r.connection(this.p.connection);
+            r.connection(this.p.connection);            
+            r.connection(this.p.startConn);
             r.safari();
         },
         up = function () {
-            this.p.instance.animate({"fill-opacity": 0}, 500);
+            //this.p.instance.animate({"fill-opacity": 0}, 500); // disable to avoid incompatibility of mouserover event
         },
         startTestECG = function(address) {
         	socket.send("startTestECG"+address);
@@ -512,10 +570,18 @@ $(function () {
         		val.text.remove();
         		val.instance.remove();
         	});
+        	
+        	if(peripheralList[i].startConn != null)
+        		peripheralList[i].startConn.line.remove();
+        	if(peripheralList[i].startGroup != null){
+        		peripheralList[i].startGroup[0].remove();
+        		peripheralList[i].startGroup[1].remove();
+        	}
+        	
         	if(peripheralList[i].addrInstance != null)
         		peripheralList[i].addrInstance.remove();
         	if(peripheralList[i].readyInstance != null)
-        		peripheralList[i].readyInstance.remove();        		
+        		peripheralList[i].readyInstance.remove();  		
     		peripheralList[i].connection.line.remove();
     		peripheralList[i].text.remove();
     		peripheralList[i].instance.remove();

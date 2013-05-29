@@ -41,26 +41,34 @@ class SIDsCO2Status(Characteristic):
         
     def process(self):
         hex_str = binascii.hexlify(self.instance._.value)
-        print "CO2 STATUS: ", hex_str
+        print "Peripheral No.", self.peripheralWorker.peripheral.number, "-" , "CO2 STATUS: ", hex_str
         value = self.instance._.value
         self.start, self.LED_ready, self.PD0, self.PD1, self.RH_T_ready, self.RH_T_enable = struct.unpack("<BBBBBB", value)
         #print self.start, self.LED_ready, self.PD0, self.PD1, self.RH_T_ready, self.RH_T_enable
         if int(self.start) == 0 and int(self.LED_ready) == 1 and int(self.PD0) == 1 and \
-                                    int(self.PD1) == 1 and int(self.RH_T_ready) == 1 and int(self.RH_T_enable) == 1: # correct initial state
+                                    int(self.PD1) == 1: # correct initial state
             self.state = STOP_FLAG
         elif int(self.start) == 1:
             self.state = START_FLAG
+            
+        # define the which side the node is located
+        if int(self.RH_T_ready) == 1 and int(self.RH_T_enable) == 1:
+            self.peripheralWorker.peripheral.side = 'left'
+        if int(self.RH_T_ready) == 0 and int(self.RH_T_enable) == 0:
+            self.peripheralWorker.peripheral.side = 'right'
         
         if self.peripheralWorker.peripheral.type != 'SIDs':
             self.peripheralWorker.peripheral.type = 'SIDs'
+            
         # send a message to UI
         data = {'type': 'SIDs',
         'value': {'type': 'state',
-                  'value': self.state # stopped == ready signal
+                  'value': self.state, # stopped == ready signal
+                  'side': self.peripheralWorker.peripheral.side
                   }
         }
         self.peripheralWorker.delegateWorker.getQueue().put(data)
-    '''
+        '''
         enable = int(hex_str, base=16) # 1: enabled; 0: disabled
         print "SIDS SHT25 ENABLE?(%s) %s" % (self.instance._.UUID, enable)
         if self.enable != enable:
@@ -75,12 +83,12 @@ class SIDsCO2Status(Characteristic):
         return data
         '''
     def startSIDs(self):
-        byte_array = struct.pack("<BBBBBB", 1, 1, 1, 1, 1, 1)
+        byte_array = struct.pack("<BBBBBB", 1, 1, 1, 1, self.RH_T_ready, self.RH_T_enable)
         val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
         self.peripheralWorker.writeValueForCharacteristic(val_data, self)
         
     def stopSIDs(self):
-        byte_array = struct.pack("<BBBBBB", 0, 1, 1, 1, 1, 1)
+        byte_array = struct.pack("<BBBBBB", 0, 1, 1, 1, self.RH_T_ready, self.RH_T_enable)
         val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
         self.peripheralWorker.writeValueForCharacteristic(val_data, self)
         if hasattr(self.service, 'log_file'):

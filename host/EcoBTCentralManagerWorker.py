@@ -8,7 +8,6 @@ list of discovered peripheral workers
 '''  
 
 from Foundation import *
-#from PyObjCTools import AppHelper
 from IOBluetooth import *
 from objc import *
 from PyObjCTools import AppHelper
@@ -19,6 +18,7 @@ import time
 from EcoBTWorker import EcoBTWorker
 from EcoBTCentralManagerDelegateWorker import EcoBTCentralManagerDelegateWorker
 from EcoBTPeripheralWorker import EcoBTPeripheralWorker
+from DualEcoBTPeripheralWorker import DualEcoBTPeripheralWorker
 
 from Peripheral import Peripheral
 
@@ -89,6 +89,12 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
                 return worker
         return None
 
+    def findWorkerForPeripheralInstance(self, peripheralInstance):
+        for w in self.peripheralWorkers:
+            if w.peripheral.instance == peripheralInstance:
+                return w           
+        return False # not found
+
     def startScan(self):
         NSLog("STARTING SCAN")
         options = NSDictionary.dictionaryWithObject_forKey_(
@@ -118,7 +124,8 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
                  'rssi': worker.peripheral.rssi,
                  'number': worker.peripheral.number,
                  'address': worker.peripheral.address,
-                 'type': worker.peripheral.type
+                 'type': worker.peripheral.type,
+                 'side': worker.peripheral.side
                  }
             data['value'].append(p)
         self.delegateWorker.getQueue().put(data)
@@ -200,13 +207,11 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
             worker.setPeripheral(Peripheral(peripheral, peripheral._.name, rssi, self.pNum))
             self.pNum += 1
             self.peripheralWorkers.append(worker)
-            
             # for test
             self.connectPeripheral(peripheral)
             self.startScan()
         
-        #send peripherals list to UI !!!!!!!
-        
+       
         
         #print "Connect, stopScan"
         #self.stopScan()
@@ -246,12 +251,13 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
         worker = self.findWorkerForPeripheralInstance(peripheral)
         # dispose worker and remove peripheral
         if worker != False:
+            
             worker.stop()
             self.peripheralWorkers.remove(worker)
             NSLog("Disconnect from Peripheral No %@", worker.peripheral.number)
             self.sendFailMessage("Disconnect from Peripheral %s" % worker.peripheral.name)
         else:
-            NSLog("Didn't find the peripheral to remove from peripherhal list!")
+            NSLog("Didn't find the peripheral to remove from peripheral list!")
         
         # update UI
         self.sendPeripheralList()
@@ -264,12 +270,6 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
                                                          error):
         NSLog("Fail to Connect")
 
-    
-    def findWorkerForPeripheralInstance(self, peripheralInstance):
-        for w in self.peripheralWorkers:
-            if w.peripheral.instance == peripheralInstance:
-                return w           
-        return False # not found
 
 
 

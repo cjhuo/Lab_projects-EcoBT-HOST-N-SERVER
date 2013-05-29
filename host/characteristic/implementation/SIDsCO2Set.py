@@ -54,23 +54,31 @@ class SIDsCO2Set(Characteristic):
         
     def process(self):
         hex_str = binascii.hexlify(self.instance._.value)
-        print "CO2 PARAMETERS: ", hex_str
         value = self.instance._.value
         temp = struct.unpack("<HBBBBBHBBBHBBH", value)
         counter = 0
         for item in temp:
             self.settings[SETTING_NAMES[counter]] = int(item)
             counter += 1
-        
+            
+        print "Peripheral No.", self.peripheralWorker.peripheral.number, "-" , "CO2 PARAMETERS: (RAW) ", hex_str
+        self._printSettings()
         self.sendSettingsToFrontend()
         
+    def _printSettings(self):
+        print "Peripheral No.", self.peripheralWorker.peripheral.number, "-", "SETTINGS"
+        for idx, key in enumerate(sorted(self.settings.keys())):
+            if idx > 0 and idx % 3 == 0:
+                print
+            print '%-30s\t: %4d\t\t' % (key, self.settings[key]),
+        print        
     
     def updateSettingsByDict(self, settings):
         counter = 0;
         for key, val in settings.items():
             self.settings[str(key)] = int(val)
             counter += 0
-        print self.settings
+        self._printSettings()
         self.sendSettingsToPeripheral()
             
     def updateSettingsByFile(self, fname):
@@ -81,6 +89,7 @@ class SIDsCO2Set(Characteristic):
                 sValue = int(row[1])
                 if sName in SETTING_NAMES:
                     self.settings[sName] = sValue
+        self._printSettings()
         self.sendSettingsToPeripheral()
                     
     def sendSettingsToPeripheral(self):

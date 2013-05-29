@@ -115,7 +115,7 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
         if c.privilege == 1: # can be auto-notified also can get value by issuing read signal, need to read at the beginning
             self.setNotifyValueForCharacteristic(True, c)  
             self.readValueForCharacteristic(c)
-        if c.privilege == 2: # can only get value by issuing read signal
+        if c.privilege == 2: # can only get value by issuing read signal, need to read at the beginning
             self.readValueForCharacteristic(c)
         elif c.privilege == 0: # can only be auto-notified
             self.setNotifyValueForCharacteristic(True, c)  

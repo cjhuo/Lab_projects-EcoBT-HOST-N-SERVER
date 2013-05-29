@@ -29,7 +29,7 @@ class RTCSet(Characteristic):
     def process(self):
         value = self.instance._.value
         year, month, day, wday, hour, minute, second = struct.unpack("<HBBBBBB", value)
-        print "EPL RTC Last Set Time ", year, month, day, wday, hour, minute, second
+        print "Peripheral No.", self.peripheralWorker.peripheral.number, "-" , "EPL RTC Last Set Time ", year, month, day, wday, hour, minute, second
         if(self.isSet != True):
             now = datetime.now()
             self.time = datetime(now.year, now.month, now.day, now.isoweekday(), now.hour, now.minute, now.second)

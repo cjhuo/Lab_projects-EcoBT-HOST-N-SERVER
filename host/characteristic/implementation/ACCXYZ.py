@@ -30,7 +30,7 @@ class ACCXYZ(Characteristic):
         z = 1.0 if z>1.0 else z
         z = -1.0 if z<-1.0 else z         
         
-        print "X: % .3fg Y: % .3fg Z: % .3fg" % (x, y, z)  
+        print "Peripheral No.", self.peripheralWorker.peripheral.number, "-" , "X: % .3fg Y: % .3fg Z: % .3fg" % (x, y, z)  
         '''
         x = math.atan2(x, math.sqrt(y*y+z*z))
         data = ('x', x)

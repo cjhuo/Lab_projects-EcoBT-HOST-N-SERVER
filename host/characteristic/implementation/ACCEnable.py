@@ -25,7 +25,7 @@ class ACCEnable(Characteristic):
     def process(self):
         hex_str = binascii.hexlify(self.instance._.value)
         self.acc_enable = int(hex_str, base=16) # 1: enabled; 0: disabled                
-        print "ACC ENABLE?(%s) %s" % (self.instance._.UUID, self.acc_enable)
+        print "Peripheral No.", self.peripheralWorker.peripheral.number, "-" , "ACC ENABLE?(%s) %s" % (self.instance._.UUID, self.acc_enable)
         if self.acc_enable == ENABLE_FALG:
             #log = "DISABLING ACC" if self.acc_enable == 0 else "ENABLING ACC"
             log = "DISABLING ACC"

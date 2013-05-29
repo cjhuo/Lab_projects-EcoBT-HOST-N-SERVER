@@ -12,3 +12,4 @@ class Peripheral(object):
         self.number = number
         self.address = None
         self.type = None
+        self.side = None # define which side the node is located on the board, either left or right

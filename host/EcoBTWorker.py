@@ -8,6 +8,7 @@ EcoBTDeviceWorker Interface
 '''        
 class EcoBTWorker(object):
     def __init__(self):
+        #self.dualEcoBTPeripheralWorker = None # the DualEcoBTPeripheralWorker this peripheral belongs to
         pass
 
 

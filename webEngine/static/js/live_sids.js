@@ -1,6 +1,7 @@
 $(function () {
 	var url = $('#serverAddr').text(); 	//push url, need to change this to server's url, 
 	var name =  $('#name').text();
+	var side =  $('#side').text().trim();
 	var configUrl = 'config';
 		
     var datasets; //store datasets
@@ -9,7 +10,7 @@ $(function () {
 		if( data.from == 'node'){
 			if(name.trim() == data.data.address.trim())
 				if(data.data.type == 'SIDsRead'){ //real data
-					console.log(data.data.value);
+					//console.log(data.data.value);
 					updateDataTable(data.data.value);
 					/*
 					datasets = data.data.data;
@@ -102,7 +103,7 @@ $(function () {
 	    	tmpSettings = sortOnKeys(settings);
 	    	var rowDom, tdDom1, tdDom2, counter = 1;
 	    	$.each(tmpSettings, function(key, val){
-	    		console.log(key, val);
+	    		//console.log(key, val);
 	    		if(counter == 1){
 	    			rowDom = $("<tr></tr>");
 	    		}
@@ -171,18 +172,32 @@ $(function () {
 
               "</tr>" );
         */
-    	$("#dataTable tbody").prepend("<tr>" +
-                "<td>" + data[0]+ ":" + data[1] +":"+ data[2] + "</td>" +
-                "<td>" + data[3] + "</td>" +
-                "<td>" + data[4] + "</td>" +
-                "<td>" + data[5] + "</td>" +
-                "<td>" + data[6] + "</td>" +
-                "<td>" + data[7] + "</td>" +
-                "<td>" + data[8] + "</td>" +
-                "<td>" + data[9] + "</td>" +
-                "<td>" + data[10] + "</td>" +
-
-              "</tr>" );
+    	if(side == 'Left'){
+	    	$("#dataTable tbody").prepend("<tr>" +
+	                "<td>" + data[0]+ ":" + data[1] +":"+ data[2] + "</td>" +
+	                "<td>" + data[3] + "</td>" +
+	                "<td>" + data[4] + "</td>" +
+	                "<td>" + data[5] + "</td>" +
+	                "<td>" + data[6] + "</td>" +
+	                "<td>" + data[7] + "</td>" +
+	                "<td>" + data[8] + "</td>" +
+	                "<td>" + data[9] + "</td>" +
+	                "<td>" + data[10] + "</td>" +
+	
+	              "</tr>" );
+    	}
+    	else{
+	    	$("#dataTable tbody").prepend("<tr>" +
+	                "<td>" + data[0]+ ":" + data[1] +":"+ data[2] + "</td>" +
+	                "<td>" + data[3] + "</td>" +
+	                "<td>" + data[4] + "</td>" +
+	                "<td>" + data[5] + "</td>" +
+	                "<td>" + data[6] + "</td>" +
+	                "<td>" + data[7] + "</td>" +
+	                "<td>" + data[8] + "</td>" +
+	
+	              "</tr>" );
+    	}
     }
 	
     function startSIDs() {

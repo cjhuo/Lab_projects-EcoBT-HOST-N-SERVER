@@ -1,7 +1,7 @@
 $(function () {
 	var url = $('#serverAddr').text(); 	//push url, need to change this to server's url, 
-	var name0 =  $('#name0').text();
-	var name1 =  $('#name1').text();
+	var name0 =  $('#name0').text(); // left node
+	var name1 =  $('#name1').text(); // right node
 		
     var datasets; //store datasets
 	function onDataReceived(data) { //setup plot after retrieving data
@@ -9,24 +9,28 @@ $(function () {
 		if( data.from == 'node'){
 			if(name0.trim() == data.data.address.trim() || name1.trim() == data.data.address.trim())
 				if(data.data.type == 'SIDsRead'){ //real data
-					console.log(data.data.value);
-					updateChart(data.data);
+					updateChart(data);
 				}
 		}
 		else if(data.from == 'central') {
-			console.log(data);
+			//console.log(data);
 			if(data.data.type == 'message'){
 				alert(data.data.value);
-				//open('/administration', '_self', true);
+				open('/', '_self', true);
 			}
 		}
 	}
 	
 	function updateChart(data) {
 		//update chart
-		chart.series[0].addPoint(data.value.x, false, true);
-		chart.series[1].addPoint(data.value.y, false, true);
-		chart.series[2].addPoint(data.value.z, true, true);
+		if(name0.trim() == data.data.address.trim()){
+			chart.series[0].addPoint(data.data.value[3], false, true);
+			chart.series[1].addPoint(data.data.value[6], true, true);
+		}
+		if(name1.trim() == data.data.address.trim()){
+			chart.series[2].addPoint(data.data.value[3], false, true);
+			chart.series[3].addPoint(data.data.value[6], true, true);
+		}
 	}
 	
 	var init = function() {

@@ -24,10 +24,10 @@ class RTCGet(Characteristic):
         year, month, day, wday, hour, minute, second = struct.unpack("<HBBBBBB", value)
         try:
             rtc_time = datetime(year = year, month = month, day = day, hour = hour, minute = minute, second = second)
-            print "EPL RTC Get Time", rtc_time
+            print "Peripheral No.", self.peripheralWorker.peripheral.number, "-" , "EPL RTC Get Time", rtc_time
         except:
             # if the RTC is not set, then the values are 0s
-            print "EPL RTC Get Time not set yet!"
+            print "Peripheral No.", self.peripheralWorker.peripheral.number, "-" , "EPL RTC Get Time not set yet!"
             rtc_time = 0
         data = {'type': "RTCGet", 'value': rtc_time} # read to 2nd digit after decimal point
         self.peripheralWorker.delegateWorker.getQueue().put(data)

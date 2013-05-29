@@ -42,16 +42,16 @@ class SIDsCO2Read(Characteristic):
 
     def process(self):
         hex_str = binascii.hexlify(self.instance._.value)
-        print "CO2 READING: ", hex_str
+        print "Peripheral No.", self.peripheralWorker.peripheral.number, "-" , "CO2 READING: ", hex_str
         value = self.instance._.value
         hour, minute, sec, LED00, LED01, LED10, LED11, amb0, amb1, rh, temp = struct.unpack("<BBBhhhhhhHH", value)
-        print rh, temp
+        print "Peripheral No.", self.peripheralWorker.peripheral.number, "-" , rh, temp
         rh = rh & 0xFFFC
         rh = -6.0 + (125.0 * rh) / 65536
         temp = temp & 0xFFFC
         temp = -46.85 + (175.72 * temp) / 65536
 
-        print hour, minute, sec, LED00, LED01, LED10, LED11, amb0, amb1, rh, temp
+        print "Peripheral No.", self.peripheralWorker.peripheral.number, "-" , hour, minute, sec, LED00, LED01, LED10, LED11, amb0, amb1, rh, temp
         self.logToFile(hour, minute, sec, LED00, LED01, LED10, LED11, amb0, amb1, rh, temp)
         
         data = {
@@ -73,7 +73,7 @@ class SIDsCO2Read(Characteristic):
     def logToFile(self, hour, minute, sec, LED00, LED01, LED10, LED11, amb0, amb1, rh, temp):
         if not hasattr(self.service, 'log_file') or self.service.log_file == False: # try to open a file
             prefix = os.path.join(os.path.dirname(__file__), os.path.pardir, os.pardir, os.pardir, "data/log_")
-            name = datetime.now().strftime("%Y%m%d%H%M%S")
+            name = datetime.now().strftime("%Y%m%d%H%M%S_") + self.peripheralWorker.peripheral.side
             postfix = '.csv'
             fd = None
             if not os.path.exists(prefix + name + postfix):
