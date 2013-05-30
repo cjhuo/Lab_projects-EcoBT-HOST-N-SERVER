@@ -18,7 +18,6 @@ import time
 from EcoBTWorker import EcoBTWorker
 from EcoBTCentralManagerDelegateWorker import EcoBTCentralManagerDelegateWorker
 from EcoBTPeripheralWorker import EcoBTPeripheralWorker
-from DualEcoBTPeripheralWorker import DualEcoBTPeripheralWorker
 
 from Peripheral import Peripheral
 
