@@ -52,9 +52,9 @@ class SIDsCO2Status(Characteristic):
             self.state = START_FLAG
 
         # define the which side the node is located
-        if int(self.RH_T_ready) == 1 and int(self.RH_T_ready) == 1:
+        if int(self.RH_T_ready) == 1 and int(self.RH_T_enable) == 1:
             self.peripheralWorker.peripheral.side = 'left'
-        if int(self.RH_T_ready) == 0 and int(self.RH_T_ready) == 0:
+        if int(self.RH_T_ready) == 0 and int(self.RH_T_enable) == 0:
             self.peripheralWorker.peripheral.side = 'right'
 
         if self.peripheralWorker.peripheral.type != 'SIDs':
