@@ -5,3 +5,5 @@ log.txt
 /HttpWebSocketTest/*
 /NIH_host/ecg/Uploads/*
 /NIH_host/host/Uploads/*
+data/*
+
