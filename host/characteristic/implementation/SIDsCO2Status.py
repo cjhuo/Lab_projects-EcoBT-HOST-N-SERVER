@@ -43,7 +43,7 @@ class SIDsCO2Status(Characteristic):
         hex_str = binascii.hexlify(self.instance._.value)
         print "Peripheral No.", self.peripheralWorker.peripheral.number, "-" , "CO2 STATUS: ", hex_str
         value = self.instance._.value
-        self.start, self.LED_ready, self.LED1_ready, self.PD0, self.PD1, self.RH_T_ready, self.RH_T_enable, self.init_delay = struct.unpack("<BBBBBBBH", value)
+        self.start, self.LED_ready, self.PD0, self.PD1, self.RH_T_ready, self.RH_T_enable = struct.unpack("<BBBBBB", value)
         #print self.start, self.LED_ready, self.PD0, self.PD1, self.RH_T_ready, self.RH_T_enable
         if int(self.start) == 0 and int(self.LED_ready) == 1 and int(self.PD0) == 1 and \
                                     int(self.PD1) == 1: # correct initial state
@@ -53,9 +53,9 @@ class SIDsCO2Status(Characteristic):
 
         # define the which side the node is located
         if int(self.RH_T_ready) == 1 and int(self.RH_T_ready) == 1:
-            self.peripheralWorker.peripheral.side = 'right'
-        if int(self.RH_T_ready) == 0 and int(self.RH_T_ready) == 0:
             self.peripheralWorker.peripheral.side = 'left'
+        if int(self.RH_T_ready) == 0 and int(self.RH_T_ready) == 0:
+            self.peripheralWorker.peripheral.side = 'right'
 
         if self.peripheralWorker.peripheral.type != 'SIDs':
             self.peripheralWorker.peripheral.type = 'SIDs'
