@@ -131,19 +131,19 @@ $(function () {
 			data.push(0);
 		}
         options.series.push({
-        	name: 'LED1 from node 0',
+        	name: 'LED1 from left node',
             data: data,
         });
         options.series.push({
-        	name: 'LED2 from node 0',
+        	name: 'LED2 from left node',
             data: data,
         });
         options.series.push({
-        	name: 'LED3 from node 1',
+        	name: 'LED1 from right node',
             data: data,
         });
         options.series.push({
-        	name: 'LED4 from node 1',
+        	name: 'LED2 from right node',
             data: data,
         });
 		chart = new Highcharts.Chart(options);

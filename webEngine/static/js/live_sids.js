@@ -176,8 +176,8 @@ $(function () {
 	    	$("#dataTable tbody").prepend("<tr>" +
 	                "<td>" + data[0]+ ":" + data[1] +":"+ data[2] + "</td>" +
 	                "<td>" + data[3] + "</td>" +
-	                "<td>" + data[4] + "</td>" +
-	                "<td>" + data[5] + "</td>" +
+	                //"<td>" + data[4] + "</td>" +
+	                //"<td>" + data[5] + "</td>" +
 	                "<td>" + data[6] + "</td>" +
 	                "<td>" + data[7] + "</td>" +
 	                "<td>" + data[8] + "</td>" +
@@ -190,8 +190,8 @@ $(function () {
 	    	$("#dataTable tbody").prepend("<tr>" +
 	                "<td>" + data[0]+ ":" + data[1] +":"+ data[2] + "</td>" +
 	                "<td>" + data[3] + "</td>" +
-	                "<td>" + data[4] + "</td>" +
-	                "<td>" + data[5] + "</td>" +
+	                //"<td>" + data[4] + "</td>" +
+	                //"<td>" + data[5] + "</td>" +
 	                "<td>" + data[6] + "</td>" +
 	                "<td>" + data[7] + "</td>" +
 	                "<td>" + data[8] + "</td>" +
