@@ -55,8 +55,8 @@ class LiveSIDsHandler(BaseHandler):
 class SIDsDualHandler(BaseHandler):
     def get(self):  
         try:
-            nameL = self.get_argument("nameL") # node's name, e.g., MAC addres
-            nameR = self.get_argument("nameR") # node's name, e.g., MAC addres
+            nameL = self.get_argument("nameL", None) # node's name, e.g., MAC addres
+            nameR = self.get_argument("nameR", None) # node's name, e.g., MAC addres
         except Exception:
             name = None   
         self.render(
