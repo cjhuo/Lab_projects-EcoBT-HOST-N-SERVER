@@ -24,11 +24,11 @@ $(function () {
 	function updateChart(data) {
 		//update chart
 		if(name0.trim() == data.data.address.trim()){
-			chart.series[0].addPoint(data.data.value[3], false, true);
+			chart.series[0].addPoint(data.data.value[3], true, true);
 			chart.series[1].addPoint(data.data.value[6], true, true);
 		}
 		if(name1.trim() == data.data.address.trim()){
-			chart.series[2].addPoint(data.data.value[3], false, true);
+			chart.series[2].addPoint(data.data.value[3], true, true);
 			chart.series[3].addPoint(data.data.value[6], true, true);
 		}
 	}

@@ -33,6 +33,14 @@ def main():
     #start web server
     t = threading.Thread(target = tornado.ioloop.IOLoop.instance().start)
     t.setDaemon(True)
+    '''
+    # test websockets
+    from characteristic.implementation.misc.PeriodicExecutor import PeriodicExecutor
+    test = PeriodicExecutor()
+    test.setParams(2, sendFakeData, app.globalSockets, 'Demo')
+    test.start()
+    '''
+
     #t.daemon = True
     t.start()
     ecoBTApp.start()
@@ -42,6 +50,16 @@ def main():
     #webbrowser.open_new('http://localhost:8000/')
     
     #start web server
+    
+def sendFakeData(sockets, address):
+    data = dict()
+    data['address'] = address
+    data['type'] = 'SIDsRead'
+    data['value'] = [1,2,3,4,5,6,7,8,9,10]
+    packet = {'from': 'node', 'data': data}
+    if len(sockets) != 0:
+        for socket in sockets.sockets:
+            socket.write_message(packet) 
     
 def writeToLog(flag):
     if flag == True:
