@@ -359,6 +359,7 @@ $(function () {
         		}
         	}
         },
+        sidsUrl,
         enableSIDsButtonEvent = function(data) {
         	// find relative peripheral
         	var peripheral, index;
@@ -366,6 +367,9 @@ $(function () {
         		if(val.number == data.number){
         			peripheral = val;
         			index = key;
+        			console.log("data:", data);
+        			// update side attribute
+        			val.side = data.side;
         		}
         	})
         	
@@ -407,16 +411,7 @@ $(function () {
 	    			var group = r.set();
 	    			group.push(p);
 	    			group.push(text);
-	    			var nameL, nameR;
-	    			if(peripheral.side == 'left'){
-	    				nameL = peripheral.address;
-	    				nameR = peripheral.belongs.address;
-	    			}
-	    			else{
-	    				nameL = peripheral.belongs.address;
-	    				nameR = peripheral.address;
-	    			}
-	    			var sidsUrl = "/sidsDual?nameL="+nameL+"&nameR="+nameR;//"/liveSIDs?name="+data.address;
+	    			updateSidsUrl(peripheral);
 	    			group.attr({
 	    			    cursor: 'pointer',
 	    			}).mouseover(function(e) {
@@ -497,6 +492,25 @@ $(function () {
     			"stroke-width": 2,
     			"font-weight":900});
 			p.addrInstance = text;
+			if(p.belongs != null && p.belongs != p)
+				updateSidsUrl(p);
+        },
+        updateSidsUrl = function(peripheral){
+			var nameL, nameR;
+			console.log(peripheral.address);
+			console.log(peripheral.belongs.address);
+			console.log(peripheral.side);
+			console.log(peripheral.side == 'left');
+			if(peripheral.side == 'left'){
+				nameL = peripheral.address;
+				nameR = peripheral.belongs.address;
+			}
+			else{
+				nameL = peripheral.belongs.address;
+				nameR = peripheral.address;
+			}
+			sidsUrl = "/sidsDual?nameL="+nameL+"&nameR="+nameR;//"/liveSIDs?name="+data.address;
+			console.log(sidsUrl);
         },
         addServiceNode = function(value) {
         	// find relative peripheral

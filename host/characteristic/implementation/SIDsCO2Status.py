@@ -62,9 +62,9 @@ class SIDsCO2Status(Characteristic):
 
         # send a message to UI
         data = {'type': 'SIDs',
+                'side': self.peripheralWorker.peripheral.side,
         'value': {'type': 'state',
                   'value': self.state, # stopped == ready signal
-                  'side': self.peripheralWorker.peripheral.side
                   }
         }
         self.peripheralWorker.delegateWorker.getQueue().put(data)
