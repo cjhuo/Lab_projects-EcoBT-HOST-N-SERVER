@@ -263,12 +263,12 @@ $(function () {
 		camera.rotation.z = -1.57;
 
 		scene = new THREE.Scene();
-		/*
+		
 		// Cube
 
 		var materials = [];
 		
-		var geometry = new THREE.CubeGeometry( 100, 200, 10 );
+		var geometry = new THREE.CubeGeometry( 50, 50, 10 );
 
 		for ( var i = 0; i < 6; i ++ ) {
 
@@ -278,7 +278,7 @@ $(function () {
 
 		cube = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { vertexColors: THREE.FaceColors } ) );
 		cube.position.x = 0;//150;
-		*/
+		
 		//cube.lookAt(a);
 		
 		//cube.rotation.x = 1.57;//0.1;
@@ -290,7 +290,7 @@ $(function () {
 		
 		// Get text from hash
 
-		var theText = "SIDs node #1";
+		var theText = "SIDs node #1"; //TBD: node name should be retrieved from device
 
 		var hash = document.location.hash.substr( 1 );
 
@@ -302,7 +302,7 @@ $(function () {
 
 		var text3d = new THREE.TextGeometry( theText, {
 
-			size: 20,
+			size: 15,
 			height: 3,
 			curveSegments: 2,
 			font: "helvetiker"
@@ -327,23 +327,25 @@ $(function () {
 		// add human 3D obj
 		var manager = new THREE.LoadingManager();
 		var loader = new THREE.OBJLoader( manager );
-		loader.load('static/css/objs/male02.obj', function(object){
+		loader.load('static/css/objs/baby.obj', function(object){
 			
 			object.traverse( function ( child ) {
 
 				if ( child instanceof THREE.Mesh ) {
 
-					child.material = textMaterial;
+					child.material = new THREE.MeshBasicMaterial( { color: 0xFFDFC4 } );
 
 				}
 
 			} );
-			
-			object.position.y = -80;
+			object.position.z = 240;
+			object.position.y = -170;
+			object.scale.set(2, 2, 2);
+			object.rotation.z = 0.2;
 			parent.add(object);
 			console.log(object);
 		});
-		//parent.add( cube );
+		parent.add( cube );
 		parent.add( text );
 		//parent.lookAt(new THREE.Vector3(0,0,0));
 		//parent.rotation.x = 1.57
