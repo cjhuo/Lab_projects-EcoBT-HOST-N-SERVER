@@ -12,7 +12,7 @@ from BaseHandler import BaseHandler
 
 # static page rendering handlers
 class MainHandler(BaseHandler):
-    @tornado.web.authenticated
+    #@tornado.web.authenticated
     def get(self):
         '''
         if not self.current_user:

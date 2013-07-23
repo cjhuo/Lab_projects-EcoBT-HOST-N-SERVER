@@ -256,27 +256,29 @@ $(function () {
 		camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 1000 );
 		camera.position.x = -350;
 		camera.position.y = 0;
-		//camera.position.y = -250;
-		
 		camera.position.z = 0;
-
-		camera.rotation = new THREE.Vector3( 0, -1.50, -1.57 ); // turn z to be parallel to gravity, facing up
+		// turn z to be parallel to gravity, facing up
+		//camera.rotation = new THREE.Vector3( 0,0, -1.50, -1.57 ); // doesn't work on r59
+		camera.rotation.y = -1.50;
+		camera.rotation.z = -1.57;
 
 		scene = new THREE.Scene();
-
+		/*
 		// Cube
 
 		var materials = [];
+		
+		var geometry = new THREE.CubeGeometry( 100, 200, 10 );
 
 		for ( var i = 0; i < 6; i ++ ) {
 
-			materials.push( new THREE.MeshBasicMaterial( { color: (i/100)* 0xffffff } ) );
+			geometry.faces[ i ].color.setHex((i/100)* 0xffffff);
 
 		}
 
-		cube = new THREE.Mesh( new THREE.CubeGeometry( 100, 200, 10, 1, 1, 1, materials ), new THREE.MeshFaceMaterial() );
+		cube = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { vertexColors: THREE.FaceColors } ) );
 		cube.position.x = 0;//150;
-		
+		*/
 		//cube.lookAt(a);
 		
 		//cube.rotation.x = 1.57;//0.1;
@@ -284,6 +286,7 @@ $(function () {
 		//cube.rotation.y = 0;//0.1;
 		//cube.rotation.z = 0.5;//0.1;
 		//scene.add( cube );
+		
 		
 		// Get text from hash
 
@@ -321,15 +324,37 @@ $(function () {
 
 		parent = new THREE.Object3D();
 		
-		parent.add( cube );
+		// add human 3D obj
+		var manager = new THREE.LoadingManager();
+		var loader = new THREE.OBJLoader( manager );
+		loader.load('static/css/objs/male02.obj', function(object){
+			
+			object.traverse( function ( child ) {
+
+				if ( child instanceof THREE.Mesh ) {
+
+					child.material = textMaterial;
+
+				}
+
+			} );
+			
+			object.position.y = -80;
+			parent.add(object);
+			console.log(object);
+		});
+		//parent.add( cube );
 		parent.add( text );
 		//parent.lookAt(new THREE.Vector3(0,0,0));
 		//parent.rotation.x = 1.57
 		scene.add( parent );
+		
+
 
 
 		renderer = new THREE.CanvasRenderer();
 		renderer.setSize( simContainer.width(), 200 );
+		
 
 		simContainer.append( renderer.domElement );
 
@@ -361,7 +386,7 @@ $(function () {
 		stats.update();
 
 	}
-
+	
 	function render() {
 
 		//parent.rotation.y += (Math.random()-0.5)*0.1;
@@ -426,14 +451,14 @@ $(function () {
 	            },
 	            plotBands: [{
 	                from: 34,
-	                to: 35.5,
+	                to: 36,
 	                color: '#DDDF0D' // green
 	            },{
-	                from: 35.5,
-	                to: 37.5,
+	                from: 36,
+	                to: 38,
 	                color: '#55BF3B' // green
 	            }, {
-	                from: 37.5,
+	                from: 38,
 	                to: 39,
 	                color: '#DDDF0D' // yellow
 	            }, {
@@ -509,14 +534,14 @@ $(function () {
 	            },
 	            plotBands: [{
 	                from: 0,
-	                to: 2,
+	                to: 1,
 	                color: '#55BF3B' // green
 	            }, {
-	                from: 2,
-	                to: 4,
+	                from: 1,
+	                to: 3,
 	                color: '#DDDF0D' // yellow
 	            }, {
-	                from: 4,
+	                from: 3,
 	                to: 6,
 	                color: '#DF5353' // red
 	            }]
