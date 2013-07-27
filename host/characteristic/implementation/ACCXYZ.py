@@ -59,10 +59,10 @@ class ACCXYZ(Characteristic):
                 'uuid': self.UUID
                 }
         #data = {'type': 'orientation', 'axis': 'x', 'value': x}
-        return data
+        #return data
         #y = math.asin(y)
         #data = {'type': 'orientation', 'axis': 'y', 'value': y}
         #self.delegateWorker.getQueue().put(data)
         #z = math.acos(z)
         #data = {'type': 'orientation', 'axis': 'z', 'value': z}
-        #self.delegateWorker.getQueue().put(data)
+        self.peripheralWorker.delegateWorker.getQueue().put(data)

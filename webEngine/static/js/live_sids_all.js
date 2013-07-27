@@ -61,7 +61,7 @@ $(function () {
 		initChart();
 		initTemperatureChart();
 		initHumidityChart();
-		initSoundMonitor();
+		//initSoundMonitor();
 		
 	}
 	
@@ -341,7 +341,7 @@ $(function () {
 			object.position.z = 240;
 			object.position.y = -170;
 			object.scale.set(2, 2, 2);
-			object.rotation.z = 0.2;
+			//object.rotation.z = 0.2;
 			parent.add(object);
 			console.log(object);
 		});

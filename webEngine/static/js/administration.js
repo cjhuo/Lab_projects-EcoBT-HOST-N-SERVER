@@ -374,12 +374,13 @@ $(function () {
 	    				group[0].attr('fill', "");
 	    			}).dblclick(function(e) {
 	    				group[0].attr('fill', "red");
-	    				showSpinner();
+	    				//showSpinner();
 	    				//startTestECG(peripheral.address);
 	    				enterSIDsPage(peripheral.address);
 	    				this.undblclick();
 	    				//this.remove();
-	    				window.open(sidsUrl, '_self', false);
+	    				//window.open(sidsUrl, '_self', false);
+	    				window.open(sidsUrl);
 	    			}); 
         		}
         	}
@@ -627,7 +628,7 @@ $(function () {
 	    	onDataReceived($.parseJSON(event.data));
 	    };
 	    socket.onerror = function(event) {
-	    	alert('Error, readyState code is: ' + socket.readyState);
+	    	//alert('Error, readyState code is: ' + socket.readyState);
 	    	socket.close();
 	    	establishConnection();
 	    };

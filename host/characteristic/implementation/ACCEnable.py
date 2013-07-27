@@ -26,11 +26,19 @@ class ACCEnable(Characteristic):
         hex_str = binascii.hexlify(self.instance._.value)
         self.acc_enable = int(hex_str, base=16) # 1: enabled; 0: disabled                
         print "ACC ENABLE?(%s) %s" % (self.instance._.UUID, self.acc_enable)
+        '''
         if self.acc_enable == ENABLE_FALG:
             #log = "DISABLING ACC" if self.acc_enable == 0 else "ENABLING ACC"
             log = "DISABLING ACC"
             NSLog(log)
             self.peripheralWorker.writeValueForCharacteristic(self.createDisableFlag(), self)
+        '''
+        if self.acc_enable == DISABLE_FALG:
+            #log = "DISABLING ACC" if self.acc_enable == 0 else "ENABLING ACC"
+            log = "ENABLING ACC"
+            NSLog(log)
+            self.peripheralWorker.writeValueForCharacteristic(self.createEnableFlag(), self)
+        
         '''
         data = {'type': 'ACCEnable', 
                 'value': self.acc_enable,
