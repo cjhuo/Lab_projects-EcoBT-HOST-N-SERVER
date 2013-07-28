@@ -87,7 +87,7 @@ $(function () {
 			west__size:	.80,	
 			west__childOptions:	{
 				closable: false,
-				south__size: .40,
+				south__size: .50,
 				center__childOptions:	{
 					closable: false,
 					west__size:		.50
