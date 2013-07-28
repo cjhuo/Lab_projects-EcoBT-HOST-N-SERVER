@@ -380,7 +380,7 @@ $(function () {
 	    				this.undblclick();
 	    				//this.remove();
 	    				//window.open(sidsUrl, '_self', false);
-	    				window.open(sidsUrl);
+	    				window.parent.location = sidsUrl;
 	    			}); 
         		}
         	}

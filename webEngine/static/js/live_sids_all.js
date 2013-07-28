@@ -104,7 +104,7 @@ $(function () {
 	var container = $("#acceleration");
 	var total_points = 100;
 	function initChart() {
-		chartContainer = $("<div id='chart' class='chart'/>").appendTo(container);
+		chartContainer = $("<div id='chart' class='chart'/>").appendTo($("#sound"));
 		options = {
             chart: {
                 renderTo: 'chart',
@@ -234,9 +234,9 @@ $(function () {
 		//console.log(simContainer.width());
 		stats = new Stats();
 		stats.domElement.style.position = 'relative';
-		//stats.domElement.style.float = 'left';
-		//stats.domElement.style.top = 'auto';
-		//simContainer.append( stats.domElement );
+		stats.domElement.style.float = 'left';
+		stats.domElement.style.top = 'auto';
+		simContainer.append( stats.domElement );
 
 		var info = $("<div/>").css( {
             position: 'relative',
@@ -315,7 +315,7 @@ $(function () {
 		var textMaterial = new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff, overdraw: true } );
 		text = new THREE.Mesh( text3d, textMaterial );
 
-		text.position.x = centerOffset;
+		//text.position.x = centerOffset;
 		text.position.y = 80;
 		text.position.z = 20;
 		text.rotation.x = 1.57; 
