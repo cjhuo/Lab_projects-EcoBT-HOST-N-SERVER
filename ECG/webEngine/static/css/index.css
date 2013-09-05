@@ -16,6 +16,10 @@ body{
 
 }
 
+.mainContainer{
+	height: 100%;
+}
+
 nav {
 	position: relative;
 	float: left;
