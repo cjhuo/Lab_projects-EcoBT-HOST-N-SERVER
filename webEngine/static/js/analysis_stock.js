@@ -16,7 +16,8 @@ $(function () {
 	
 	//ajax call urls
 	var submitUrl = 'ecgHandler'; 
-	var fileHandlerUrl = 'ecgHandler'
+	var fileHandlerUrl = 'ecgAllInOne';
+	var dataUrl = 'ecgAllInOne';		
 	
 	var datasets; //store datasets
 	var peaks; //store indice of peak points for channels 
@@ -272,6 +273,35 @@ $(function () {
             legend: {
             	enabled: false
             },
+            navigator: {
+            	enabled: true,
+            	adaptToUpdatedData: false,
+            	series: {},
+            	xAxis:{
+            		labels:{
+            			enabled: true,
+            			//step: 3,
+            			overflow: false
+            		},
+            		//tickInterval: 1000,
+            		dateTimeLabelFormats: {
+            			millisecond: '%H:%M:%S',
+        	        	second: '%H:%M:%S',
+        	        	minute: '%H:%M:%S',
+        	        	hour: '%H:%M:%S',
+        	        	day: '%H:%M:%S',
+        	        	week: '%H:%M:%S',
+        	        	month: '%H:%M:%S',
+        	        	year: '%H:%M:%S'
+        	        },
+        	        startOnTick: true,
+        	        endOnTick: true
+            	}
+            },
+            scrollbar: {
+            	enabled: true,
+    			liveRedraw: false
+            },
             rangeSelector:{
             	enabled: false,
             	inputEnabled: false,
@@ -299,28 +329,52 @@ $(function () {
             			+ ' seconds data are diplayed for the purpose of getting Q/T inputs from user'
             },
             xAxis: {
-            	lineColor: '#F5959A',
-            	gridLineColor: '#F5959A',
+				
+				//minRange: 1000,
+                minRange: 1000,
+                //setting the scrollbar's position to the left
+                min: Date.UTC(0, 0, 0, 0, 0, 0, 0),
+                max: document.ontouchstart === undefined ? Date.UTC(0, 0, 0, 0, 0, 0, 0) + 10* 1000
+                		: Date.UTC(0, 0, 0, 0, 0, 0, 0) + 5 * 1000,
+                events: {
+					afterSetExtremes : afterSetExtremes,
+                	setExtremes: setExtremes
+                },
+            	
+            	lineColor: 'rgb(245, 149, 154)',
+            	gridLineColor: 'rgb(245, 149, 154)',
             	gridLineWidth: document.ontouchstart === undefined ? 0.5 : 2,
-            	minorGridLineColor: '#F5959A',
+            	minorGridLineColor: 'rgb(245, 149, 154)',
             	minorGridLineWidth: document.ontouchstart === undefined ? 0.2 : 1,
             	
-            	minorTickInterval: xGridInterval/5, //a fifth of the tickInterval by default
+            	minorTickInterval: xGridInterval/5, //5 minor tick by default, exactlly what we want
     	        minorTickWidth: 1,
     	        minorTickLength: 0,
     	        minorTickPosition: 'inside',
-    	        minorTickColor: '#F5959A',
+    	        minorTickColor: 'rgb(245, 149, 154)',
     	
     	        //tickPixelInterval: 30,
-    	        tickInterval: xGridInterval,
+    	        tickInterval: xGridInterval, //0.2 second
     	        tickWidth: 2,
     	        tickPosition: 'inside',
     	        tickLength: 0,
     	        tickColor: 'rgb(245, 149, 154)',
     	        
+        		dateTimeLabelFormats: {
+        			millisecond: '%H:%M:%S',
+    	        	second: '%H:%M:%S',
+    	        	minute: '%H:%M:%S',
+    	        	hour: '%H:%M:%S',
+    	        	day: '%H:%M:%S',
+    	        	week: '%H:%M:%S',
+    	        	month: '%H:%M:%S',
+    	        	year: '%H:%M:%S'
+    	        },
+    	        
     	        labels: {
-    	        	enabled: false,
-    	        	step: 2
+    	        	enabled: true,
+    	        	step: 10,
+    	        	overflow: false
     	        },
     	        startOnTick: false,
     	        endOnTick: false
@@ -358,8 +412,8 @@ $(function () {
                 enabled: true,
                 crosshairs: true,
                 formatter: function() {
-                    return '<b>'+ this.series.name +'</b><br/>'+
-                    this.x/(1000/frequency) +': '+ this.y;
+                    return '<b>'+ this.points[0].series.name +'</b><br/>'+
+                    Math.round((this.x - Date.UTC(0, 0, 0, 0, 0, 0, 0))/(1000/frequency)) +': '+ this.y;
                 },
                 positioner: function () {
                 	return { x: 550, y: 50 };
@@ -371,7 +425,7 @@ $(function () {
 	               	dataGrouping: {
 	            		enabled: false
 	            	},  
-            	   animation: false,
+                	animation: false,
                 	color: 'black',	
                 	lineWidth: 0.7,
                     dataLabels: {
@@ -409,6 +463,69 @@ $(function () {
             },
             series: []
     };
+    
+    function setExtremes(e){
+        var maxDistance = document.ontouchstart === undefined ? 10 * 1000 : 5 * 1000; //10 seconds
+        var xaxis = this;
+        if ((e.max - e.min) > maxDistance) {
+            var min = e.max - maxDistance;
+            var max = e.max;
+            window.setTimeout(function() {
+                xaxis.setExtremes(min, max);
+            }, 1);
+            return false;
+        }  
+        var minDistance = 1000; // 1 second
+        if ((e.max - e.min) < minDistance) { //less than minrange
+            var min = e.max - minDistance;
+            var max = e.max;
+            if(min < Date.UTC(0, 0, 0, 0, 0, 0, 0)){
+            	min = Date.UTC(0, 0, 0, 0, 0, 0, 0);
+            	max = e.min + 1000;
+            }
+            
+            window.setTimeout(function() {
+                xaxis.setExtremes(min, max);
+            }, 1);
+        	return false;
+        }
+    }
+    
+    function afterSetExtremes(e){
+    	plot.showLoading('Loading data from server...');
+    	
+    	var min = Math.round((e.min-Date.UTC(0, 0, 0, 0, 0, 0, 0))/(1000/frequency));
+    	var max = Math.round((e.max-Date.UTC(0, 0, 0, 0, 0, 0, 0))/(1000/frequency));
+    	var tmpDatasets = [];
+		$.ajax({
+			type: 'GET',
+			url: dataUrl,
+			dataType: 'json',
+			cache: false,
+			data: {"min":min, "max": max},			
+			error: function() {plot.hideLoading();/*alert("Server Error!");*/},
+			success: function(data){
+				tmpDatasets = data.data;
+				key = choice.find("input:checked").attr("value");
+				
+				var dataWithTime = [];
+				for(var j=0; j<tmpDatasets[key].data.length; j++){
+					dataWithTime.push([e.min + j*1000/frequency, tmpDatasets[key].data[j]]);
+				}
+				
+				plot.series[0].setData(dataWithTime, false);
+				
+				// adjust min and max according on every y axis
+				/*
+				var minVal = tmpDatasets[key].min;
+				var maxVal = minVal + 11 * yGridInterval;
+				plot.series[0].yAxis.setExtremes(minVal, maxVal, false);
+				*/
+				plot.redraw();				
+				plot.hideLoading();
+			},
+		});
+    }
     
 	var spinnerOpts = { //options settings for spinner
 			  lines: 13, // The number of lines to draw
@@ -600,10 +717,11 @@ $(function () {
 	
 	}
 	
-	    
+    var pointInterval, base;	    
 	function extractDatasets(data) {
 		datasets = data.dspData;		
-		peaks = data.peaks;
+		pointInterval = data.pointInterval;
+		base = data.base;
 	}
     
     function addChoices() {
@@ -793,7 +911,7 @@ $(function () {
     	//options.yAxis.height = yTickHeight*(Math.ceil(options.yAxis.max/yGridInterval)-Math.floor(options.yAxis.min/yGridInterval));
         options.yAxis.height = 12 * yTickHeight;
         options.yAxis.top = yTop;
-    	var diagramHeight = yTop + options.yAxis.height + 15;
+    	var diagramHeight = yTop + options.yAxis.height + 93;
         if (data.length > 0){
         	clearAndPlot();
 			/* re-plot everything */
@@ -801,8 +919,26 @@ $(function () {
         	options.series.push({
         		name: label,
                 data: data,
+                pointStart: Date.UTC(0, 0, 0, 0, 0, 0, 0),
                 pointInterval: xPointInterval
         	});
+        	
+            options.navigator.series = {
+            		type: 'areaspline',
+            		color: '#4572A7',
+            		fillOpacity: 0.4,
+            		dataGrouping: {
+            			smoothed: false
+            		},
+            		lineWidth: 1,
+            		marker: {
+            			enabled: false
+            		},
+            		shadow: false,
+                    data: base[key],
+                    pointStart: Date.UTC(0, 0, 0, 0, 0, 0, 0),
+                    pointInterval: pointInterval
+            		};
         	
         	//plot all channels on one plot
         	diagram = $('<div id="diagram" ></div>').css( {
@@ -816,7 +952,7 @@ $(function () {
             });
         	diagram.insertAfter(choice);
         	
-        	plot = new Highcharts.Chart(options, function() {
+        	plot = new Highcharts.StockChart(options, function() {
         		hideSpinner();
         	});
         	
@@ -955,13 +1091,13 @@ $(function () {
 				peakText.append(domStr);*/
 	    	if(qPoint) {
 				var domStr = '<br>You have picked Q point at (x: ' 
-					+ qPoint.x/xPointInterval + ', y: '
+					+ Math.round((qPoint.x-Date.UTC(0, 0, 0, 0, 0, 0, 0))/xPointInterval) + ', y: '
 					+ qPoint.y/xPointInterval + ') .';
 				peakText.append(domStr);
 	    	}
 	    	if(tPoint) {
 				var domStr = '<br>You have picked T point at (x: ' 
-					+ tPoint.x/xPointInterval + ', y: '
+					+ Math.round((tPoint.x-Date.UTC(0, 0, 0, 0, 0, 0, 0))/xPointInterval) + ', y: '
 					+ tPoint.y/xPointInterval + ') .';
 				peakText.append(domStr);
 	    	}	    	
@@ -990,8 +1126,8 @@ $(function () {
     	*/
     	//console.log(choice.find('input').filter('[checked=checked]').attr("value"));
     	var pdata = {//'channel': selectedPoints[0].series.label.substring(8),
-    			'qPoint': [qPoint.x/xPointInterval, qPoint.y/xPointInterval],
-    			'tPoint': [tPoint.x/xPointInterval, tPoint.y/xPointInterval],
+    			'qPoint': [Math.round((qPoint.x-Date.UTC(0, 0, 0, 0, 0, 0, 0))/xPointInterval), qPoint.y/xPointInterval],
+    			'tPoint': [Math.round((tPoint.x-Date.UTC(0, 0, 0, 0, 0, 0, 0))/xPointInterval), tPoint.y/xPointInterval],
     			'bin': parseInt(bin.val()),
     			'lead': choice.find('input').filter('[checked=checked]').attr("value")	
     			};

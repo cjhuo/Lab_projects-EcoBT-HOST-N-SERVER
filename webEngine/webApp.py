@@ -19,6 +19,7 @@ class Application(tornado.web.Application):
         self.ds = DataSource()
         self.globalSockets = Sockets()
         self.ecoBTApp = ecoBTApp
+        self.ecgList = dict() # save ecg object for sessions
         
         settings = dict(
             template_path=os.path.join(
@@ -50,8 +51,9 @@ class Application(tornado.web.Application):
         
         self.handlers = [
                 (r'/', MainHandler),          
-                (r'/ecgHandler', ECGHandler),
-                (r'/ecgAllInOne', ECGAllInOneHandler),            
+                (r'/ecgHandler', ECGHandler, dict(ecgList = self.ecgList)),
+                (r'/ecgAllInOne', ECGAllInOneHandler, dict(ecgList = self.ecgList)),    
+                (r'/dicomList', DicomListHandler),        
                 (r'/cardReader', CardReaderHandler),
                 (r'/analysis_allInOne', AnalysisAllInOnceHandler),   
                 (r'/liveECG', LiveECGHandler),

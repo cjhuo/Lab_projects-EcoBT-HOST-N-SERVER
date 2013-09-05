@@ -357,50 +357,11 @@ $(function () {
 				plot.hideLoading();
 			},
 		});
-		/*
-    	var newData = [];
-    	var minVal = datasets[0].data[min];
-    	var maxVal = datasets[0].data[min];
-    	for(var j=min; j<=max; j++){
-    		newData.push([e.min+(j-min)*4, datasets[0].data[j]]);
-    		if(datasets[0].data[j]<minVal)
-    			minVal = datasets[0].data[j]
-    		if(datasets[0].data[j]>maxVal)
-    			maxVal = datasets[0].data[j]
-    	}
-    	
-    	plot.series[0].yAxis.setExtremes(minVal, maxVal);
-    	console.log(minVal, maxVal);
-		plot.series[0].setData(newData);
-		 */
-    	/*
-    	for(var i=0; i<datasets.length; i++){
-    		var newData = [];
-        	for(var j=min; j<=max; j++){
-        		newData.push(datasets[i].data[j]);
-        	}
-        	console.log(newData);
-    		plot.series[i].setData(newData);
-    	}
-    	*/
-    	//plot.redraw();
-    	
     }
-    /*
-	function getAndProcessData() { //issue ajax call and further process the data on sucess
-		showSpinner();
-		$.ajax({
-			url: dataurl,
-			cache: false,
-			type: 'POST',
-			dataType: 'json',
-			success: onDataReceived
-		});
-	}
-	*/
 
 	/* issue ajax call and further process the data on sucess */
 	function getAndProcessData() { 
+    	getDicomList();
 		chooseFileSource();
 	}
 	
@@ -416,25 +377,83 @@ $(function () {
 		$('#fileChooser').dialog( "destroy" );
 	}
 	
+	var dicomList;
+	var dicomListMenu;
+	function getDicomList() {
+		$.ajax({
+			url: '/dicomList',
+			cache: false,
+			type: 'GET',
+			async: false,
+			dataType: 'json',
+			success: function(data) {
+				dicomList = data.fileList;
+			}
+		});
+    	
+    	dicomListMenu = $('<ul>').css({
+    		zIndex: '2000'
+    	}).appendTo('body');
+    	$.each(dicomList, function(key, val) {
+    		var lnk = $('<li><a href="#">' + val + '</a></li>').click(function() {
+    			$.ajax({
+					url: fileHandlerUrl,
+					cache: false,
+					type: 'POST',
+					dataType: 'json',
+					data: {"filename": val},
+					beforeSend: function() {
+						showSpinner();
+						$('#fileChooser').dialog( "destroy" );
+						dicomListMenu.hide();						
+					},
+					success: onDataReceived
+				});
+    		});
+    		lnk.appendTo(dicomListMenu);
+    	});
+    	dicomListMenu.hide().menu();
+	}
+	
 	function chooseFileSource(){
     	var popUpDiv = $('<div id="fileChooser"/>');
-    	$('<p>Please choose choose a dicom file: </p>').appendTo(popUpDiv);
-    	var defButton = $('<button>Use sample dicom file</button>').css({
+    	$('<p>Please choose choose a dicom file: </p>')
+    		.appendTo(popUpDiv);
+    	var fileListButton = $('<button>Select Recorded Files</button>').css({
     		float: 'left',
     		fontSize: 'small',
-    	});   	
-
-    	defButton.button();
-    	defButton.click(chooseTestFile);
-    	popUpDiv.append(defButton);
-    	
-    	var fileInput = $('<span class="file-wrapper">\
-    			<span>Submit your own Dicom file</span>\
-                <input type="file" name="uploaded_files" >\
-            </span>').css({
-    		float: 'right',
-    		fontSize: 'small',
     	});
+
+    	fileListButton.button({
+            icons: {
+                primary: "ui-icon-triangle-1-s"
+              }
+    	});
+    	//fileListButton.click(chooseTestFile);
+    	popUpDiv.append(fileListButton);
+
+    	fileListButton.click(function(event){    		
+    		dicomListMenu.show().position({
+                my: "left top",
+                at: "left bottom",
+                of: this
+              });           
+            $( document ).one( "click", function() {
+            	dicomListMenu.hide();
+              });
+            return false;
+    	});
+    	
+    	var fileInput = $('<div class="file-wrapper">\
+						<span>Submit your own Dicom file</span>\
+		        		<input style="width:100%" type="file" \
+						name="uploaded_files" ></div>')
+		    			.css({
+				    		float: 'right',
+				            marginLeft: '5px',
+				    		fontSize: 'small',
+				    	});
+    	
     	fileInput.button();
     	fileInput.fileupload({
     		url: fileHandlerUrl,
@@ -541,7 +560,7 @@ $(function () {
     function addFileUploadDiv() {
     	var fileInput = $('<span class="file-wrapper" title="Submit a different Dicom file">\
     			<span>File</span>\
-                <input type="file" name="uploaded_files" >\
+                <input style="width:100%" type="file" name="uploaded_files" >\
             </span>').css({
     		float: 'left',
     		fontSize: 'small',
@@ -705,7 +724,7 @@ $(function () {
         			enabled: false
         		},
         		shadow: false,
-                data: base,
+                data: base[0],
                 pointStart: Date.UTC(0, 0, 0, 0, 0, 0, 0),
                 pointInterval: pointInterval
         		};
