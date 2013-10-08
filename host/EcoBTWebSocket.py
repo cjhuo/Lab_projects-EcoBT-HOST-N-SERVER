@@ -9,7 +9,10 @@ from IOBluetooth import *
 from objc import *
 
 import json
-
+import csv
+import os
+import xlwt
+from datetime import datetime
 import tornado.websocket
 
 class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
@@ -39,7 +42,8 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
         try:
             #self.ecoBTApp.managerWorker.delegateWorker.getQueue().put(message)
             self.handleMessage(message)
-        except:
+        except Exception as e:
+            print >>sys.stderr, e
             self.write_message({'from': 'central', 
                                 'data': {'type': 'message',
                                          'value': 'error'}
@@ -70,6 +74,13 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
                 # cancel all other connection
                 #self.ecoBTApp.managerWorker.cancelAllConnectionExcept(\
                 #                self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).peripheral)
+                # remove old uncombined logs
+                
+                path = os.path.join(os.path.dirname(__file__), os.pardir, "data")
+                for file in os.listdir(path):
+                    if file.endswith("left.csv") or file.endswith("right.csv"):
+                        os.remove(os.path.join(path, file))
+                
             elif message.startswith("startSIDs"):
                 address = message[9:]
                 self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsStatus().startSIDs()
@@ -79,8 +90,37 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
                 self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsStatus().stopSIDs()         
             elif message.startswith("sendSIDsSet"): 
                 address = message[11:]
-                self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsSet().sendSettingsToFrontend()         
-
+                self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsSet().sendSettingsToFrontend()  
+            elif message == "combineLog":
+                path = os.path.join(os.path.dirname(__file__), os.pardir, "data")
+                lFile = None
+                rFile = None
+                for file in os.listdir(path):
+                    if file.endswith("left.csv"):
+                        lFile = os.path.join(path, file)
+                    elif file.endswith("right.csv"):
+                        rFile = os.path.join(path, file)
+                #combine logs
+                wb = xlwt.Workbook()
+                ws = wb.add_sheet("LEFT NODE")
+                with open(lFile, 'r') as fd:
+                    lReader = csv.reader(fd, delimiter=',')
+                    for rowx, row in enumerate(lReader):
+                        for colx, col in enumerate(row):
+                            ws.write(rowx, colx, col)
+                log_name = "FULL_" + datetime.now().strftime("%Y%m%d%H%M%S")
+                wb.save(os.path.join(path, log_name))
+                ws = wb.add_sheet("RIGHT NODE")
+                with open(rFile, 'r') as fd:
+                    rReader = csv.reader(fd, delimiter=',')         
+                    for rowx, row in enumerate(rReader):
+                        for colx, col in enumerate(row):
+                            ws.write(rowx, colx, col)                
+                
+                wb.save(os.path.join(path, log_name))
+                #remove separate logs
+                os.remove(lFile)
+                os.remove(rFile)
                 '''                
                 self.ecoBTApp.managerWorker.stopScan() 
                 self.ecoBTApp.managerWorker.state = 4

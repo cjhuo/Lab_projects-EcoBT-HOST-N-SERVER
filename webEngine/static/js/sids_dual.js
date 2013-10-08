@@ -2,15 +2,26 @@ $(function () {
 	var url = $('#serverAddr').text(); 	//push url, need to change this to server's url, 
 	var name0 =  $('#name0').text(); // left node
 	var name1 =  $('#name1').text(); // right node
-		
+	var configUrl = 'config';
+	
     var datasets; //store datasets
 	function onDataReceived(data) { //setup plot after retrieving data
-		console.log(data);
+		//console.log(data);
 		if( data.from == 'node'){
-			if(name0.trim() == data.data.address.trim() || name1.trim() == data.data.address.trim())
-				if(data.data.type == 'SIDsRead'){ //real data
-					updateChart(data);
-				}
+			if(data.data.type == 'SIDsRead'){ //real data
+				console.log(data.data.address, data.data.value);
+				if(name0.trim() == data.data.address.trim())
+					updateDataTable(data.data.value, "left");
+				else if(name1.trim() == data.data.address.trim())
+					updateDataTable(data.data.value, "right");
+				updateChart(data);
+			}
+			else if(data.data.type == 'SIDsSettings'){
+				if(name0.trim() == data.data.address.trim())
+					addSettings(data.data.value, "left");
+				else if(name1.trim() == data.data.address.trim())
+					addSettings(data.data.value, "right");
+			}
 		}
 		else if(data.from == 'central') {
 			//console.log(data);
@@ -21,6 +32,35 @@ $(function () {
 		}
 	}
 	
+    function updateDataTable(data, side){
+    	if(side == 'left'){
+	    	$("#dataTableL tbody").prepend("<tr>" +
+	                "<td>" + data[0]+ ":" + data[1] +":"+ data[2] + "</td>" +
+	                "<td>" + data[3] + "</td>" +
+	                //"<td>" + data[4] + "</td>" +
+	                //"<td>" + data[5] + "</td>" +
+	                "<td>" + data[6] + "</td>" +
+	                "<td>" + data[7] + "</td>" +
+	                "<td>" + data[8] + "</td>" +
+	                "<td>" + data[9] + "</td>" +
+	                "<td>" + data[10] + "</td>" +
+	
+	              "</tr>" );
+    	}
+    	else{
+	    	$("#dataTableR tbody").prepend("<tr>" +
+	                "<td>" + data[0]+ ":" + data[1] +":"+ data[2] + "</td>" +
+	                "<td>" + data[3] + "</td>" +
+	                //"<td>" + data[4] + "</td>" +
+	                //"<td>" + data[5] + "</td>" +
+	                "<td>" + data[6] + "</td>" +
+	                "<td>" + data[7] + "</td>" +
+	                "<td>" + data[8] + "</td>" +
+	
+	              "</tr>" );
+    	}
+    }
+    
 	function updateChart(data) {
 		//update chart
 		if(name0.trim() == data.data.address.trim()){
@@ -44,6 +84,16 @@ $(function () {
 		initSoundMonitor();
 		*/
 		
+		addSettingContainers();
+		addUpdateButtons();
+		addSaveButtons();
+		addFileUploadDivL();
+		addFileUploadDivR();
+		
+		addStartButton();
+		addStopButton();
+		startButton.button("enable");
+		stopButton.hide();
 	}
 	
 	function initLayout(){
@@ -58,6 +108,430 @@ $(function () {
 			}
 		});
 	}
+	
+    var startButton, stopButton;
+    function addStartButton() {
+    	startButton = $('<button>START RECORDING</button>').css({
+    		float: 'right',
+    		fontSize: '30%',
+    		position: 'relative',
+    		//right: '0px',
+    		top: '0px'
+    	});   	
+    	startButton.button();
+    	startButton.button("disable");
+    	startButton.click(startSIDs);
+    	startButton.insertBefore("#dataContainerL");
+    }
+    
+    function addStopButton() {
+    	stopButton = $('<button>STOP RECORDING</button>').css({
+			float: 'right',
+			fontSize: '30%',
+			position: 'relative',
+			//right: '0px',
+			top: '0px'
+		});   	
+		stopButton.button();
+		stopButton.button("enable");
+		stopButton.click(stopSIDs);
+		stopButton.insertBefore("#dataContainerL");
+    }
+    
+    function startSIDs() {
+    	//disable all setting inputs
+    	$.each(inputsL, function(key,val){
+    		val.spinner("disable");
+    	});
+    	$.each(inputsR, function(key,val){
+    		val.spinner("disable");
+    	});    	
+    	fileInputL.hide();
+    	fileInputR.hide();    	
+    	startButton.hide();
+    	stopButton.show();
+    	updateButtonL.hide();
+    	updateButtonR.hide();
+    	socket.send("startSIDs"+name0.trim());
+    	socket.send("startSIDs"+name1.trim());
+    } 
+    
+    function stopSIDs() {
+    	//enable all setting inputs
+    	$.each(inputsL, function(key,val){
+    		if(val[0].id != "SAMPLE CACULATION"){
+    			val.spinner("enable");
+    		}
+    	});   
+    	
+    	$.each(inputsR, function(key,val){
+    		if(val[0].id != "SAMPLE CACULATION"){
+    			val.spinner("enable");
+    		}
+    	});       	
+    	fileInputL.show();
+    	fileInputR.show();
+    	stopButton.hide();
+    	startButton.show();
+    	updateButtonL.show();
+    	updateButtonR.show();
+    	socket.send("stopSIDs"+name0.trim());
+    	socket.send("stopSIDs"+name1.trim());
+    	socket.send("combineLog");
+    }    
+	
+    var fileInputL, fileInputR;
+    function addFileUploadDivL() {
+    	fileInputL = $('<span class="file-wrapper" title="Submit a different Dicom file">\
+    			<span>UPLOAD CONFIG FILE</span>\
+                <input type="file" name="uploaded_files" >\
+            </span>').css({
+    		float: 'right',
+    		fontSize: '30%',
+    	});
+    	fileInputL.button();
+    	fileInputL.fileupload({
+    		url: configUrl,
+            dataType: 'json',
+            formData: {
+            	address: name0.trim()
+            },
+            send: function (e, data) {
+            	showSpinner();
+            	//console.log(data);
+            },
+            done: function (e, data) {
+            	//console.log(data.result);
+            	hideSpinner();
+            	alert("Update sent to Node successfully!");
+            },
+            fail: function (e, data) {
+            	alert('invalid file');
+            	hideSpinner();
+            }
+        });
+    	fileInputL.insertBefore("#dataContainerL");
+    }	
+	
+    function addFileUploadDivR() {
+    	fileInputR = $('<span class="file-wrapper" title="Submit a different Dicom file">\
+    			<span>UPLOAD CONFIG FILE</span>\
+                <input type="file" name="uploaded_files" >\
+            </span>').css({
+    		float: 'right',
+    		fontSize: '30%',
+    	});
+    	fileInputR.button();
+    	fileInputR.fileupload({
+    		url: configUrl,
+            dataType: 'json',
+            formData: {
+            	address: name1.trim()
+            },
+            send: function (e, data) {
+            	showSpinner();
+            	//console.log(data);
+            },
+            done: function (e, data) {
+            	//console.log(data.result);
+            	hideSpinner();
+            	alert("Update sent to Node successfully!");
+            },
+            fail: function (e, data) {
+            	alert('invalid file');
+            	hideSpinner();
+            }
+        });
+    	fileInputR.insertBefore("#dataContainerR");
+    }	
+    
+    var saveButtonL, saveButtonR;
+    function addSaveButtons() {
+    	saveButtonL = $('<button>SAVE SETTINGS</button>').css({
+			float: 'right',
+			fontSize: '30%',
+			position: 'relative',
+			//right: '0px',
+			top: '0px'
+		});   	
+    	saveButtonL.button();
+    	saveButtonL.button("enable");
+    	saveButtonL.click(saveSettingsL);
+    	saveButtonL.insertBefore("#dataContainerL");
+    	
+    	saveButtonR = $('<button>SAVE SETTINGS</button>').css({
+			float: 'right',
+			fontSize: '30%',
+			position: 'relative',
+			//right: '0px',
+			top: '0px'
+		});   	
+    	saveButtonR.button();
+    	saveButtonR.button("enable");
+    	saveButtonR.click(saveSettingsR);
+    	saveButtonR.insertBefore("#dataContainerR");    	
+    }	
+	
+    function saveSettingsL(){
+    	var config = {};
+    	$.each(inputsL, function(key, val){
+    		//config.push(val[0].value);
+    		
+    		config[val[0].id] = val[0].value;
+    		
+    	});
+    	var data = {
+    			'address': name0.trim(),
+    			'settings': config
+    	};
+		$.ajax({
+			type: 'get',
+			url: configUrl,
+			dataType: 'json',
+			cache: false,
+			data: {"data":JSON.stringify(data)},
+			beforeSend: showSpinner,
+			complete: hideSpinner,
+			success: function(data){
+				window.open(data.url, '_self', false);
+			},
+			error: function() {alert("Save Failed!!");}
+		});
+    }
+    
+    function saveSettingsR(){
+    	var config = {};
+    	$.each(inputsR, function(key, val){
+    		//config.push(val[0].value);
+    		
+    		config[val[0].id] = val[0].value;
+    		
+    	});
+    	var data = {
+    			'address': name1.trim(),
+    			'settings': config
+    	};
+		$.ajax({
+			type: 'get',
+			url: configUrl,
+			dataType: 'json',
+			cache: false,
+			data: {"data":JSON.stringify(data)},
+			beforeSend: showSpinner,
+			complete: hideSpinner,
+			success: function(data){
+				window.open(data.url, '_self', false);
+			},
+			error: function() {alert("Save Failed!!");}
+		});
+    } 
+    
+    var updateButtonL, updateButtonR;
+    function addUpdateButtons() {
+    	updateButtonL = $('<button>UPDATE SETTINGS</button>').css({
+			float: 'right',
+			fontSize: '30%',
+			position: 'relative',
+			//right: '0px',
+			top: '0px'
+		});   	
+    	updateButtonL.button();
+    	updateButtonL.button("enable");
+    	updateButtonL.click(updateSettingsL);
+    	updateButtonL.insertBefore("#dataContainerL");
+    	
+    	updateButtonR = $('<button>UPDATE SETTINGS</button>').css({
+			float: 'right',
+			fontSize: '30%',
+			position: 'relative',
+			//right: '0px',
+			top: '0px'
+		});   	
+    	updateButtonR.button();
+    	updateButtonR.button("enable");
+    	updateButtonR.click(updateSettingsR);
+    	updateButtonR.insertBefore("#dataContainerR");    	
+    }
+    
+    function updateSettingsL() { //update setting through ajax
+    	var config = {};
+    	$.each(inputsL, function(key, val){
+    		//config.push(val[0].value);
+    		
+    		config[val[0].id] = val[0].value;
+    		
+    	});
+    	var data = {
+    			'address': name0.trim(),
+    			'settings': config
+    	};
+		$.ajax({
+			type: 'put',
+			url: configUrl,
+			dataType: 'json',
+			cache: false,
+			data: {"data":JSON.stringify(data)},
+			beforeSend: showSpinner,
+			success: function(){
+				hideSpinner();
+				alert("Update sent to Node successfully!");
+			},
+			error: function() {alert("Update Failed!!");}
+		});
+    }   
+
+    function updateSettingsR() { //update setting through ajax
+    	var config = {};
+    	$.each(inputsR, function(key, val){
+    		//config.push(val[0].value);
+    		
+    		config[val[0].id] = val[0].value;
+    		
+    	});
+    	var data = {
+    			'address': name1.trim(),
+    			'settings': config
+    	};
+		$.ajax({
+			type: 'put',
+			url: configUrl,
+			dataType: 'json',
+			cache: false,
+			data: {"data":JSON.stringify(data)},
+			beforeSend: showSpinner,
+			success: function(){
+				hideSpinner();
+				alert("Update sent to Node successfully!");
+			},
+			error: function() {alert("Update Failed!!");}
+		});
+    }
+    
+	/*
+    var settings = [
+                    {name: 'setting1', value: '0'},
+                    {name: 'setting2', value: '2'},
+                    {name: 'setting3', value: '3'},
+                    {name: 'setting4', value: '4'}
+                    ]; //demo settings array
+    */
+    var settingContainerL, settingContainerR, inputsL, inputsR;
+    function addSettingContainers(){
+    	settingContainerL = $("<div id='settingContainerL'/>"); 
+    	settingContainerL.insertBefore("#dataTableL");
+    	settingContainerR = $("<div id='settingContainerR'/>"); 
+    	settingContainerR.insertBefore("#dataTableR");
+    }
+    
+    function addSettings(settings, side){
+    	//console.log(settings);
+    	if(side == "left"){
+	    	if(inputsL == null){
+		    	settingTable = $("<table id='settingTable' border='0'></table>");
+		    	inputsL = [];
+		    	tmpSettings = sortOnKeys(settings);
+		    	var rowDom, tdDom1, tdDom2, counter = 1;
+		    	$.each(tmpSettings, function(key, val){
+		    		//console.log(key, val);
+		    		if(counter == 1){
+		    			rowDom = $("<tr></tr>");
+		    		}
+		    		if(counter % 4 == 1){
+			    		rowDom.appendTo(settingTable);
+			    		rowDom = $("<tr></tr>");
+		    		}
+		    		var label = $("<label for='" + key + "'> " + key + " </label><br>");
+		    		var input = $("<input id='" + key + "' value = '" + val + "'/>").css({
+		    			fontSize: 'small',
+		    			width: '40px'
+		    		});
+		    		inputsL.push(input);
+		    		
+		    		tdDom1 = $("<td></td>");
+		    		label.appendTo(tdDom1);
+		    		tdDom2 = $("<td></td>");
+		    		input.appendTo(tdDom2);
+		    		input.spinner();
+		    		if(key == "SAMPLE CACULATION"){
+		    			input.spinner("disable");
+		    		}
+		    		tdDom1.appendTo(rowDom);
+		    		tdDom2.appendTo(rowDom);	
+		    		counter++;
+		    	});
+		    	rowDom.appendTo(settingTable);
+		    	settingTable.appendTo(settingContainerL);
+	    	}
+	    	else { // update tables
+	        	$.each(inputsL, function(key, val){
+	        		//config.push(val[0].value);
+	        		val[0].value = settings[val[0].id];
+	        	});
+	    	}
+    	}
+    	else if(side == "right"){
+    		if(inputsR == null){
+		    	settingTable = $("<table id='settingTable' border='0'></table>");
+		    	inputsR = [];
+		    	tmpSettings = sortOnKeys(settings);
+		    	var rowDom, tdDom1, tdDom2, counter = 1;
+		    	$.each(tmpSettings, function(key, val){
+		    		//console.log(key, val);
+		    		if(counter == 1){
+		    			rowDom = $("<tr></tr>");
+		    		}
+		    		if(counter % 4 == 1){
+			    		rowDom.appendTo(settingTable);
+			    		rowDom = $("<tr></tr>");
+		    		}
+		    		var label = $("<label for='" + key + "'> " + key + " </label><br>");
+		    		var input = $("<input id='" + key + "' value = '" + val + "'/>").css({
+		    			fontSize: 'small',
+		    			width: '40px'
+		    		});
+		    		inputsR.push(input);
+		    		
+		    		tdDom1 = $("<td></td>");
+		    		label.appendTo(tdDom1);
+		    		tdDom2 = $("<td></td>");
+		    		input.appendTo(tdDom2);
+		    		input.spinner();
+		    		if(key == "SAMPLE CACULATION"){
+		    			input.spinner("disable");
+		    		}
+		    		tdDom1.appendTo(rowDom);
+		    		tdDom2.appendTo(rowDom);	
+		    		counter++;
+		    	});
+		    	rowDom.appendTo(settingTable);
+		    	settingTable.appendTo(settingContainerR);
+	    	}
+	    	else { // update tables
+	        	$.each(inputsR, function(key, val){
+	        		//config.push(val[0].value);
+	        		val[0].value = settings[val[0].id];
+	        	});
+	    	}
+    	}
+    }
+    
+    
+    function sortOnKeys(dict) {
+
+        var sorted = [];
+        for(var key in dict) {
+            sorted[sorted.length] = key;
+        }
+        sorted.sort();
+
+        var tempDict = {};
+        for(var i = 0; i < sorted.length; i++) {
+            tempDict[sorted[i]] = dict[sorted[i]];
+        }
+
+        return tempDict;
+    }
+        
 	
 	var chartContainer;
 	var chart;
@@ -201,7 +675,8 @@ $(function () {
 		showReconMsg('connecting to server...');
 	    socket.onopen = function(event) {
 			hideReconMsg();
-			//socket.send("sendSIDsSet"+name.trim());
+			socket.send("sendSIDsSet"+name0.trim());
+			socket.send("sendSIDsSet"+name1.trim());
 	    };
 	    socket.onmessage = function(event) {
 	    	onDataReceived($.parseJSON(event.data));

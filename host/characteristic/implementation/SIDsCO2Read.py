@@ -77,7 +77,7 @@ class SIDsCO2Read(Characteristic):
             postfix = '.csv'
             fd = None
             if not os.path.exists(prefix + name + postfix):
-                    fd = open(prefix + name + postfix, 'w')
+                    fd = open(prefix + name + postfix, 'w', 0) # buffersize set to 0
                     self.service.log_file = fd
                     self.service.csvWriter = csv.writer(fd, delimiter=',')
                     self.service.csvWriter.writerow(["Time", "LED1PD1", "LED1PD2", "LED2PD1", "LED2PD2", "AMBIENT1", "AMBIENT2", "RH", "TEMP"])
@@ -85,7 +85,7 @@ class SIDsCO2Read(Characteristic):
                 raise Exception
         if self.service.log_file != False:
             self.service.csvWriter.writerow([str(hour)+":"+str(minute)+":"+str(sec), LED00, LED01, LED10, LED11, amb0, amb1, rh, temp])
-                
+            self.service.log_file.flush()
                 
                 
                 

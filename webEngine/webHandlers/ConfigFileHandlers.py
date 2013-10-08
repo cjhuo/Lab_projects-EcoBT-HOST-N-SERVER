@@ -6,6 +6,7 @@ Created on Feb 24, 2013
 import json
 import os
 import csv
+from datetime import datetime
 from BaseHandler import BaseHandler
 
 class ConfigHandler(BaseHandler):
@@ -42,7 +43,7 @@ class ConfigHandler(BaseHandler):
         address = str(data['address'])
         settings = data['settings']
         path = os.path.join(os.path.dirname(__file__), os.pardir, "static/Uploads/")
-        fname = "config.csv"
+        fname = "config_" + datetime.now().strftime("%Y%m%d%H%M%S_") + address + ".csv"
         with open(path + fname, 'w') as csvfile:
             csvWriter = csv.writer(csvfile, delimiter=',')
             for key, val in settings.items():

@@ -12,14 +12,62 @@
 <div id="serverAddr" style="display:none">{{ serverAddr }}</div>
 
 <div class="ui-layout-north">
-	<div id='node1' class="ui-layout-center">
+	<div id='node0' class="ui-layout-center">
+		<!-- 
 		<iframe width=100% height=100% src="/liveSIDs?name={{nodeNameL}}&side=left" seamless="seamless" frameborder="no" scrolling="auto"></iframe>
+		-->	
+		<div id="dataContainerL" class="ui-widget">
+		  <table id="dataTableL" class="ui-widget ui-widget-content">
+		    <thead>
+		      <tr class="ui-widget-header ">
+		        <th>Time</th>
+		        <th>LED 1 Signal 1</th>
+		        <!-- <th>LED 1 Signal 2</th> -->        
+		        <!-- <th>LED 2 Signal 1</th> -->        
+		        <th>LED 2 Signal 2</th>        
+		        <th>Ambient 1</th>       
+		        <th>Ambient 2</th>    
+		        <th>RH</th>       
+		        <th>T</th>
+		      </tr>
+		    </thead>
+		    <tbody>
+		    <!-- 
+		      <tr>
+		        <td>John Doe</td>
+		        <td>john.doe@example.com</td>
+		        <td>johndoe1</td>
+		
+		      </tr>
+		       -->
+		    </tbody>
+		  </table>
+		</div>		
 	</div>
 
 	<!-- <div class="ui-layout-east">Inner East</div> -->
 
-	<div id='node2' class="ui-layout-east">	
+	<div id='node1' class="ui-layout-east">	
+		<!-- 
 		<iframe width=100% height=100% src="/liveSIDs?name={{nodeNameR}}&side=right" seamless="seamless" frameborder="no" scrolling="auto"></iframe>
+		-->
+		<div id="dataContainerR" class="ui-widget">
+		  <table id="dataTableR" class="ui-widget ui-widget-content">
+		    <thead>
+		      <tr class="ui-widget-header ">
+		        <th>Time</th>
+		        <th>LED 1 Signal 1</th>
+		        <!-- <th>LED 1 Signal 2</th> -->        
+		        <!-- <th>LED 2 Signal 1</th> -->        
+		        <th>LED 2 Signal 2</th>        
+		        <th>Ambient 1</th>       
+		        <th>Ambient 2</th>    
+		      </tr>
+		    </thead>   
+		    <tbody>
+		    </tbody>
+		  </table>
+		</div>	
 	</div>
 </div>
 <div id="simulation" class="ui-layout-center">
@@ -53,9 +101,9 @@
 
  <style> 
 
-div#dataContainer { font-size: small; width: auto; margin: 20px 0; }
-div#dataContainer table { margin: 1em 0; border-collapse: collapse; width: auto; }
-div#dataContainer table td, div#dataContainer table th { border: 1px solid #eee; padding: .6em 10px; text-align: middle; }
+div { font-size: 0.6em; width: auto; margin-left: auto; margin-right: auto; }
+div table { margin: auto; border-collapse: collapse; width: 100%; }
+div table td, div table th { border: 1px solid #eee; padding: .6em 10px; text-align: middle; }
  </style>
 {% end %}
 
