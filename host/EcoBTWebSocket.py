@@ -108,7 +108,7 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
                     for rowx, row in enumerate(lReader):
                         for colx, col in enumerate(row):
                             ws.write(rowx, colx, col)
-                log_name = "FULL_" + datetime.now().strftime("%Y%m%d%H%M%S")
+                log_name = "FULL_" + datetime.now().strftime("%Y%m%d%H%M%S") + ".xls"
                 wb.save(os.path.join(path, log_name))
                 ws = wb.add_sheet("RIGHT NODE")
                 with open(rFile, 'r') as fd:
