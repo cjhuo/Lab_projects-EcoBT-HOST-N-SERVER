@@ -19,7 +19,7 @@ $(function () {
 		else if(data.from == 'central') {
 			if(data.data.type == 'message'){
 				alert(data.data.value);
-				//open('/administration', '_self', true);
+				open('/', '_self', true);
 			}
 		}
 	}
@@ -84,16 +84,20 @@ $(function () {
 	function initLayout(){
 		$('body').layout({
 			closable: false,
+			resizable: false,
 			west__size:	.80,	
 			west__childOptions:	{
 				closable: false,
+				resizable: false,
 				south__size: .50,
 				center__childOptions:	{
 					closable: false,
+					resizable: false,
 					west__size:		.50
 				},
 				south__childOptions:	{
 					closable: false,
+					resizable: false,
 					west__size:		.50
 				}			}
 		});
