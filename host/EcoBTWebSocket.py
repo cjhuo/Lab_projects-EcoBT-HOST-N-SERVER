@@ -7,7 +7,7 @@ from Foundation import *
 #from PyObjCTools import AppHelper
 from IOBluetooth import *
 from objc import *
-
+from EmailSender import EmailSender
 import json
 
 import tornado.websocket
@@ -79,7 +79,20 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
                 self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsStatus().stopSIDs()         
             elif message.startswith("sendSIDsSet"): 
                 address = message[11:]
-                self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsSet().sendSettingsToFrontend()         
+                self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsSet().sendSettingsToFrontend()   
+            else: #json
+                data = json.loads(message)
+                emailContent = "This is an alert sent from SIDs monitor\
+                                notifying you some of the body conditions\
+                                of the baby went wrong. NECCESSARY ACTIONS\
+                                NEED TO BE TAKEN! \n\nThe following are\
+                                current status of the baby: \n\
+                                Current body temperature: " + data['temp']\
+                                + "\nCurrent CO2 density: " + data['hum'] \
+                                + "\n(Normal Body temperature Ranage: " \
+                                + data['tempRangeMin'] + '~' + data['tempRangeMax'] + ", " +\
+                                "Normal CO2 density: " + data['humRangeMin'] + '~' + data['humRangeMax'] + ")"
+                EmailSender().send_email(emailContent, data['email'])
 
                 '''                
                 self.ecoBTApp.managerWorker.stopScan() 

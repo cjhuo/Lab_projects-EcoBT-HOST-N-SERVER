@@ -54,8 +54,18 @@ $(function () {
 
 		//check if alert need to be sent		
 		if(alertSet == true){
-			if(data[9] < tempRange1 || data[9] > tempRange2 || data[10] > humRange2){
+			if(data[9] < tempRangeMin || data[9] > tempRangeMax || data[10] > humRangeMax){
 				//send alert TBD
+				var data = {
+						'temp': data[9],
+						'hum': data[10],
+						'tempRangeMin': tempRangeMin,
+						'tempRangeMax': tempRangeMax,
+						'humRangeMin': humRangeMin,
+						'humRangeMax': humRangeMax,
+						'email': email
+				};
+				socket.send(JSON.stringify(data));
 			}
 		}
 	}
@@ -87,6 +97,7 @@ $(function () {
 	function stopAlert() {
 		emailSRmvButton.hide();
 		emailSetButton.show();
+		alertSet = false;
 	}
 	var alertSet = false, email;
 	function startAlert(){
@@ -471,7 +482,7 @@ $(function () {
 
 	}
 	
-	var chartTemp, tempRange1=36, tempRange2=38;
+	var chartTemp, tempRangeMin=36, tempRangeMax=38;
 	function initTemperatureChart(){
 		chartTemp = new Highcharts.Chart({
 		    
@@ -527,14 +538,14 @@ $(function () {
 	            },
 	            plotBands: [{
 	                from: 34,
-	                to: tempRange1,
+	                to: tempRangeMin,
 	                color: '#DDDF0D' // green
 	            },{
-	                from: tempRange1,
-	                to: tempRange2,
+	                from: tempRangeMin,
+	                to: tempRangeMax,
 	                color: '#55BF3B' // green
 	            }, {
-	                from: tempRange2,
+	                from: tempRangeMax,
 	                to: 39,
 	                color: '#DDDF0D' // yellow
 	            }, {
@@ -554,7 +565,7 @@ $(function () {
 	        }]
 	    });
 	}
-	var chartHum, humRange1=0, humRange2=1;
+	var chartHum, humRangeMin=0, humRangeMax=1;
 	function initHumidityChart(){
 		chartHum = new Highcharts.Chart({
 	        
@@ -609,11 +620,11 @@ $(function () {
 	                text: '%'
 	            },
 	            plotBands: [{
-	                from: humRange1,
-	                to: humRange2,
+	                from: humRangeMin,
+	                to: humRangeMax,
 	                color: '#55BF3B' // green
 	            }, {
-	                from: humRange2,
+	                from: humRangeMax,
 	                to: 3,
 	                color: '#DDDF0D' // yellow
 	            }, {
