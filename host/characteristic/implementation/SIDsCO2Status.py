@@ -95,7 +95,7 @@ class SIDsCO2Status(Characteristic):
             self.service.log_file.close() # close log file
             self.service.log_file = False
         dataPath = os.path.join(os.path.dirname(__file__), os.path.pardir, os.pardir, os.pardir, "data")
-        os.system('open "%s"' % dataPath)
+        #os.system('open "%s"' % dataPath)
     '''
     def createStartFlag(self):
         return self.createFlag(START_FLAG)

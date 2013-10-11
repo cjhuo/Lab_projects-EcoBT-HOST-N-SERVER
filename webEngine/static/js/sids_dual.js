@@ -177,7 +177,10 @@ $(function () {
     	updateButtonR.show();
     	socket.send("stopSIDs"+name0.trim());
     	socket.send("stopSIDs"+name1.trim());
-    	socket.send("combineLog");
+    	setTimeout(function(){ 				// wait long enough for separate log files to be closed
+    		socket.send("combineLog");
+    	}, 3000);
+    	
     }    
 	
     var fileInputL, fileInputR;

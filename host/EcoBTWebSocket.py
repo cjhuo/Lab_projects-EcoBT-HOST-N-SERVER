@@ -121,6 +121,7 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
                 #remove separate logs
                 os.remove(lFile)
                 os.remove(rFile)
+                os.system('open "%s"' % path)
                 '''                
                 self.ecoBTApp.managerWorker.stopScan() 
                 self.ecoBTApp.managerWorker.state = 4
