@@ -66,6 +66,11 @@ $(function () {
 						'email': email
 				};
 				socket.send(JSON.stringify(data));
+				//alert has been send wait enough time to start alert again
+				alertSet = false;
+				setTimeout(function(){
+					alertSet = true;
+				}, 60000); //60s delay
 			}
 		}
 	}
