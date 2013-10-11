@@ -5,7 +5,7 @@ $(function () {
 		
     var datasets; //store datasets
 	function onDataReceived(data) { //setup plot after retrieving data
-		console.log(data);
+		//console.log(data);
 		if( data.from == 'node'){
 			if(name.trim() == data.data.address.trim())
 				if(data.data.type == 'orientation'){
@@ -44,14 +44,20 @@ $(function () {
 	function updateTempHumChart(data){
 		//update Temp chart
 		var point = chartTemp.series[0].points[0];
-		console.log()
+		//console.log()
 		point.update(data[9], true);
 		
 		//update Hum chart
 		var point = chartHum.series[0].points[0];
-		console.log()
+		//console.log()
 		point.update(data[10], true);
 
+		//check if alert need to be sent		
+		if(alertSet == true){
+			if(data[9] < tempRange1 || data[9] > tempRange2 || data[10] > humRange2){
+				//send alert TBD
+			}
+		}
 	}
 	
 	var init = function() {
@@ -61,9 +67,44 @@ $(function () {
 		initChart();
 		initTemperatureChart();
 		initHumidityChart();
+		initAlert();
 		//initSoundMonitor();
-		
+		//window.addEventListener( 'orientationchange', onWindowResize, false );
 	}
+	var emailSetButton, emailSRmvButton;
+	function initAlert(){
+		var emailLabel = $('<label for="email">Email to send for alert messages</label>');
+		var emailTxt = $('<input type="text" name="email" id="email" class="text ui-widget-content ui-corner-all">');
+		emailSetButton = $('<button>Start Alert</button>').button();
+		emailSRmvButton = $('<button>Stop Alert</button>').button().hide();
+		emailSetButton.click(startAlert);
+		emailSRmvButton.click(stopAlert)
+		$('#alert').append(emailLabel);
+		$('#alert').append(emailTxt);
+		$('#alert').append(emailSetButton);
+		$('#alert').append(emailSRmvButton);
+	}
+	function stopAlert() {
+		emailSRmvButton.hide();
+		emailSetButton.show();
+	}
+	var alertSet = false, email;
+	function startAlert(){
+		email = $('#email').val().trim();
+		if(email != "" && isValidEmailAddress(email)){
+			emailSetButton.hide();
+			emailSRmvButton.show();
+			alertSet = true;
+		}
+		else{
+			alert("It's not a valid Email format!");
+		}
+	}
+	
+	function isValidEmailAddress(emailAddress) {
+	    var pattern = new RegExp(/^((([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*)|((\x22)((((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(([\x01-\x08\x0b\x0c\x0e-\x1f\x7f]|\x21|[\x23-\x5b]|[\x5d-\x7e]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(\\([\x01-\x09\x0b\x0c\x0d-\x7f]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))))*(((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(\x22)))@((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?$/i);
+	    return pattern.test(emailAddress);
+	};
 	
 	function initSoundMonitor(){
 		
@@ -82,25 +123,50 @@ $(function () {
 	}
 	
 	function initLayout(){
-		$('body').layout({
-			closable: false,
-			resizable: false,
-			west__size:	.80,	
-			west__childOptions:	{
+		if(document.ontouchstart === undefined){ // touch device
+			$('body').layout({
 				closable: false,
 				resizable: false,
-				south__size: .50,
-				center__childOptions:	{
+				west__size:	.70,	
+				west__childOptions:	{
 					closable: false,
 					resizable: false,
-					west__size:		.50
-				},
-				south__childOptions:	{
+					south__size: .50,
+					center__childOptions:	{
+						closable: false,
+						resizable: false,
+						west__size:		.50
+					},
+					south__childOptions:	{
+						closable: false,
+						resizable: false,
+						west__size:		.50
+					}			}
+			});
+		}
+		else{
+			$('#charts').attr('class', 'ui-layout-north');
+			$('body').layout({
+				closable: false,
+				resizable: false,
+				north__size:	.70,	
+				north__childOptions:	{
 					closable: false,
 					resizable: false,
-					west__size:		.50
-				}			}
-		});
+					south__size: .50,
+					center__childOptions:	{
+						closable: false,
+						resizable: false,
+						west__size:		.50
+					},
+					south__childOptions:	{
+						closable: false,
+						resizable: false,
+						west__size:		.50
+					}			}
+			});
+			
+		}
 	}
 	
 	var chartContainer;
@@ -120,7 +186,7 @@ $(function () {
             },
             credits: {
             	href: "http://embedded.ece.uci.edu/",
-            	text: "UCI Embedded Lab"
+            	text: ""//"UCI Embedded Lab"
             },
             xAxis: {
             	reversed: true,
@@ -353,6 +419,10 @@ $(function () {
 		parent.add( text );
 		//parent.lookAt(new THREE.Vector3(0,0,0));
 		//parent.rotation.x = 1.57
+		//alert(document.width);
+		if(simContainer.width()<450){
+			parent.scale.set(0.5,0.5,0.5);
+		}
 		scene.add( parent );
 		
 
@@ -364,8 +434,6 @@ $(function () {
 
 		simContainer.append( renderer.domElement );
 
-
-		//window.addEventListener( 'resize', onWindowResize, false );
 		
 		//render();
 		renderer.render( scene, camera );
@@ -374,7 +442,8 @@ $(function () {
 	}
 
 	function onWindowResize() {
-
+		location.reload();
+		/*
 		//windowHalfX = window.innerWidth / 2;
 		//windowHalfY = window.innerHeight / 2;
 
@@ -382,6 +451,7 @@ $(function () {
 		camera.updateProjectionMatrix();
 
 		renderer.setSize( window.innerWidth, window.innerHeight );
+		*/
 	}
 
 	function animate() {
@@ -401,7 +471,7 @@ $(function () {
 
 	}
 	
-	var chartTemp;
+	var chartTemp, tempRange1=36, tempRange2=38;
 	function initTemperatureChart(){
 		chartTemp = new Highcharts.Chart({
 		    
@@ -419,7 +489,7 @@ $(function () {
 	        },
 	        credits: {
 	        	href: "http://cps.eng.uci.edu",
-	        	text: "UCI Embedded System Lab"
+	        	text: ""//"UCI Embedded System Lab"
 	        },
 	        
 	        title:{
@@ -457,14 +527,14 @@ $(function () {
 	            },
 	            plotBands: [{
 	                from: 34,
-	                to: 36,
+	                to: tempRange1,
 	                color: '#DDDF0D' // green
 	            },{
-	                from: 36,
-	                to: 38,
+	                from: tempRange1,
+	                to: tempRange2,
 	                color: '#55BF3B' // green
 	            }, {
-	                from: 38,
+	                from: tempRange2,
 	                to: 39,
 	                color: '#DDDF0D' // yellow
 	            }, {
@@ -484,7 +554,7 @@ $(function () {
 	        }]
 	    });
 	}
-	var chartHum;
+	var chartHum, humRange1=0, humRange2=1;
 	function initHumidityChart(){
 		chartHum = new Highcharts.Chart({
 	        
@@ -501,7 +571,7 @@ $(function () {
 	        	enabled: false
 	        },
 	        credits: {
-	        	href: "http://cps.eng.uci.edu",
+	        	href: "",//"http://cps.eng.uci.edu",
 	        	text: "UCI Embedded System Lab"
 	        },
 	        
@@ -539,11 +609,11 @@ $(function () {
 	                text: '%'
 	            },
 	            plotBands: [{
-	                from: 0,
-	                to: 1,
+	                from: humRange1,
+	                to: humRange2,
 	                color: '#55BF3B' // green
 	            }, {
-	                from: 1,
+	                from: humRange2,
 	                to: 3,
 	                color: '#DDDF0D' // yellow
 	            }, {

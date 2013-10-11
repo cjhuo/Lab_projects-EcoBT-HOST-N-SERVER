@@ -73,3 +73,55 @@ p {
 }
 
 
+/*Smartphone*/
+@media only screen and (max-width : 768px) {
+	body{
+		min-width: 768px;
+	}
+
+	nav {
+		width: 100%;
+	}
+	ul.nav {
+		top: 0px;
+		display: inline-block;
+		padding: 0px 0px 0px 0px;
+		width: 480px;
+		/*background: url('images/shad2.png') no-repeat;*/
+		/*-webkit-background-size:100% 100%;*/
+		background: none;
+		
+	}
+	ul.nav li {
+		float: left;
+		margin: 0px 0px 15px 1px;
+	}
+	ul.nav li a {
+	  	display: table-cell; 
+  		vertical-align: middle;  	 	
+		overflow: hidden;	
+		text-align: center;	
+		width: 80px;
+		height: 60px;	
+		padding: 7px 5px 7px 5px;
+		-webkit-border-top-right-radius: 0px;
+ 		-webkit-border-bottom-left-radius: 30px;
+ 		-webkit-border-bottom-right-radius: 30px;
+ 		background: #cbcbcb url('images/border2.png') no-repeat;
+ 		-webkit-background-size: 100% 100%;
+	}
+
+	ul.nav li a:hover {
+		overflow: hidden;
+		padding: 17px 5px 7px 5px;
+		background: #ebebeb url('images/border2.png') no-repeat;
+		-webkit-background-size: 100% 100%;
+	}
+	iframe {
+		width: 100%;
+	}
+	.container {
+		width: 768px;
+	}
+	
+}

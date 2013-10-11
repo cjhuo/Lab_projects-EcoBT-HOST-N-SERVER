@@ -5,8 +5,9 @@
 {% end %}
 
 {% block body %}
-<div id="name" style="display: inline; float: right; font-size: small">{% if nodeName==None %}Demo{% else %}{{ nodeName }} {% end %}</div>
-<div style="font-size: small; float: right">Node Name: </div>
+<div style="font-size: small; position: fixed; bottom: 0px; right: 0px">Node Name: 
+<div id="name" style="display: inline">{% if nodeName==None %}Demo{% else %}{{ nodeName }} {% end %}</div>
+</div>
 <br>
 <div id="serverAddr" style="display:none">{{ serverAddr }}</div>
 <div id="soundServerAddr" style="display:none">{{ soundServerAddr }}</div>
@@ -16,7 +17,8 @@
 
 
 
-<div class="ui-layout-center">Alert</div>
+<div id="alert" class="ui-layout-center"><p>Alert Settings</p>
+</div>
 
 
 
@@ -28,7 +30,7 @@
 
 
 
-<div class="ui-layout-west">
+<div id="charts" class="ui-layout-west">
 
 
 

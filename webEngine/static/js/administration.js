@@ -327,11 +327,11 @@ $(function () {
 	    				group[0].attr('fill', "green");
 	    			}).mouseout(function(e) {
 	    				group[0].attr('fill', "");
-	    			}).dblclick(function(e) {
+	    			}).click(function(e) {//dblclick(function(e) {
 	    				group[0].attr('fill', "red");
 	    				showSpinner();
 	    				startTestECG(peripheral.address);
-	    				this.undblclick();
+	    				this.unclick();//this.undblclick();
 	    				//this.remove();
 	    				window.open(ecgUrl, '_self', false);
 	    			}); 
@@ -372,12 +372,12 @@ $(function () {
 	    				group[0].attr('fill', "green");
 	    			}).mouseout(function(e) {
 	    				group[0].attr('fill', "");
-	    			}).dblclick(function(e) {
+	    			}).click(function(e) {//dblclick(function(e) {
 	    				group[0].attr('fill', "red");
 	    				//showSpinner();
 	    				//startTestECG(peripheral.address);
 	    				enterSIDsPage(peripheral.address);
-	    				this.undblclick();
+	    				this.unclick();//this.undblclick();
 	    				//this.remove();
 	    				//window.open(sidsUrl, '_self', false);
 	    				window.parent.location = sidsUrl;
