@@ -407,14 +407,49 @@ $(function () {
 		text.rotation.x = 1.57; 
 		text.rotation.y = -1.57;
 		text.rotation.z = 0;
+		
+		//LIGHTS
+		
+		hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 1 );
+		hemiLight.color.setHSL( 0.6, 1, 0.6 );
+		hemiLight.groundColor.setHSL( 0.095, 1, 0.75 );
+		hemiLight.position.set( 0, 500, 0 );
+		scene.add( hemiLight );
+		
+		dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
+		dirLight.color.setHSL( 0.1, 1, 0.95 );
+		dirLight.position.set( -1, 1.75, 1 );
+		dirLight.position.multiplyScalar( 50 );
+		scene.add( dirLight );
+
+		dirLight.castShadow = true;
+
+		dirLight.shadowMapWidth = 2048;
+		dirLight.shadowMapHeight = 2048;
+
+		var d = 50;
+
+		dirLight.shadowCameraLeft = -d;
+		dirLight.shadowCameraRight = d;
+		dirLight.shadowCameraTop = d;
+		dirLight.shadowCameraBottom = -d;
+
+		dirLight.shadowCameraFar = 3500;
+		dirLight.shadowBias = -0.0001;
+		dirLight.shadowDarkness = 0.35;
+		//dirLight.shadowCameraVisible = true;
+
+		var directionalLight = new THREE.DirectionalLight( 0xffffff, 1.2 );
+		directionalLight.position.set( 0, 0, 1 ).normalize();
+		scene.add( directionalLight );
 
 		parent = new THREE.Object3D();
 		
 		// add human 3D obj
 		var manager = new THREE.LoadingManager();
-		var loader = new THREE.OBJLoader( manager );
-		loader.load('static/css/objs/baby.obj', function(object){
-			
+		var loader = new THREE.OBJMTLLoader();//OBJLoader( manager );
+		loader.load('static/css/objs/baby.obj', 'static/css/objs/baby.mtl', function(object){
+			/*
 			object.traverse( function ( child ) {
 
 				if ( child instanceof THREE.Mesh ) {
@@ -423,16 +458,17 @@ $(function () {
 
 				}
 
-			} );
-			object.position.z = 240;
-			object.position.y = -170;
-			object.scale.set(2, 2, 2);
-			//object.rotation.z = 0.2;
+			} );*/
+			object.position.z = -90;
+			object.position.y = -200;
+			object.position.x = -170;
+			object.scale.set(0.8, 0.8, 0.8);
+			object.rotation.y = -0.3;
 			parent.add(object);
 			console.log(object);
 		});
-		parent.add( cube );
-		parent.add( text );
+		//parent.add( cube );
+		//parent.add( text );
 		//parent.lookAt(new THREE.Vector3(0,0,0));
 		//parent.rotation.x = 1.57
 		//alert(document.width);
@@ -444,8 +480,8 @@ $(function () {
 
 
 
-		renderer = new THREE.CanvasRenderer();
-		renderer.setSize( simContainer.width(), 200 );
+		renderer = new THREE.WebGLRenderer();
+		renderer.setSize( simContainer.width(), container.height() - 100 );
 		
 
 		simContainer.append( renderer.domElement );
