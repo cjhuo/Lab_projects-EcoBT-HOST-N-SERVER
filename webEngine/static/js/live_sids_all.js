@@ -84,21 +84,67 @@ $(function () {
 		initTemperatureChart();
 		initHumidityChart();
 		initAlert();
+		initRiskState();
 		//initSoundMonitor();
 		//window.addEventListener( 'orientationchange', onWindowResize, false );
 	}
+	
+	var stateDiv, itrVal
+	function initRiskState(){
+		var riskDiv = $('<div id="riskLevel"/>')
+		.css({
+			marginTop: '50px',
+			fontSize: 'small'
+		}).appendTo($('#alert'));
+		var title = $('<div>Current sleep state:</div>').appendTo(riskDiv);
+		var stateDiv = $('<div id="state"/>').appendTo(riskDiv);
+		
+		//default state is no state
+		//stateDiv.html('NONE').addClass("noLevel");
+		
+		//try low
+		$('<div/>').text('low').attr('class', 'low').appendTo(riskDiv);
+		
+		//try medium
+		$('<div/>').text('meidum').attr('class', 'medium').appendTo(riskDiv);
+
+		//try high
+		$('<div/>').text('high').attr('class', 'high').appendTo(riskDiv);
+		
+		//try emergency
+		
+		var stateDiv3 = $('<div/>').text('emergency').attr('class', 'high').appendTo(riskDiv);
+		itrVal = setInterval(function(){
+			stateDiv3.addClass("emergency", 1500, "linear", function(){
+				stateDiv3.removeClass("emergency", 1500, "linear");
+			});
+		}, 3100);
+	}
+	
 	var emailSetButton, emailSRmvButton;
 	function initAlert(){
+		var emailDiv = $('<div id="emailSettings" />')
+		.css({
+			marginTop: '10px',
+			fontSize: 'small',
+			display: 'table'
+		}).appendTo($('#alert'));
 		var emailLabel = $('<label for="email">Email to send for alert messages</label>');
-		var emailTxt = $('<input type="text" name="email" id="email" class="text ui-widget-content ui-corner-all">');
-		emailSetButton = $('<button>Start Alert</button>').button();
+		var emailTxt = $('<input type="text" name="email" \
+				id="email" class="text ui-widget-content ui-corner-all">')
+				.css({
+					marginBottom: '0px'
+				});
+		emailSetButton = $('<button>Start Alert</button>').css({
+			fontSize:'smaller'
+		}).button();
 		emailSRmvButton = $('<button>Stop Alert</button>').button().hide();
 		emailSetButton.click(startAlert);
 		emailSRmvButton.click(stopAlert)
-		$('#alert').append(emailLabel);
-		$('#alert').append(emailTxt);
-		$('#alert').append(emailSetButton);
-		$('#alert').append(emailSRmvButton);
+		emailDiv.append(emailLabel);
+		emailDiv.append(emailTxt);
+		emailDiv.append(emailSetButton);
+		emailDiv.append(emailSRmvButton);
 	}
 	function stopAlert() {
 		emailSRmvButton.hide();

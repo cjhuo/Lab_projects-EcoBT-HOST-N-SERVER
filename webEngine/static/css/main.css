@@ -1,6 +1,7 @@
 
 * { margin:0;
 	padding:0;
+	color: #3E576F
 }
 
 body{
@@ -75,6 +76,45 @@ padding: .4em;
 	margin-left:auto;
 	margin-right:auto;
 
+}
+
+/*Risk levels*/
+.noLevel {
+	text-align: center;
+	margin: 50px auto;
+	font-size: 50px; text-transform: uppercase;
+}
+
+.low {
+	text-align: center;
+	margin: 50px auto;
+	font-size: 50px; text-transform: uppercase;
+	color: #00ff00;
+	text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff, 0 0 40px #00ff00, 0 0 70px #00ff00, 0 0 80px #00ff00, 0 0 100px #00ff00, 0 0 150px #00ff00;
+}
+
+.medium {
+	text-align: center;
+	margin: 50px auto;
+	font-size: 50px; text-transform: uppercase;
+	color: #ffff00;
+	text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff, 0 0 40px #ffff00, 0 0 70px #ffff00, 0 0 80px #ffff00, 0 0 100px #ffff00, 0 0 150px #ffff00;
+}
+
+.high {
+	text-align: center;
+	margin: 50px auto;
+	font-size: 50px; text-transform: uppercase;
+	color: #ff0000;
+	text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff, 0 0 40px #ff0000, 0 0 70px #ff0000, 0 0 80px #ff0000, 0 0 100px #ff0000, 0 0 150px #ff0000;
+}
+
+.emergency {
+	text-align: center;
+	margin: 50px auto;
+	font-size: 50px; text-transform: uppercase;
+	color: #000;
+	text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff, 0 0 40px #ff0000, 0 0 70px #ff0000, 0 0 80px #ff0000, 0 0 100px #ff0000, 0 0 150px #ff0000;
 }
 
 #charts{
