@@ -872,7 +872,8 @@ $(function () {
 	    socket.onerror = function(event) {
 	    	alert('Error, readyState code is: ' + socket.readyState);
 	    	socket.close();
-	    	establishConnection();
+	    	open('/', '_self', true);
+	    	//establishConnection();
 	    };
 	    
 	    socket.onclose = function(event) {

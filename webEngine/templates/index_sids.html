@@ -9,7 +9,9 @@
 
 <script>
 function show(item){
-	$('#iframe1').show();
+	$('#iframe1').css({
+		height: window.innerHeight + 'px'
+	}).show();
 	$('#content').hide();
 	if(item=='orientation'){
 		$('#iframe1').removeAttr('srcdoc');

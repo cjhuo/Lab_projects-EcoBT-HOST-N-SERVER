@@ -12,7 +12,11 @@ $(function () {
 	//such as cps.eng.uci.edu:8000/socket
 	console.log(url);
 	//var container = $("<div class='canvas' style='height:2000px'/>").appendTo(document.body);
-	var container = $("<div class='canvas'/>").appendTo(document.body);
+	var container = $("<div class='canvas'/>")
+					.css({
+						height: window.innerHeight-50 + 'px'
+					})
+					.appendTo(document.body);
 
 	var startDiscoverServices = false;
 	function onDataReceived(data){
