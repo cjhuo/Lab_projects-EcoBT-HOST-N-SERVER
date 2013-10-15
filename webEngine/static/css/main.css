@@ -62,10 +62,9 @@ padding: .4em;
 
 .chart {
     /*width: 400px;*/
-    height: 250px;
+    /*height: 250px;*/
 	display: block;
-	margin-left:auto;
-	margin-right:auto;
+	margin:auto;
 }
 
 .simulation {

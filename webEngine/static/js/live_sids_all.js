@@ -191,10 +191,10 @@ $(function () {
 	var container = $("#acceleration");
 	var total_points = 100;
 	function initChart() {
-		chartContainer = $("<div id='chart' class='chart'/>").appendTo($("#sound"));
+		//chartContainer = $("<div id='chart' class='chart'/>").appendTo($("#sound"));
 		options = {
             chart: {
-                renderTo: 'chart',
+                renderTo: 'sound',
                 type: 'line',
                 backgroundColor: 'transparent'
             },
@@ -647,8 +647,7 @@ $(function () {
 	}
 	var chartHum, humRangeMin=0, humRangeMax=1;
 	function initHumidityChart(){
-		var
-		chartHum = new Highcharts.Chart({
+		var chartHum = new Highcharts.Chart({
 	        
 	        chart: {
 	            renderTo: 'humidity',
