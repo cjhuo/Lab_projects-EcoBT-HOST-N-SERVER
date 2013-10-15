@@ -609,6 +609,14 @@ $(function () {
         var widget = new PerfectWidgets.Widget("chartTemp", jsonModel, additionalParams);
         //getting slider object
         slider = widget.getByName("Slider1");
+        
+        
+        //test widget
+        setInterval(function(){
+        	var val = Math.floor((Math.random()*8)+34);
+        	slider.setValue(val);
+        }, 1000);
+        
 		/*
 		chartTemp = new Highcharts.Chart({
 		    
