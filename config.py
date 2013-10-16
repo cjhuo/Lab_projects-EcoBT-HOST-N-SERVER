@@ -24,7 +24,7 @@ temperatureServerAddr = 'ws://' + ipAddr + ':8000/socket'
 administrationServerAddr = 'ws://' + ipAddr + ':8000/socket' 
 LiveECGServerAddr = 'ws://' + ipAddr + ':8000/socket'
 LiveSIDsServerAddr = 'ws://' + ipAddr + ':8000/socket'
-soundServerAddr = 'ws://' + ipAddr + ':8000/socket'
+soundServerAddr = 'http://' + ipAddr + ':8000/static/Siren.mp3'
 
 # setup for ecoBT host
 # turn off keyboard interrupt detection for server mode in order not to get too many 'Enter' signal..

@@ -10,7 +10,7 @@ $(function () {
 			if(name.trim() == data.data.address.trim())
 				if(data.data.type == 'orientation'){
 					updateSimulation(data.data);
-					updateACCChart(data.data);
+					//updateACCChart(data.data);
 				}
 				if(data.data.type == 'SIDsRead'){ //real data
 					console.log(data.data.value);
@@ -22,6 +22,7 @@ $(function () {
 				open('/', '_self', true);
 			}
 		}
+		fakeCheckCondition(data.data);
 	}
 	
 	
@@ -32,10 +33,14 @@ $(function () {
 	}
 	
 	function updateACCChart(data) {
+		console.log(data.value.x, data.value.y, data.value.z);
 		//update ACC chart
+		chart.series[0].addPoint(data.value.z, true, true);
+		/*
 		chart.series[0].addPoint(data.value.x, false, true);
 		chart.series[1].addPoint(data.value.y, false, true);
 		chart.series[2].addPoint(data.value.z, true, true);
+		*/
 	}
 	
 	/**
@@ -50,9 +55,8 @@ $(function () {
 		
 		//update Hum chart
 		var point = chartHum.series[0].points[0];
-		//console.log()
 		point.update(data[10], true);
-
+		/*
 		//check if alert need to be sent		
 		if(alertSet == true){
 			if(data[9] < tempRangeMin || data[9] > tempRangeMax || data[10] > humRangeMax){
@@ -74,60 +78,175 @@ $(function () {
 				}, 60000); //60s delay
 			}
 		}
+		*/
 	}
 	
 	var init = function() {
 		showSpinner();
 		initLayout();
-		initSimulation();
 		initChart();
 		initTemperatureChart();
 		initHumidityChart();
 		initAlert();
 		initRiskState();
-		//initSoundMonitor();
+		initSoundMonitor();
+		initSimulation();
+		demoScriptInit();
 		//window.addEventListener( 'orientationchange', onWindowResize, false );
 	}
 	
-	var stateDiv, itrVal
+	var fakeItrv, gradual = 0.0;
+	function demoScriptInit() {
+		setTimeout(function() {
+			//set temp to 37
+			slider.setValue(37);
+			
+			//set CO2 to 0.05;
+			//update Hum chart
+			var point = chartHum.series[0].points[0];			
+			point.update(0.05, true);
+
+			
+			//set risk level to Low
+			toggleState('low');
+			
+			//fake breathing data
+	        fakeItrv = setInterval(function(){
+	        	if(riskLvl == 2 && gradual < 0.7){
+	        		gradual = gradual + 0.015;
+	        	}
+	        	var val = 0.7-(Math.random()*0.2)-gradual;
+	        	if(val > 0.0){
+	        		chart.series[0].addPoint(val, false, true);
+	        		chart.series[1].addPoint(-val, true, true);
+	        	}
+	        	else{
+	        		chart.series[0].addPoint(0, false, true);
+	        		chart.series[1].addPoint(0, true, true);
+	        		//clearInterval(fakeItrv);
+	        		//no sound over 5 sec
+	        		setTimeout(function(){
+	        			clearInterval(fakeItrv);
+	        			toggleState('emergency');
+	        		}, 5000)
+	        	}
+	        }, 150);
+	        
+		}, 2000);
+
+        
+	}
+	
+	var faceDownTime;
+	function fakeCheckCondition(data){
+		//data is from acc
+		if(data.value.z < -0.5 && riskLvl < 1){ // face down
+			
+			if(faceDownTime == null){
+				faceDownTime = new Date();
+			}
+			else if(new Date() - faceDownTime > 5000){
+				//toggle medium
+				toggleState('medium');
+				//reset faceDownTime
+				faceDownTime = null;
+			}
+		} 
+		
+		// fake temp growing
+		else if(riskLvl == 1 && slider.getValue() < 38.9){
+			setTimeout(function(){ // grow temp by 2 over 5 sec
+				if(slider.getValue() < 38.9)
+					slider.setValue(slider.getValue()+0.4);
+			}, 1000);
+		}
+		else if(riskLvl == 1 && chartHum.series[0].points[0].y < 4.0){			
+			setTimeout(function(){ //grow co2 to 4 over 5 sec
+				if(chartHum.series[0].points[0].y < 4.0){
+					var newVal = parseFloat((chartHum.series[0].points[0].y + 0.79).toFixed(2));
+					chartHum.series[0].points[0].update(newVal, true);
+				}
+			}, 1000);
+		}
+		else if(riskLvl == 1 && chartHum.series[0].points[0].y == 4.0){
+			toggleState('high');
+		}
+
+	}
+	
+	var riskLvl, stateLow, stateMedium, stateHigh, stateEmergency, itrVal;
 	function initRiskState(){
 		var riskDiv = $('<div id="riskLevel"/>')
 		.css({
 			marginTop: '50px',
-			fontSize: 'small'
+			fontSize: 'normal'
 		}).appendTo($('#alert'));
 		var title = $('<div>Current sleep state:</div>').appendTo(riskDiv);
-		var stateDiv = $('<div id="state"/>').appendTo(riskDiv);
+		//var stateDiv = $('<div id="state"/>').appendTo(riskDiv);
 		
 		//default state is no state
 		//stateDiv.html('NONE').addClass("noLevel");
 		
-		//try low
-		$('<div/>').text('low').attr('class', 'low').appendTo(riskDiv);
-		
-		//try medium
-		$('<div/>').text('meidum').attr('class', 'medium').appendTo(riskDiv);
+		stateLow = $('<div/>').text('low').attr('class', 'noLevel').appendTo(riskDiv);
 
-		//try high
-		$('<div/>').text('high').attr('class', 'high').appendTo(riskDiv);
+		stateMedium = $('<div/>').text('meidum').attr('class', 'noLevel').appendTo(riskDiv);
+
+		stateHigh = $('<div/>').text('high').attr('class', 'noLevel').appendTo(riskDiv);
 		
-		//try emergency
+		stateEmergency = $('<div/>').text('emergency').attr('class', 'noLevel').appendTo(riskDiv);
 		
-		var stateDiv3 = $('<div/>').text('emergency').attr('class', 'high').appendTo(riskDiv);
-		itrVal = setInterval(function(){
-			stateDiv3.addClass("emergency", 1500, "linear", function(){
-				stateDiv3.removeClass("emergency", 1500, "linear");
-			});
-		}, 3100);
+		/*
+		toggleState("low");
+		toggleState("medium");
+		toggleState("high");
+		toggleState("emergency");
+		*/
+	}
+	
+	//state: low: 0; medium: 1; high: 2; emergency: 3
+	function toggleState(state){
+		//turn off all state first
+		if(itrVal != null)
+			clearInterval(itrVal);
+		stateLow.attr('class', 'noLevel');
+		stateMedium.attr('class', 'noLevel');
+		stateHigh.attr('class', 'noLevel');
+		stateEmergency.attr('class', 'noLevel');
+		
+		if(state == "low"){
+			stateLow.toggleClass('low', 1000);
+			riskLvl = 0;
+		}
+		else if(state == "medium"){
+			stateMedium.toggleClass('medium', 1000);
+			riskLvl = 1;
+		}
+		else if(state == "high"){
+			stateHigh.toggleClass('high', 1000);
+			riskLvl = 2;
+		}
+		else if(state == "emergency"){
+			stateEmergency.attr('class', 'high');
+			itrVal = setInterval(function(){
+				stateEmergency.addClass("emergency", 200, "linear", function(){
+					stateEmergency.removeClass("emergency", 1000, "linear");
+				});
+			}, 1210);
+			riskLvl = 3;
+			alertSound[0].play();
+			
+		}
 	}
 	
 	var emailSetButton, emailSRmvButton;
 	function initAlert(){
+		$('<div style="display: block; margin-top: 10px; color: #3E576F">Alert Settings</div>')
+		.appendTo($('#alert'));
 		var emailDiv = $('<div id="emailSettings" />')
 		.css({
 			marginTop: '10px',
-			fontSize: 'small',
-			display: 'table'
+			fontSize: 'normal',
+			display: 'block'
 		}).appendTo($('#alert'));
 		var emailLabel = $('<label for="email">Email to send for alert messages</label>');
 		var emailTxt = $('<input type="text" name="email" \
@@ -169,8 +288,14 @@ $(function () {
 	    return pattern.test(emailAddress);
 	};
 	
+	var alertSound;
 	function initSoundMonitor(){
+		alertSound = $('<audio src='+ soundUrl +' />').appendTo('#alert');
+		alertSound.bind('ended', function(){
+			alertSound[0].play();
+		});
 		
+		/*
 		var player = $('<div><audio autoplay="autoplay" \
 				src='+ soundUrl +' \
 				controls="controls" /></div>').css({
@@ -180,6 +305,7 @@ $(function () {
 			    margin: 'auto'
 				});
 		$('#sound').append(player);
+		*/
 		
 
 		//$('audio,video').mediaelementplayer();
@@ -241,8 +367,9 @@ $(function () {
 		options = {
             chart: {
                 renderTo: 'sound',
-                type: 'line',
-                backgroundColor: 'transparent'
+                type: 'area',
+                backgroundColor: 'transparent',
+                animation: false
             },
             title: {
                 text: 'Breathing'
@@ -261,15 +388,23 @@ $(function () {
             },
             yAxis: [{
                 title: {
-                    text: 'X',
+                    text: '',
                     rotation: 0
                 },
-                min: -1.0,
-                max: 1.0,
+                labels: {
+                	enabled: false
+                },
+                min: -1,
+                max: 1,
                 offset: 0,
                 lineWidth: 2,
-                height: 50
-            }, 
+                plotLines: [{
+                    value: 0,
+                    width: 2,
+                    color: '#C0D0E0'
+                }],
+                //height: 50
+            }/*, 
             {
                 title: {
                     text: 'Y',
@@ -295,7 +430,7 @@ $(function () {
                 lineWidth: 2,
                 height: 50
             	
-            }],
+            }*/],
             plotOptions: {
             	line: {
             		animation: false
@@ -308,7 +443,7 @@ $(function () {
             },
             tooltip: {
                 formatter: function() {
-                	return '<b>'+ this.series.yAxis.axisTitle.text +'</b>:'+ this.y;
+                	return this.y;//'<b>'+ this.series.yAxis.axisTitle.text +'</b>:'+ this.y;
                 }
             },
             legend: {
@@ -334,7 +469,18 @@ $(function () {
         options.series.push({
         	name: 'X',
             data: data,
+            color: '#909090'
         });
+        data = [];
+	    for (var i = 0; i < total_points; i++){
+			data.push(0);
+		}
+        options.series.push({
+        	name: 'Y',
+            data: data,
+            color: '#909090'
+        });
+        /*
         options.series.push({
         	name: 'Y',
             data: data,
@@ -344,7 +490,7 @@ $(function () {
         	name: 'Z',
             data: data,
             yAxis: 2
-        });
+        });*/
 		chart = new Highcharts.Chart(options, function() {
     		hideSpinner();
     	});
@@ -393,7 +539,7 @@ $(function () {
 		camera.position.z = 0;
 		// turn z to be parallel to gravity, facing up
 		//camera.rotation = new THREE.Vector3( 0,0, -1.50, -1.57 ); // doesn't work on r59
-		camera.rotation.y = -1.50;
+		camera.rotation.y = -1.57;
 		camera.rotation.z = -1.57;
 
 		scene = new THREE.Scene();
@@ -511,9 +657,9 @@ $(function () {
 			object.position.y = -200;
 			object.position.x = -170;
 			object.scale.set(0.8, 0.8, 0.8);
-			object.rotation.y = -0.3;
+			object.rotation.y = -0.5;
 			parent.add(object);
-			console.log(object);
+			//console.log(object);
 		});
 		//parent.add( cube );
 		//parent.add( text );
@@ -597,7 +743,7 @@ $(function () {
 		//info.style.textAlign = 'center';
 		info.html("Body temperature");
 		info.appendTo(tempContainer);
-		console.log(info);
+		//console.log(info);
 		
 		var chartTempDiv = $('<div id="chartTemp"/>')
 							.css({
@@ -609,17 +755,19 @@ $(function () {
         //creating widget
 		var additionalParams = { "uniqueClassName": "widget_id", 
 				"keepRatio": true, 
-				"Slider1.Value": 41 };
+				"Slider1.Value": 34 };
         var widget = new PerfectWidgets.Widget("chartTemp", jsonModel, additionalParams);
         //getting slider object
         slider = widget.getByName("Slider1");
         
         
-        //test widget
+        //test widget       
+        /*
         setInterval(function(){
         	var val = Math.floor((Math.random()*8)+34);
         	slider.setValue(val);
         }, 1000);
+        */
         
 		/*
 		chartTemp = new Highcharts.Chart({
@@ -705,7 +853,7 @@ $(function () {
 	}
 	var chartHum, humRangeMin=0, humRangeMax=1;
 	function initHumidityChart(){
-		var chartHum = new Highcharts.Chart({
+		chartHum = new Highcharts.Chart({
 	        
 	        chart: {
 	            renderTo: 'humidity',
