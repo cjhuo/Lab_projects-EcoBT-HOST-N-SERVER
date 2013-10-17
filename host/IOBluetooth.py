@@ -30,6 +30,8 @@ ProfileList = [
 "FE10",             # SIDS SHT25 Profile
 "FF20",             # RTC Profile,
 "FEC0",             # ECG Profile
+"ADD0",             # Audio Profile
+"BDA0",             # Body temperature Profile
 # Characteristic Profile
 "2A23",             # Device Info Characteristic Profile
 "FE11",             # SIDs CO2 STATUS Characteristic Profile
@@ -57,6 +59,10 @@ ProfileList = [
 "FEC6",              # ECG characteristic first 6 channels
 "FEC7",              # ECG characteristic second 6 channels
 #"FEC8"              # ECG characteristic
+"ADD1",              # Audio Configuration
+"ADD2",              # Audio Read
+"BDA1",              # Body temp Configuration
+"BDA2"               # Body temp Read
 ]
 
 
