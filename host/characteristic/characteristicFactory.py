@@ -37,6 +37,14 @@ def createCharacteristic(UUID, instance, service, peripheralWorker):
         c = ECGSet.ECGSet() 
     elif UUID == "FEC6" or UUID == "FEC7":
         c = ECGGet.ECGGet()     
+    elif UUID == "ADD1":
+        c = SIDsAudioSet.SIDsAudioSet()
+    elif UUID == "ADD2":
+        c = SIDsAudioRead.SIDsAudioRead()
+    elif UUID == "BDD1":
+        c = SIDsBodySet.SIDsBodySet()
+    elif UUID == "BDD2":
+        c = SIDsBodyRead.SIDsBodyRead()
     else: # found a profile that has not implemented
         c = Characteristic.Characteristic()
     c.setUUIDInstanceServicePeripheralWorker(UUID, instance, service, peripheralWorker)
