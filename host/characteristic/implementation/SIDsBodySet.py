@@ -14,21 +14,27 @@ import struct
 
 from Characteristic import *
 
+'''
+structure:
+frequency: 2 bytes in sec
+avgCnt: 1 byte
+run/stop: 1 byte
+'''
+
 class SIDsBodySet(Characteristic):
     def __init__(self):
         Characteristic.__init__(self)
         self.privilege = 2
-        self.isSet = False
         
     def process(self):
         value = self.instance._.value
-        para1, para2, para3, para4 = struct.unpack("@BBBB", value)
-        print "SIDsBodySet", para1, para2, para3, para4
-        if(self.isSet != True):     
-            self.peripheralWorker.writeValueForCharacteristic(self.createEnableBodyTemp(para2, para3, para4), self)
-            self.isSet = True
+        freq, avgCnt, enable = struct.unpack("<HBB", value)
+        print "SIDsBodySet %d%d%d" % (freq, avgCnt, enable)
+        
+        if(enable != 0x01): # if not enabled, enable it
+            self.peripheralWorker.writeValueForCharacteristic(self.createEnableFlag(freq, avgCnt), self)
 
-    def createEnableBodyTemp(self, p2, p3, p4):
-        settings = struct.pack("@BBBB", 0x01, p2, p3, p4)
+    def createEnableFlag(self, freq, avgCnt):
+        settings = struct.pack("<HBB", freq, avgCnt, 0x01)
         val_data = NSData.dataWithBytes_length_(settings, len(settings))
         return val_data

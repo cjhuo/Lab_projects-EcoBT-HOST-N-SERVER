@@ -14,21 +14,25 @@ import binascii
 
 from Characteristic import *
 
+'''
+structure:
+window: 2 bytes in ms
+run/stop: 1 byte  
+'''
 class SIDsAudioSet(Characteristic):
     def __init__(self):
         Characteristic.__init__(self)
         self.privilege = 2
-        self.isSet = False
         
     def process(self):
         value = self.instance._.value
-        para1, para2, para3 = struct.unpack("@BBB", value)
-        print "SIDsAudioSet", para1, para2, para3
-        if(self.isSet != True):     
-            self.peripheralWorker.writeValueForCharacteristic(self.createEnableAudioRead(para2, para3), self)
-            self.isSet = True
+        window, enable = struct.unpack("<HB", value)
+        print "SIDsAudioSet %d%d" % (window, enable)
+        
+        if(enable != 0x01): # if not enabled, enable it
+            self.peripheralWorker.writeValueForCharacteristic(self.createEnableAudioRead(window), self)
 
-    def createEnableAudioRead(self, p2, p3):
-        settings = struct.pack("@BBB", 0x01, p2, p3)
+    def createEnableAudioRead(self, window):
+        settings = struct.pack("<HB", window, 0x01)
         val_data = NSData.dataWithBytes_length_(settings, len(settings))
         return val_data
