@@ -15,6 +15,15 @@ $(function () {
 				if(data.data.type == 'SIDsRead'){ //real data
 					console.log(data.data.value);
 				}
+				if(data.data.type == 'Audio') { // update audio chart
+		        	if(data.data.leftAvg > 0.0 && data.data.rightAvg > 0.0){
+		        		chart.series[0].addPoint(data.data.leftAvg, false, true);
+		        		chart.series[1].addPoint(-data.data.rightAvg, true, true);
+		        	}
+				}
+				if(data.data.type == 'BodyTemp'){ // update body temp chart
+					slider.setValue(data.data.value);
+				}
 		}
 		else if(data.from == 'central') {
 			if(data.data.type == 'message'){
