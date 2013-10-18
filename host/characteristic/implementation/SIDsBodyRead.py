@@ -8,10 +8,11 @@ import binascii
 
 from Characteristic import *
 
-class SIDsBodySet(Characteristic):
+class SIDsBodyRead(Characteristic):
     def __init__(self):
         Characteristic.__init__(self)
         self.privilege = 0
         
     def process(self):
-        pass
+        hex_str = binascii.hexlify(self.instance._.value)
+        print "SIDsBodyRead", hex_str

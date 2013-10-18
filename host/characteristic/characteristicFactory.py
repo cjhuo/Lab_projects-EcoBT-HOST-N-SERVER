@@ -41,9 +41,9 @@ def createCharacteristic(UUID, instance, service, peripheralWorker):
         c = SIDsAudioSet.SIDsAudioSet()
     elif UUID == "ADD2":
         c = SIDsAudioRead.SIDsAudioRead()
-    elif UUID == "BDD1":
+    elif UUID == "BDA1":
         c = SIDsBodySet.SIDsBodySet()
-    elif UUID == "BDD2":
+    elif UUID == "BDA2":
         c = SIDsBodyRead.SIDsBodyRead()
     else: # found a profile that has not implemented
         c = Characteristic.Characteristic()

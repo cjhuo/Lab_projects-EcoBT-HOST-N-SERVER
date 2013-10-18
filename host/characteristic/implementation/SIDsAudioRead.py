@@ -8,10 +8,12 @@ import binascii
 
 from Characteristic import *
 
-class SIDsAudioSet(Characteristic):
+class SIDsAudioRead(Characteristic):
     def __init__(self):
         Characteristic.__init__(self)
         self.privilege = 0
         
     def process(self):
-        pass
+        hex_str = binascii.hexlify(self.instance._.value)
+
+        print "SIDSAudioRead", hex_str
