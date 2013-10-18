@@ -48,6 +48,7 @@ class SIDsCO2Status(Characteristic):
         if int(self.start) == 0 and int(self.LED_ready) == 1 and int(self.PD0) == 1 and \
                                     int(self.PD1) == 1 and int(self.RH_T_ready) == 1 and int(self.RH_T_enable) == 1: # correct initial state
             self.state = STOP_FLAG
+            self.startSIDs()
         elif int(self.start) == 1:
             self.state = START_FLAG
         

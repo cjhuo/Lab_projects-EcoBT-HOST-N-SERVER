@@ -16,3 +16,19 @@ class SIDsBodyRead(Characteristic):
     def process(self):
         hex_str = binascii.hexlify(self.instance._.value)
         print "SIDsBodyRead", hex_str
+        
+        # 2 bytes(signed short)
+        # parser TBD!!!!!!!
+        tempC = None
+        
+        
+        
+        # send to frontend
+        data = {
+                'type': 'BodyTemp',
+                'value': tempC
+                }
+        
+        self.peripheralWorker.delegateWorker.getQueue().put(data)
+ 
+  

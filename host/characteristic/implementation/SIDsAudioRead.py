@@ -17,3 +17,17 @@ class SIDsAudioRead(Characteristic):
         hex_str = binascii.hexlify(self.instance._.value)
 
         print "SIDSAudioRead", hex_str
+        
+        # 4 sets of 4 bytes. In each set, 2 bytes(short) left first, 2bytes(short) right after
+        # parser TBD!!!!!
+        audioList = [] #length of 4, each item is list of length 2
+        
+        
+        
+        data = {
+                'type': 'Audio',
+                'value': audioList
+                }
+        
+        self.peripheralWorker.delegateWorker.getQueue().put(data)
+       

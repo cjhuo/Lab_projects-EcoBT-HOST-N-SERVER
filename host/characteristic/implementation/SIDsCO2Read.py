@@ -45,7 +45,8 @@ class SIDsCO2Read(Characteristic):
         print "CO2 READING: ", hex_str
         value = self.instance._.value
         hour, minute, sec, LED00, LED01, LED10, LED11, amb0, amb1, rh, temp = struct.unpack("<BBBhhhhhhHH", value)
-        print rh, temp
+        print "HUMIDITY and AMBIENT TEMP: ", rh, temp
+        print "CO2 READINGS: ", LED00, LED01, LED10, LED11
         rh = rh & 0xFFFC
         rh = -6.0 + (125.0 * rh) / 65536
         temp = temp & 0xFFFC
