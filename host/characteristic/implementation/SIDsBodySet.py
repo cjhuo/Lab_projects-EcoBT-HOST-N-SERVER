@@ -25,12 +25,12 @@ class SIDsBodySet(Characteristic):
     def __init__(self):
         Characteristic.__init__(self)
         self.privilege = 2
-        
+
     def process(self):
         value = self.instance._.value
-        freq, avgCnt, enable = struct.unpack("<HBB", value)
-        print "SIDsBodySet %d%d%d" % (freq, avgCnt, enable)
-        
+        freq, ready, enable = struct.unpack("<HBB", value)
+        print "SIDsBodySet %d%d%d" % (freq, ready, enable)
+
         if(enable != 0x01): # if not enabled, enable it
             self.peripheralWorker.writeValueForCharacteristic(self.createEnableFlag(freq, avgCnt), self)
 
