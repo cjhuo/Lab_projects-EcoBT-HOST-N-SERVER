@@ -32,9 +32,9 @@ class SIDsBodySet(Characteristic):
         print "SIDsBodySet %d%d%d" % (freq, ready, enable)
 
         if(enable != 0x01): # if not enabled, enable it
-            self.peripheralWorker.writeValueForCharacteristic(self.createEnableFlag(freq, avgCnt), self)
+            self.peripheralWorker.writeValueForCharacteristic(self.createEnableFlag(freq, ready), self)
 
-    def createEnableFlag(self, freq, avgCnt):
-        settings = struct.pack("<HBB", freq, avgCnt, 0x01)
+    def createEnableFlag(self, freq, ready):
+        settings = struct.pack("<HBB", freq, ready, 0x01)
         val_data = NSData.dataWithBytes_length_(settings, len(settings))
         return val_data

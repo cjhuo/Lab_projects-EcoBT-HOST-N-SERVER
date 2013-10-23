@@ -25,26 +25,26 @@ class SIDsAudioRead(Characteristic):
     def __init__(self):
         Characteristic.__init__(self)
         self.privilege = 0
-        
+
     def process(self):
         value = self.instance._.value
         dataSet = struct.unpack("<hhhhhhhh", value)
 
         print "SIDSAudioRead", dataSet
-        
+
         # calculate mean value of left channel and right channel
         leftSum, rightSum = 0, 0
-        for idx in range(0, 16, 2):
-            leftSum += dataSet[idx]
-            rightSum += dataSet[idx+1]
+        for idx in range(4):
+            leftSum += dataSet[idx*2]
+            rightSum += dataSet[idx*2+1]
         leftAvg = leftSum / (len(dataSet)/2)
-        righAvg = righSum / (len(dataSet)/2)
-        
+        rightAvg = rightSum / (len(dataSet)/2)
+
         data = {
                 'type': 'Audio',
                 'leftAvg': leftAvg,
-                'righAvg': rightAvg 
+                'righAvg': rightAvg
                 }
-        
+
         self.peripheralWorker.delegateWorker.getQueue().put(data)
-       
+
