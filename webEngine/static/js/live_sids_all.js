@@ -198,7 +198,7 @@ $(function () {
 		
 		stateLow = $('<div/>').text('low').attr('class', 'noLevel').appendTo(riskDiv);
 
-		stateMedium = $('<div/>').text('meidum').attr('class', 'noLevel').appendTo(riskDiv);
+		stateMedium = $('<div/>').text('medium').attr('class', 'noLevel').appendTo(riskDiv);
 
 		stateHigh = $('<div/>').text('high').attr('class', 'noLevel').appendTo(riskDiv);
 		
