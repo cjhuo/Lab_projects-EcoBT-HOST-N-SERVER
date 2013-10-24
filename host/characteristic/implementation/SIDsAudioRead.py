@@ -43,7 +43,7 @@ class SIDsAudioRead(Characteristic):
         data = {
                 'type': 'Audio',
                 'leftAvg': leftAvg,
-                'righAvg': rightAvg
+                'rightAvg': rightAvg
                 }
 
         self.peripheralWorker.delegateWorker.getQueue().put(data)
