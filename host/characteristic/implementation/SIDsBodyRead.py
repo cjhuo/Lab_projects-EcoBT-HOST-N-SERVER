@@ -89,7 +89,6 @@ class SIDsBodyRead(Characteristic):
 
         # Convert to temperature in Celsius
         tempC = 0
-        print SIDsBodyRead.CONV_MAP[0]
         if value < SIDsBodyRead.CONV_MAP[0]:
             tempC = -1
         elif value > SIDsBodyRead.CONV_MAP[50]:
@@ -108,7 +107,7 @@ class SIDsBodyRead(Characteristic):
             tempC = (value - lo) * (temp_hi - temp_lo) / (hi - lo) + temp_lo
             tempC = round(tempC, 2)
 
-        print  "Body Temp: ", tempC
+        print  "Body Temp: ", value, tempC
 
 
 #        tempC = random.uniform(31, 40)
