@@ -85,10 +85,9 @@ class SIDsBodyRead(Characteristic):
         #hex_str = binascii.hexlify(self.instance._.value)
         #print "SIDsBodyRead", hex_str
         value, = struct.unpack("<H", self.instance._.value)
-        print "SIDsBodyRead: ", value
+#        print "SIDsBodyRead: ", value
 
         # Convert to temperature in Celsius
-        # TBD!!!!!!!
         tempC = 0
         print SIDsBodyRead.CONV_MAP[0]
         if value < SIDsBodyRead.CONV_MAP[0]:
