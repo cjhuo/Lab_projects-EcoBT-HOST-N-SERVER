@@ -149,6 +149,7 @@ $(function () {
 	}
 	
 	var faceDownTime;
+    var fakeTempInc;
 	function fakeCheckCondition(data){
 		//data is from acc
 		if(data.value.z < -0.5 && riskLvl < 1){ // face down
@@ -161,14 +162,16 @@ $(function () {
 				toggleState('medium');
 				//reset faceDownTime
 				faceDownTime = null;
+                fakeTempInc = 0;
 			}
 		} 
 		
 		// fake temp growing
 		else if(riskLvl == 1 && slider.getValue() < 38.9){
 			setTimeout(function(){ // grow temp by 2 over 5 sec
+                fakeTempInc = fakeTempInc + 1;
 				if(slider.getValue() < 38.9)
-					slider.setValue(slider.getValue()+0.4);
+					slider.setValue(slider.getValue() + fakeTempInc + 0.4);
 			}, 1000);
 		}
 		else if(riskLvl == 1 && chartHum.series[0].points[0].y < 4.0){			

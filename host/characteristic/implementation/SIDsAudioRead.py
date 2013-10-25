@@ -46,5 +46,5 @@ class SIDsAudioRead(Characteristic):
                 'rightAvg': rightAvg
                 }
 
-        self.peripheralWorker.delegateWorker.getQueue().put(data)
+#        self.peripheralWorker.delegateWorker.getQueue().put(data)
 
