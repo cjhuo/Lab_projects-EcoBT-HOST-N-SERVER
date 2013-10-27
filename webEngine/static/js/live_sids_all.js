@@ -4,6 +4,7 @@ $(function () {
 	var soundUrl = $('#soundServerAddr').text();;
 		
     var datasets; //store datasets
+    var tempMonEnable = true;
 	function onDataReceived(data) { //setup plot after retrieving data
 		//console.log(data);
 		if( data.from == 'node'){
@@ -22,7 +23,9 @@ $(function () {
 		        	}
 				}
 				if(data.data.type == 'BodyTemp'){ // update body temp chart
-					slider.setValue(data.data.value);
+					if(tempMonEnable){
+						slider.setValue(data.data.value);
+					}
                     console.log("temp");
                     console.log(data.data.value);
 				}
@@ -149,7 +152,6 @@ $(function () {
 	}
 	
 	var faceDownTime;
-    var fakeTempInc;
 	function fakeCheckCondition(data){
 		//data is from acc
 		if(data.value.z < -0.5 && riskLvl < 1){ // face down
@@ -168,10 +170,10 @@ $(function () {
 		
 		// fake temp growing
 		else if(riskLvl == 1 && slider.getValue() < 38.9){
-			setTimeout(function(){ // grow temp by 2 over 5 sec
-                fakeTempInc = fakeTempInc + 1;
+			tempMonEnable = false;
+			setTimeout(function(){ // grow temp by 14 over 5 sec
 				if(slider.getValue() < 38.9)
-					slider.setValue(slider.getValue() + fakeTempInc + 0.4);
+					slider.setValue(slider.getValue() + 2.8);
 			}, 1000);
 		}
 		else if(riskLvl == 1 && chartHum.series[0].points[0].y < 4.0){			
