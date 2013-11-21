@@ -67,5 +67,5 @@ def ValidateData(peakdata, Qpoint, Tpoint) :
             validatedataset.append(temp)
         else :
             continue
-
+    print validatedataset
     return validatedataset

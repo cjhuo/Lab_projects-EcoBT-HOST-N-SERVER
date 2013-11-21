@@ -25,7 +25,11 @@ class ECG_reader():
         self.NumofsamplesPerChannel = None
         self.NumofChannels = None
         '''
-        
+        qpool = multiprocessing.pool.Pool()
+        tpool = multiprocessing.pool.Pool()
+        self.qpool = qpool
+        self.tpool = tpool
+
     def setFile(self, Dfile = filePath):
         #print(Dfile)
         self._parseDicomFile(Dfile)
@@ -101,13 +105,17 @@ class ECG_reader():
             template, offset, stepsize = CAPS.get_templateParam(qpoint, Wavedata)
 
             SearchingQ = partial( CAPS.get_correlation, 'Q', offset, template, stepsize, self.peakdata, Wavedata )
-            Qpoint = multiprocessing.pool.Pool().map( SearchingQ, index_rangeQ )
+            Qpoint = self.qpool.map( SearchingQ, index_rangeQ )
+
+            print Qpoint
 
             # Searching similar point from manually selected T point
             template, offset, stepsize = CAPS.get_templateParam(tpoint, Wavedata)
 
             SearchingT = partial( CAPS.get_correlation, 'T', offset, template, stepsize,  self.peakdata, Wavedata )
-            Tpoint = multiprocessing.pool.Pool().map( SearchingT, index_rangeT )
+            Tpoint = self.tpool.map( SearchingT, index_rangeT )
+
+            print Tpoint
 
             # Calculate the Qtc value
             Qtcs, AvgHR, LongQTc, ShortQTc, NumofHR, PercentOverQTc, RangeRR = Qtc.CalculateQtc(self.peakdata, Qpoint, Tpoint, int(self.samplingrate))
