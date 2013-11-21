@@ -9,3 +9,4 @@ log.txt
 /NIH_host/host/Uploads/*
 data/*.txt
 data/*.dcm
+data/*.csv
