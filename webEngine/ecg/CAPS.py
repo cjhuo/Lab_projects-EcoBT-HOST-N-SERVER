@@ -4,7 +4,7 @@ import scipy.stats
 import numpy
 
 threshold = 0.5
-tempsize = 80
+tempsize = 70
 
 def get_step_size( template ):
     zeropad    = numpy.zeros( (12,tempsize-1), numpy.int )

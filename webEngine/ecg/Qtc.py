@@ -36,13 +36,13 @@ def CalculateQtc(peakdata, Qpoint, Tpoint, samplingrate) :
                 FilteredRR.append(RR[i])
 
 
-            AvgHR = round( float(60) / numpy.mean(FilteredRR), 2 )
-            LongQTc = round( max(FilteredQTc), 2 )
-            ShortQTc = round( min(FilteredQTc), 2 )
+            AvgHR = round( float(60) / numpy.mean(FilteredRR), 3 )
+            LongQTc = round( max(FilteredQTc), 3 )
+            ShortQTc = round( min(FilteredQTc), 3 )
             NumofHR = len(FilteredRR)
             OverCheck = numpy.array(FilteredQTc)>0.45
             PercentOverQTc = round (float(len(numpy.array(FilteredQTc)[OverCheck])*100)/len(FilteredQTc), 2 )
-            RangeRR = round(min(FilteredRR), 2 ), round(max(FilteredRR), 2 )
+            RangeRR = round(float(60)/max(FilteredRR), 3 ), round(float(60)/min(FilteredRR), 3 )
 
     else :
         FilteredQTc=[]
