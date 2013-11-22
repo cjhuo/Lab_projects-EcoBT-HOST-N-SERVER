@@ -75,7 +75,7 @@ class ECG_reader():
             wavedata = self.wavech   
         return wavedata
     
-    def getBinInfo(self, qpoint, tpoint, bin=10, channelNo = 2) :
+    def getBinInfo(self, qpoint, tpoint, bin=10, channelNo = 2, correlationVal=0.50) :
         ErrorCode = 0
         Qtcs = []
         AvgHR = 0
@@ -96,40 +96,28 @@ class ECG_reader():
         index_rangeQ = range( 1, len( self.peakdata ) - 1 )
         index_rangeT = range( 0, len( self.peakdata ) - 1 )
 
-        nRangeQ = self.findrange(self.peakdata, qpoint)
-        nRangeT = self.findrange(self.peakdata, tpoint)
+        # Searching similar point from manually selected Q point
+        template, offset, stepsize = CAPS.get_templateParam(qpoint, Wavedata)
 
-        if ((nRangeQ[0] + (nRangeQ[1]-nRangeQ[0]) / 2) < qpoint < nRangeQ[1]) & ((nRangeT[0] < tpoint < nRangeT[1] - ((nRangeT[1]-nRangeT[0]) / 3))) :
+        SearchingQ = partial( CAPS.get_correlation, 'Q', offset, template, stepsize, self.peakdata, Wavedata, correlationVal )
+        Qpoint = self.qpool.map( SearchingQ, index_rangeQ )
 
-            # Searching similar point from manually selected Q point
-            template, offset, stepsize = CAPS.get_templateParam(qpoint, Wavedata)
+        # Searching similar point from manually selected T point
+        template, offset, stepsize = CAPS.get_templateParam(tpoint, Wavedata)
 
-            SearchingQ = partial( CAPS.get_correlation, 'Q', offset, template, stepsize, self.peakdata, Wavedata )
-            Qpoint = self.qpool.map( SearchingQ, index_rangeQ )
+        SearchingT = partial( CAPS.get_correlation, 'T', offset, template, stepsize,  self.peakdata, Wavedata, correlationVal )
+        Tpoint = self.tpool.map( SearchingT, index_rangeT )
 
-            print Qpoint
+        # Calculate the Qtc value
+        Qtcs, AvgHR, LongQTc, ShortQTc, NumofHR, PercentOverQTc, RangeRR = Qtc.CalculateQtc(self.peakdata, Qpoint, Tpoint, int(self.samplingrate))
 
-            # Searching similar point from manually selected T point
-            template, offset, stepsize = CAPS.get_templateParam(tpoint, Wavedata)
+        # Make histogram
+        histo = Histogram.histo(Qtcs,bin)
+        histodata = histo.Histogram(Qtcs, bin)
 
-            SearchingT = partial( CAPS.get_correlation, 'T', offset, template, stepsize,  self.peakdata, Wavedata )
-            Tpoint = self.tpool.map( SearchingT, index_rangeT )
-
-            print Tpoint
-
-            # Calculate the Qtc value
-            Qtcs, AvgHR, LongQTc, ShortQTc, NumofHR, PercentOverQTc, RangeRR = Qtc.CalculateQtc(self.peakdata, Qpoint, Tpoint, int(self.samplingrate))
-
-            # Make histogram
-            histo = Histogram.histo(Qtcs,bin)
-            histodata = histo.Histogram(Qtcs, bin)
-
-            s2=datetime.now()
-            print(histodata)
-            print(s2-s1)
-        else :
-            ErrorCode ='-1'
-            raise ErrorCode
+        s2=datetime.now()
+        print(histodata)
+        print(s2-s1)
 
         return histodata, [AvgHR, str(RangeRR[0]) + '~' + str(RangeRR[1]), NumofHR, LongQTc, ShortQTc, PercentOverQTc]#, ErrorCode
 

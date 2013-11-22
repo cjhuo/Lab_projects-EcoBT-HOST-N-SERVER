@@ -11,6 +11,9 @@
  *      b) You can always go back to the original state by choose any of the radio buttons</p>
  *
  */
+function correlation_changed(val){
+    $('#correlation-label').text(val/100);
+}
 
 $(function () {
 	
@@ -1065,9 +1068,18 @@ $(function () {
     	
     	var binChooser = $('<div id="binChooser"/>');
     	binChooser.html('<label for="spinner">Select a bin number:</label>');
-    	
-    	binChooser.append(bin);
-    	binChooser.appendTo(choice);
+
+        var correlationLabel;
+        correlationInfo = $('<p style="margin:0" class="correlation-info">Select correlation value : </p>');
+        correlation = $('<input type="range" id="correlation" nave="correlation" min="50" max="100" value="50" onchange="correlation_changed(this.value)"> ');
+
+        correlationLabel = $('<label class="correlation-label" id="correlation-label">0.50</label>')
+        binChooser.append(bin);
+        binChooser.append(correlationInfo);
+        binChooser.append(correlationLabel);
+        binChooser.append(correlation);
+
+        binChooser.appendTo(choice);
     	return binChooser;
     }
 
@@ -1129,6 +1141,7 @@ $(function () {
     			'qPoint': [Math.round((qPoint.x-Date.UTC(0, 0, 0, 0, 0, 0, 0))/xPointInterval), qPoint.y/xPointInterval],
     			'tPoint': [Math.round((tPoint.x-Date.UTC(0, 0, 0, 0, 0, 0, 0))/xPointInterval), tPoint.y/xPointInterval],
     			'bin': parseInt(bin.val()),
+                'correlation':parseInt(correlation.val()),
     			'lead': choice.find('input').filter('[checked=checked]').attr("value")	
     			};
 

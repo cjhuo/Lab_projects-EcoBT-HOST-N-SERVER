@@ -3,8 +3,8 @@ import scipy
 import scipy.stats
 import numpy
 
-threshold = 0.7
-tempsize = 70 
+threshold = 0.5
+tempsize = 80
 
 def get_step_size( template ):
     zeropad    = numpy.zeros( (12,tempsize-1), numpy.int )
@@ -28,7 +28,7 @@ def get_step_size( template ):
     return max(1,(filtered_index[-1][0] - filtered_index[0][0])/2)
 
 # First coarse searching, and then specific searching
-def get_matched_template_index( original_data, template, step_size ):
+def get_matched_template_index( original_data, template, step_size, correlationVal ):
 
     maxcorr  = -1
     candidatelist = []
@@ -52,7 +52,7 @@ def get_matched_template_index( original_data, template, step_size ):
                 maxcorr  = crosscorr
                 maxindex = j
 
-    if len(candidatelist) == 0 :
+    if (len(candidatelist) == 0)|( maxcorr<correlationVal) :
         maxindex = -1
 
     return maxindex
@@ -69,12 +69,12 @@ def get_templateParam( searchingpoint, originaldata ):
 
     return template, new_offset, step_size
 
-def get_correlation( selectionMode, offset, template, step_size, peakdata, originaldata, index):
+def get_correlation( selectionMode, offset, template, step_size, peakdata, originaldata, correlationVal, index):
 
     RtoR = peakdata[ index + 1 ] - peakdata[ index ]
 
     original_data = get_original_chunk( selectionMode, peakdata[index], RtoR, originaldata )
-    matched_index = get_matched_template_index( original_data, template, step_size )
+    matched_index = get_matched_template_index( original_data, template, step_size, correlationVal )
 
     if matched_index != -1 :
         if selectionMode == 'Q' :
@@ -91,7 +91,8 @@ def get_original_chunk( selectionMode, peakpoint, RtoR, originaldata ):
         endpoint   = peakpoint + tempsize/2
     elif selectionMode == 'T' :
         startpoint = max(0, peakpoint - tempsize/2)
-        endpoint   = peakpoint + ( 2*RtoR/3) + tempsize
+#        endpoint   = peakpoint + ( 2*RtoR/3) + tempsize
+        endpoint   = peakpoint + RtoR
 
     return originaldata[:, startpoint:endpoint]
 
