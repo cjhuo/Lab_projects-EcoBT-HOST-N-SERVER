@@ -14,6 +14,9 @@ import binascii
 import struct
 import os
 
+# for preiodically re-start sensor
+import threading
+
 from host.characteristic.implementation.Characteristic import *
 
 '''
@@ -38,6 +41,7 @@ class SIDsCO2Status(Characteristic):
         Characteristic.__init__(self)
         self.privilege = 1
         self.state = None # 0: stopped; 1: started
+        self.restarter = None
 
     def process(self):
         hex_str = binascii.hexlify(self.instance._.value)
@@ -87,6 +91,9 @@ class SIDsCO2Status(Characteristic):
         val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
         self.peripheralWorker.writeValueForCharacteristic(val_data, self)
 
+        self.restarter = ReStarter(self, 60)
+        self.restarter.start()
+
     def stopSIDs(self):
         byte_array = struct.pack("<BBBBBB", 0, 1, 1, 1, self.RH_T_ready, self.RH_T_enable)
         val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
@@ -96,6 +103,10 @@ class SIDsCO2Status(Characteristic):
             self.service.log_file = False
         dataPath = os.path.join(os.path.dirname(__file__), os.path.pardir, os.pardir, os.pardir, "data")
         #os.system('open "%s"' % dataPath)
+
+        if self.restarter:
+            self.restarter.stop()
+            self.restarter = None
     '''
     def createStartFlag(self):
         return self.createFlag(START_FLAG)
@@ -108,3 +119,29 @@ class SIDsCO2Status(Characteristic):
         val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
         return val_data
     '''
+
+class ReStarter(threading.Thread):
+    def __init__(self, statusCtrl, interval=1):
+        threading.Thread.__init__(self)
+
+        self._stop = threading.Event()
+        self._stop.clear()
+
+        self.statusCtrl = statusCtrl
+        self.interval = interval
+
+
+    def task(self):
+        self.statusCtrl.stopSIDs()
+        self.statusCtrl.startSIDs()
+
+
+    def run(self):
+        while True:
+            if self._stop.isSet():
+                break
+            time.sleep(interval)
+            self.task()
+
+    def stop(self):
+        self._stop.set()
