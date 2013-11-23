@@ -109,7 +109,7 @@ class ECG_reader():
         Tpoint = self.tpool.map( SearchingT, index_rangeT )
 
         # Calculate the Qtc value
-        Qtcs, AvgHR, LongQTc, ShortQTc, NumofHR, PercentOverQTc, RangeRR = Qtc.CalculateQtc(self.peakdata, Qpoint, Tpoint, int(self.samplingrate))
+        Qtcs, AvgHR, LongQTc, ShortQTc, NumofHR, PercentOverQTc, RangeRR, MeanQTc, MedianQTc = Qtc.CalculateQtc(self.peakdata, Qpoint, Tpoint, int(self.samplingrate))
 
         # Make histogram
         histo = Histogram.histo(Qtcs,bin)
@@ -119,7 +119,7 @@ class ECG_reader():
         print(histodata)
         print(s2-s1)
 
-        return histodata, [AvgHR, str(RangeRR[0]) + '~' + str(RangeRR[1]), NumofHR, LongQTc, ShortQTc, PercentOverQTc]#, ErrorCode
+        return histodata, [AvgHR, str(RangeRR[0]) + '~' + str(RangeRR[1]), NumofHR, LongQTc, ShortQTc, MeanQTc, MedianQTc, PercentOverQTc]#, ErrorCode
 
     def findrange(self, peaklist, value) :
 

@@ -207,6 +207,8 @@ $(function () {
 		        <th>Number of Heart Beats (RR)</th>\
 				<th>Longest QTc</th>\
 				<th>Shortest QTc</th>\
+				<th>Average QTc</th>\
+				<th>Median of QTc</th>\
 				<th>Percent QTc >=450 ms (0.45 sec)</th>\
 		      </tr>\
 		    </thead>\
@@ -1064,16 +1066,16 @@ $(function () {
     	for (var i = 1; i<=10; i++) { //generate bin number range from 1 - 10
     		bin.append($('<option/>').html(i));
     	}
-    	bin.val(3); //by default generate 3 bins
+    	bin.val(7); //by default generate 7 bins
     	
     	var binChooser = $('<div id="binChooser"/>');
     	binChooser.html('<label for="spinner">Select a bin number:</label>');
 
         var correlationLabel;
         correlationInfo = $('<p style="margin:0" class="correlation-info">Select correlation value : </p>');
-        correlation = $('<input type="range" id="correlation" nave="correlation" min="50" max="100" value="50" onchange="correlation_changed(this.value)"> ');
+        correlation = $('<input type="range" id="correlation" nave="correlation" min="50" max="100" value="70" onchange="correlation_changed(this.value)"> ');
 
-        correlationLabel = $('<label class="correlation-label" id="correlation-label">0.50</label>')
+        correlationLabel = $('<label class="correlation-label" id="correlation-label">0.70</label>')
         binChooser.append(bin);
         binChooser.append(correlationInfo);
         binChooser.append(correlationLabel);

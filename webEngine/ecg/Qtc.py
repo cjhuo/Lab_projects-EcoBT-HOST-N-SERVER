@@ -31,6 +31,7 @@ def CalculateQtc(peakdata, Qpoint, Tpoint, samplingrate) :
             SortedIndex = sorted(range(len(QTc)), key=QTc.__getitem__)
             QTcIndex = SortedIndex[Outlier:len(SortedIndex)-Outlier]
 
+            #            for i in QTcIndex :
             for i in QTcIndex :
                 FilteredQTc.append(QTc[i])
                 FilteredRR.append(RR[i])
@@ -43,7 +44,8 @@ def CalculateQtc(peakdata, Qpoint, Tpoint, samplingrate) :
             OverCheck = numpy.array(FilteredQTc)>0.45
             PercentOverQTc = round (float(len(numpy.array(FilteredQTc)[OverCheck])*100)/len(FilteredQTc), 2 )
             RangeRR = round(float(60)/max(FilteredRR), 3 ), round(float(60)/min(FilteredRR), 3 )
-
+            MeanQTc = round(numpy.mean(FilteredQTc),3)
+            MedianQTc = round(numpy.median(FilteredQTc),3)
     else :
         FilteredQTc=[]
         AvgHR = 0
@@ -52,8 +54,10 @@ def CalculateQtc(peakdata, Qpoint, Tpoint, samplingrate) :
         NumofHR = 0
         PercentOverQTc = 0
         RangeRR = 0
+        MeanQTc = 0
+        MedianQTc = 0
 
-    return FilteredQTc, AvgHR, LongQTc, ShortQTc, NumofHR, PercentOverQTc, RangeRR
+    return FilteredQTc, AvgHR, LongQTc, ShortQTc, NumofHR, PercentOverQTc, RangeRR, MeanQTc, MedianQTc
 
 def ValidateData(peakdata, Qpoint, Tpoint) :
     validatedataset = list()
