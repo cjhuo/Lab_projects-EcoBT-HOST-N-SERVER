@@ -16,6 +16,8 @@ import os
 
 # for preiodically re-start sensor
 import threading
+import time
+from datetime import datetime, timedelta
 
 from host.characteristic.implementation.Characteristic import *
 
@@ -87,9 +89,12 @@ class SIDsCO2Status(Characteristic):
         return data
         '''
     def startSIDs(self):
-        byte_array = struct.pack("<BBBBBB", 1, 1, 1, 1, self.RH_T_ready, self.RH_T_enable)
-        val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
-        self.peripheralWorker.writeValueForCharacteristic(val_data, self)
+#        byte_array = struct.pack("<BBBBBB", 1, 1, 1, 1, self.RH_T_ready, self.RH_T_enable)
+#        val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
+#        self.peripheralWorker.writeValueForCharacteristic(val_data, self)
+
+        start = DelayStart(self)
+        start.start()
 
         self.restarter = ReStarter(self, 60)
         self.restarter.start()
@@ -107,6 +112,17 @@ class SIDsCO2Status(Characteristic):
         if self.restarter:
             self.restarter.stop()
             self.restarter = None
+
+    def sendSTART(self):
+        byte_array = struct.pack("<BBBBBB", 1, 1, 1, 1, self.RH_T_ready, self.RH_T_enable)
+        val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
+        self.peripheralWorker.writeValueForCharacteristic(val_data, self)
+
+    def sendSTOP(self):
+        byte_array = struct.pack("<BBBBBB", 0, 1, 1, 1, self.RH_T_ready, self.RH_T_enable)
+        val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
+        self.peripheralWorker.writeValueForCharacteristic(val_data, self)
+
     '''
     def createStartFlag(self):
         return self.createFlag(START_FLAG)
@@ -120,6 +136,19 @@ class SIDsCO2Status(Characteristic):
         return val_data
     '''
 
+class DelayStart(threading.Thread):
+    def __init__(self, statusCtrl):
+        threading.Thread.__init__(self)
+        self.statusCtrl = statusCtrl
+
+    def run(self):
+        now = datetime.now()
+        delay = 1 - ((now.microsecond + 0.0) / 10**6)
+        time.sleep(delay)
+        self.statusCtrl.sendSTART()
+        print delay
+
+
 class ReStarter(threading.Thread):
     def __init__(self, statusCtrl, interval=1):
         threading.Thread.__init__(self)
@@ -132,16 +161,28 @@ class ReStarter(threading.Thread):
 
 
     def task(self):
-        self.statusCtrl.stopSIDs()
-        self.statusCtrl.startSIDs()
+        print "!!!RESTART!!!"
+        self.statusCtrl.sendSTOP()
+        start = DelayStart(self.statusCtrl)
+        start.start()
 
 
     def run(self):
+        now = datetime.now()
+        delay = 1 - ((now.microsecond + 0.0) / 10**6)
+        time.sleep(delay)
+
+        count = 1
         while True:
+            now = datetime.now()
+            delay = 1 - ((now.microsecond + 0.0) / 10**6)
+            time.sleep(delay)
+            count += 1
             if self._stop.isSet():
                 break
-            time.sleep(interval)
-            self.task()
+            if count == self.interval:
+                self.task()
+                count = 0
 
     def stop(self):
         self._stop.set()
