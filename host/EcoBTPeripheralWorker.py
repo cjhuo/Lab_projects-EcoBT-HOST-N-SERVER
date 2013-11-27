@@ -84,6 +84,18 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
             self.peripheral.instance.writeValue_forCharacteristic_type_(
                                                                value, characteristic,
                                                                CBCharacteristicWriteWithResponse)
+    def writeValueForCharacteristicWithoutResponse(self, value, characteristic):
+        if isinstance(characteristic, Characteristic.Characteristic):
+            NSLog("WRITING CHARACTERISTIC %@ TO VALUE %@", characteristic.UUID, value)
+            self.peripheral.instance.writeValue_forCharacteristic_type_(
+                                                               value, characteristic.instance,
+                                                               CBCharacteristicWriteWithoutResponse)
+        else:
+            NSLog("WRITING CHARACTERISTIC %@ TO VALUE %@", characteristic._.UUID, value)
+            self.peripheral.instance.writeValue_forCharacteristic_type_(
+                                                               value, characteristic,
+                                                               CBCharacteristicWriteWithoutResponse)
+
             
     def findServiceByUUID(self, UUID):
         for s in self.services:

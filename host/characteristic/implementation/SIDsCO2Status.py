@@ -102,7 +102,7 @@ class SIDsCO2Status(Characteristic):
     def stopSIDs(self):
         byte_array = struct.pack("<BBBBBB", 0, 1, 1, 1, self.RH_T_ready, self.RH_T_enable)
         val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
-        self.peripheralWorker.writeValueForCharacteristic(val_data, self)
+        self.peripheralWorker.writeValueForCharacteristicWithoutResponse(val_data, self)
         if hasattr(self.service, 'log_file'):
             self.service.log_file.close() # close log file
             self.service.log_file = False
@@ -116,12 +116,12 @@ class SIDsCO2Status(Characteristic):
     def sendSTART(self):
         byte_array = struct.pack("<BBBBBB", 1, 1, 1, 1, self.RH_T_ready, self.RH_T_enable)
         val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
-        self.peripheralWorker.writeValueForCharacteristic(val_data, self)
+        self.peripheralWorker.writeValueForCharacteristicWithoutResponse(val_data, self)
 
     def sendSTOP(self):
         byte_array = struct.pack("<BBBBBB", 0, 1, 1, 1, self.RH_T_ready, self.RH_T_enable)
         val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
-        self.peripheralWorker.writeValueForCharacteristic(val_data, self)
+        self.peripheralWorker.writeValueForCharacteristicWithoutResponse(val_data, self)
 
     '''
     def createStartFlag(self):
