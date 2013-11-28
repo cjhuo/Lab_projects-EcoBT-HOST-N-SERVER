@@ -153,7 +153,10 @@ $(function () {
     	updateButtonL.hide();
     	updateButtonR.hide();
     	socket.send("startSIDs"+name0.trim());
-    	socket.send("startSIDs"+name1.trim());
+    	setTimeout(function(){		//wait 1 second before starting the right board
+    		socket.send("startSIDs"+name1.trim());
+    	}, 1000);
+    	
     } 
     
     function stopSIDs() {
