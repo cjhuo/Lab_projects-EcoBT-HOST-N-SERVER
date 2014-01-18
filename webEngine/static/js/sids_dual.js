@@ -10,6 +10,20 @@ $(function () {
 		if( data.from == 'node'){
 			if(data.data.type == 'SIDsRead'){ //real data
 				console.log(data.data.address, data.data.value);
+				
+				//check whether data is in valid range or not
+				//if not, no show on table or chart
+				if(name0.trim() == data.data.address.trim()){
+					if(data.data.value[3] < led1_left_min || data.data.value[3] > led1_left_max || 
+						data.data.value[6] < led2_left_min || data.data.value[] > led2_left_max)
+						return 0;
+				}
+				else if(name1.trim() == data.data.address.trim()){
+					if(data.data.value[3] < led1_right_min || data.data.value[3] > led1_right_max || 
+						data.data.value[6] < led2_right_min || data.data.value[] > led2_right_max)
+						return 0;
+				}
+				
 				if(name0.trim() == data.data.address.trim())
 					updateDataTable(data.data.value, "left");
 				else if(name1.trim() == data.data.address.trim())
@@ -543,6 +557,14 @@ $(function () {
 	var chart;
 	var container = $("#simulation");
 	var total_points = 100;
+	var led1_left_min = 0,
+		led1_left_max = 1500,
+		led2_left_min = 0,
+		led2_left_max = 1500,
+		led1_right_min = 0,
+		led1_right_max = 1500,
+		led2_right_min = 0,
+		led2_right_max = 1320;
 	function initChart() {
 		chartContainer = $("<div id='chart' class='chart'/>").appendTo(container);
 		options = {
