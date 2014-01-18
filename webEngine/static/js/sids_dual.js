@@ -15,12 +15,12 @@ $(function () {
 				//if not, no show on table or chart
 				if(name0.trim() == data.data.address.trim()){
 					if(data.data.value[3] < led1_left_min || data.data.value[3] > led1_left_max || 
-						data.data.value[6] < led2_left_min || data.data.value[] > led2_left_max)
+						data.data.value[6] < led2_left_min || data.data.value[6] > led2_left_max)
 						return 0;
 				}
 				else if(name1.trim() == data.data.address.trim()){
 					if(data.data.value[3] < led1_right_min || data.data.value[3] > led1_right_max || 
-						data.data.value[6] < led2_right_min || data.data.value[] > led2_right_max)
+						data.data.value[6] < led2_right_min || data.data.value[6] > led2_right_max)
 						return 0;
 				}
 				
