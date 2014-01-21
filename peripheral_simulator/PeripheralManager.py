@@ -69,9 +69,11 @@ class PeripheralManagerWorker(NSObject):
         if self.getState() == 1: # bluetooth ready
             # start initialize services and characteristics
             # for test now, not scalable
-            
+            # FOUND, THERE HAS TO BE A CHARACTERISTIC EXISTING IN THE PERIPHERAL 
+            # WITH NOTIFICATION PROPETIY TO KEEP THE CONNECTION WITH
+            # OUT TIMEOUT. OTHERWISE, THE CONNECTION WILL TIMEOUT IN 3 SECONDS
             self.testCharacteristic = CBMutableCharacteristic.alloc().initWithType_properties_value_permissions_(CBUUID.UUIDWithString_(u'7788'),
-                                                       CBCharacteristicPropertyRead,
+                                                       CBCharacteristicPropertyNotify | CBCharacteristicPropertyRead,
                                                        nil, # ensures the value is treated dynamically
                                                        CBAttributePermissionsReadable)
             self.testService = CBMutableService.alloc().initWithType_primary_(CBUUID.UUIDWithString_(u'7780'),
