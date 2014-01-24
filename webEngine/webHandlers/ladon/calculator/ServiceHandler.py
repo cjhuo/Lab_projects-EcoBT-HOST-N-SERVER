@@ -25,7 +25,19 @@ def simple_app(environ, start_response):
 if __name__ == "__main__":
     import tornado.httpserver
     import tornado.wsgi
+    import tornado.autoreload
     container = tornado.wsgi.WSGIContainer(application)
     http_server = tornado.httpserver.HTTPServer(container)
     http_server.listen(8888)
-    tornado.ioloop.IOLoop.instance().start()
+    '''
+    following handle autoreload for WSGI which by default doesn't
+    work on WSGI and GoogleApp. 
+    Idea borrowed from http://kevbradwick.wordpress.com/
+    2011/10/15/getting-python-tornado-web-autoreload-to-work/
+    This feature is suitable for realizing dynamically 
+    add/remove
+    '''
+    ioloop = tornado.ioloop.IOLoop.instance()
+    tornado.autoreload.start(ioloop)
+    ioloop.start()
+    
