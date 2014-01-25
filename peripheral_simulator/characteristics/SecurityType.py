@@ -25,7 +25,7 @@ class SecurityType(Characteristic):
         print "Initializing descriptors.."
         self.instance._.descriptors = [CBMutableDescriptor.alloc().
                                             initWithType_value_(CBUUID.UUIDWithString_(CBUUIDCharacteristicUserDescriptionString),
-                                                                u'AES_CFB: "uint8", \n\
+                                                                u'AES_CFB: "uint8",\
                                                                 parameters:\
                                                                 1. secret key: unicode16,\
                                                                 2. IV: unicode16')]        
