@@ -86,7 +86,7 @@ class PeripheralManagerWorker(NSObject):
             self.manager.addService_(self.testService)
             
             # start advertise
-            self.manager.startAdvertising_({CBAdvertisementDataServiceUUIDsKey: [CBUUID.UUIDWithString_(u'1801')],
+            self.manager.startAdvertising_({CBAdvertisementDataServiceUUIDsKey: [CBUUID.UUIDWithString_(u'7780')],
                                             CBAdvertisementDataLocalNameKey: u'TestPeripheral'})
             
             '''
