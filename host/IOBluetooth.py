@@ -20,6 +20,14 @@ CBConnectPeripheralOptionNotifyOnDisconnectionKey = u"kCBConnectOptionNotifyOnDi
 CBCharacteristicWriteWithResponse = 0
 CBCharacteristicWriteWithoutResponse = 1
 
+# descriptor type UUID, only 0x2901 and 0x2904 can be created for current apple implementation
+CBUUIDCharacteristicExtendedPropertiesString = u'2900'
+CBUUIDCharacteristicUserDescriptionString = u'2901'
+CBUUIDClientCharacteristicConfigurationString = u'2902'
+CBUUIDServerCharacteristicConfigurationString = u'2903'
+CBUUIDCharacteristicFormatString = u'2904'
+CBUUIDCharacteristicAggregateFormatString = u'2905'
+
 # Profile Identifier dictionary 
 # used to initialize service object and characteristic object
 ProfileDict = {

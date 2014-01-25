@@ -92,7 +92,7 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
     def startScan(self):
         NSLog("STARTING SCAN")
         options = NSDictionary.dictionaryWithObject_forKey_(
-            NSNumber.numberWithBool_(NO),
+            NSNumber.numberWithBool_(YES),
             CBCentralManagerScanOptionAllowDuplicatesKey
         )
         self.manager.scanForPeripheralsWithServices_options_(

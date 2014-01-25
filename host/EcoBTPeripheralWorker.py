@@ -151,12 +151,14 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
         
     # CBPeripheral delegate methods
     def peripheral_didDiscoverServices_(self, peripheral, error):
+        print len(peripheral._.services)
         for service in peripheral._.services:
-            NSLog("Service found with UUID: %@", service._.UUID)
-            self.appendService(service)
+            if self.checkUUID(service._.UUID) != None and self.findServiceByUUID(self.checkUUID(service._.UUID)) == None: # already added service, no need to add again
+                NSLog("Service found with UUID: %@", service._.UUID)
+                self.appendService(service)
             
-            # for test
-            self.discoverCharacteristics_forService(service)
+                # for test
+                self.discoverCharacteristics_forService(service)
         
         # inform UI!
 
@@ -196,16 +198,29 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
                                                                       characteristic,
                                                                       error):
         
-        NSLog("didDiscoverDescriptorsForCharacteristic %@", characteristic._.UUID)
-        peripheral.readValueForDescriptor_(characteristic._.descriptors[0])
+        NSLog("didDiscoverDescriptorsForCharacteristic %@, %@", characteristic._.UUID, error)
+        print len(characteristic._.descriptors)
+        for descriptor in characteristic._.descriptors:
+            NSLog("Reading value of descriptor %@ for characteristic %@", descriptor._.UUID, str(characteristic._.UUID))
+            peripheral.readValueForDescriptor_(descriptor)
+            NSLog("value %@", descriptor._.value)
         
-    def peripheral_didUpdateValueForDescriptor_error(self, 
+    def peripheral_didUpdateValueForDescriptor_error_(self, 
                                                      peripheral,
                                                      descriptor,
                                                      error):
-        NSLog("didUpdateValueForDescriptor %@", descriptor._.UUID)
-        NSLog("descriptor's value is %@", descriptor._.value)
+        NSLog("didUpdateValueForDescriptor %@ for characteristic %@, error %@", descriptor._.UUID, descriptor._.characteristic._.UUID, error)
+        NSLog("descriptor's value is %@", NSString.alloc().initWithData_encoding_(descriptor._.value, NSUTF8StringEncoding))
+        print str(NSString.alloc().initWithData_encoding_(descriptor._.value, NSUTF8StringEncoding))
 
+    def peripheral_didWriteValueForDescriptor_error_(self,
+                                                     peripheral,
+                                                     descriptor,
+                                                     error):
+        NSLog("didWriteValueForDescriptor %@, %@", descriptor._.UUID, error._.code)
+        #peripheral.readValueForDescriptor_(descriptor)
+        NSLog("value %@", descriptor._.value)
+        
             
     def peripheral_didUpdateValueForCharacteristic_error_(self,
                                                           peripheral,

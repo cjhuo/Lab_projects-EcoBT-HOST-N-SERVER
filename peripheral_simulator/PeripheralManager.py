@@ -6,10 +6,11 @@ Created on Jan 20, 2014
 
 from Foundation import *
 #from PyObjCTools import AppHelper
-from IOBluetooth import *
+from config_peripheral import *
 from objc import *
 from PyObjCTools import AppHelper
-from EcoBTWorker import EcoBTWorker
+
+import ProfileHierarchyBuilder
 
 
 class PeripheralManagerWorker(NSObject):
@@ -23,6 +24,7 @@ class PeripheralManagerWorker(NSObject):
             3: has host connected(advertise stopped automatically)
         '''
         self._state = 0
+        self.services = []
         # initializing CBPeripheralManager
         NSLog("Initializing CBPeripheralManager")
         self.manager = CBPeripheralManager.alloc().initWithDelegate_queue_(self, nil)
@@ -45,6 +47,14 @@ class PeripheralManagerWorker(NSObject):
     def stop(self):
         pass
     
+    def UUID2Str(self, UUID):
+        for service, chars in ProfileDict.iteritems():
+            if CBUUID.UUIDWithString_(service) == UUID:
+                return service
+            for char in chars.keys():
+                if CBUUID.UUIDWithString_(char) == UUID:
+                    return char
+        return None
     
     ''' CBPeripheralManagerDelegate Methods From Below '''
     
@@ -68,6 +78,7 @@ class PeripheralManagerWorker(NSObject):
             
         if self.getState() == 1: # bluetooth ready
             # start initialize services and characteristics
+            '''
             # for test now, not scalable
             # !!!FOUND, THERE HAS TO BE A CHARACTERISTIC EXISTING IN THE PERIPHERAL 
             # WITH NOTIFICATION PROPETIY TO KEEP THE CONNECTION WITH
@@ -82,11 +93,16 @@ class PeripheralManagerWorker(NSObject):
             self.testService = CBMutableService.alloc().initWithType_primary_(CBUUID.UUIDWithString_(u'7780'),
                                                       YES)
             self.testService._.characteristics = [self.testCharacteristic]
-            
+                        
             self.manager.addService_(self.testService)
-            
-            # start advertise
             self.manager.startAdvertising_({CBAdvertisementDataServiceUUIDsKey: [CBUUID.UUIDWithString_(u'7780')],
+                                            CBAdvertisementDataLocalNameKey: u'TestPeripheral'})
+
+            '''
+            ProfileHierarchyBuilder.createHierarchy(self)
+            
+            # start advertise, using the first service UUID as advertisement data
+            self.manager.startAdvertising_({CBAdvertisementDataServiceUUIDsKey: [self.manager._.services[0]._.UUID],
                                             CBAdvertisementDataLocalNameKey: u'TestPeripheral'})
             
             '''
@@ -96,8 +112,6 @@ class PeripheralManagerWorker(NSObject):
                                                     NSString.stringWithString_(u'TestPeripheral')],
                                                 [CBAdvertisementDataServiceUUIDsKey, CBAdvertisementDataLocalNameKey]))
             '''
-
-
             self.updateState(2)
 
             
@@ -124,11 +138,21 @@ class PeripheralManagerWorker(NSObject):
         NSLog("Peripheral received read request from central")
         print "Still advertising?", "Yes" if self.manager._.isAdvertising == 1 else "No"
         #self.manager.stopAdvertising()
+        char = self.UUID2Str(request._.characteristic._.UUID)
+        service = self.UUID2Str(request._.characteristic._.service._.UUID)
+        error = None
+        for srv in self.services:
+            if srv.UUID == service:
+                for chr in srv.characteristics:
+                    if chr.UUID == char:
+                        request, error = chr.handleReadRequest(request)
+        self.manager.respondToRequest_withResult_(request, error)
+        '''
         if request._.characteristic._.UUID  == self.testCharacteristic._.UUID:
             testNSData = NSString.alloc().initWithString_(u'1234').dataUsingEncoding_(NSUTF8StringEncoding) # default value
             request._.value = NSData.alloc().initWithBytes_length_('bytes', 5)
             self.manager.respondToRequest_withResult_(request, CBATTErrorSuccess[0]) # CBATTErrorSuccess is a tuple, only first one useful
-        
+        '''
         ''' treat static characteristic value
             if request._.offset > self.testCharacteristic._.value._.length:
                 self.manager.respondToRequest_withResult_(request, CBATTErrorInvalidOffset)

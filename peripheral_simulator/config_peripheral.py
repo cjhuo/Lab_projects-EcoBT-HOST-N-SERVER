@@ -68,41 +68,12 @@ NSUTF8StringEncoding = 4
 # Profile Identifier dictionary 
 # used to initialize service object and characteristic object
 ProfileDict = {
-# Service Profile
-"180D": '',             # EcoBT Profile
-"180A": '',             # "180A" Generic Access Profile
-"FF10": '',             # LED Profile
-"FFA0": '',             # ACC Profile
-"FE10": '',             # SIDS SHT25 Profile
-"FF20": '',             # RTC Profile,
-"FEC0": '',             # ECG Profile
-# Characteristic Profile
-"2A23": 'DeviceInfo',             # Device Info Characteristic Profile
-"FE11": 'SIDsCO2Status',             # SIDs Enable Characteristic Profile
-"FE12": 'SIDsCO2Set',             # SIDs Rate Characteristic Profile, default 10
-"FE13": 'SIDsCO2Read',             # SIDs Start Characteristic Profile , default 0
-"FE14": 'SIDsTempRead' ,             # Temperature Characteristic Profile
-"FE15": 'SIDsHumidRead',             # Humidity Characteristic Profile
-"FF11": 'LEDEnable',             # LED 0 Enable Characteristic Profile
-"FF12": 'LEDEnable',             # LED 1 Enable Characteristic Profile
-"FF13": 'LEDBlinkInterval',             # LED 0 Blink Characteristic Profile
-"FF14": 'LEDBlinkInterval',             # LED 1 Blink Characteristic Profile
-"FFA1": 'ACCEnable',             # ACC Enable Characteristic Profile
-#"FFA2",             # ACC Range Selection Characteristic Profile
-#"FFA3",             # ACC X Characteristic Profile
-#"FFA4",             # ACC Y Characteristic Profile
-#"FFA5",             # ACC Z Characteristic Profile
-"FFA6": 'ACCXYZ',             # ACC XYZ Characteristic Profile
-"FF21": 'RTCSet',             # RTC Set Time Characteristic Profile
-"FF22": 'RTCGet',              # RTC Get Time Characteristic Profile
-#"FEC1",              # ECG characteristic info
-"FEC2": 'ECGStatus',              # ECG characteristic status
-#"FEC3",              # ECG characteristic config 1
-#"FEC4",              # ECG characteristic config 2
-"FEC5": 'ECGSet',              # ECG characteristic start flag
-"FEC6": 'ECGGet',              # ECG characteristic first 6 channels
-"FEC7": 'ECGGet',              # ECG characteristic second 6 channels
-#"FEC8"              # ECG characteristic
+# service UUID
+'7780': {
+         # characteristic UUID and implementation
+         '7788': 'TestCharacteristic'
+         }
+               
 }
 
 
