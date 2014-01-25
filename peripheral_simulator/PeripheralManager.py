@@ -69,13 +69,16 @@ class PeripheralManagerWorker(NSObject):
         if self.getState() == 1: # bluetooth ready
             # start initialize services and characteristics
             # for test now, not scalable
-            # FOUND, THERE HAS TO BE A CHARACTERISTIC EXISTING IN THE PERIPHERAL 
+            # !!!FOUND, THERE HAS TO BE A CHARACTERISTIC EXISTING IN THE PERIPHERAL 
             # WITH NOTIFICATION PROPETIY TO KEEP THE CONNECTION WITH
             # OUT TIMEOUT. OTHERWISE, THE CONNECTION WILL TIMEOUT IN 3 SECONDS
             self.testCharacteristic = CBMutableCharacteristic.alloc().initWithType_properties_value_permissions_(CBUUID.UUIDWithString_(u'7788'),
                                                        CBCharacteristicPropertyNotify | CBCharacteristicPropertyRead,
                                                        nil, # ensures the value is treated dynamically
                                                        CBAttributePermissionsReadable)
+            self.testCharacteristic._.descriptors = [CBMutableDescriptor.alloc().
+                                                     initWithType_value_(CBUUID.UUIDWithString_(CBUUIDCharacteristicUserDescriptionString),
+                                                                         u'TestDescriptor')]
             self.testService = CBMutableService.alloc().initWithType_primary_(CBUUID.UUIDWithString_(u'7780'),
                                                       YES)
             self.testService._.characteristics = NSArray.alloc().initWithObjects_(self.testCharacteristic)
@@ -83,11 +86,18 @@ class PeripheralManagerWorker(NSObject):
             self.manager.addService_(self.testService)
             
             # start advertise
+            self.manager.startAdvertising_({CBAdvertisementDataServiceUUIDsKey: [CBUUID.UUIDWithString_(u'1801')],
+                                            CBAdvertisementDataLocalNameKey: u'TestPeripheral'})
+            
+            '''
+            !!!Native conversion between NSDictionary and dict, and NSArray and list from Objective-c to Python
             self.manager.startAdvertising_(NSDictionary.dictionaryWithObjects_forKeys_(
-                                                NSArray.arrayWithObjects_(NSArray.arrayWithObjects_(CBUUID.UUIDWithString_(u'7780')), 
-                                                    NSString.stringWithString_(u'TestPeripheral')),
-                                           NSArray.arrayWithObjects_(CBAdvertisementDataServiceUUIDsKey, 
-                                                                           CBAdvertisementDataLocalNameKey)))
+                                                [[CBUUID.UUIDWithString_(u'1801')], # advertising using GATT
+                                                    NSString.stringWithString_(u'TestPeripheral')],
+                                                [CBAdvertisementDataServiceUUIDsKey, CBAdvertisementDataLocalNameKey]))
+            '''
+
+
             self.updateState(2)
 
             
@@ -112,6 +122,7 @@ class PeripheralManagerWorker(NSObject):
     
     def peripheralManager_didReceiveReadRequest_(self, peripheral, request):
         NSLog("Peripheral received read request from central")
+        print "Still advertising?", "Yes" if self.manager._.isAdvertising == 1 else "No"
         if request._.characteristic._.UUID  == self.testCharacteristic._.UUID:
             testNSData = NSString.alloc().initWithString_(u'1234').dataUsingEncoding_(NSUTF8StringEncoding) # default value
             request._.value = NSData.alloc().initWithBytes_length_('bytes', 5)
