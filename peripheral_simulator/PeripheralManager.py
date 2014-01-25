@@ -81,7 +81,7 @@ class PeripheralManagerWorker(NSObject):
                                                                          u'TestDescriptor')]
             self.testService = CBMutableService.alloc().initWithType_primary_(CBUUID.UUIDWithString_(u'7780'),
                                                       YES)
-            self.testService._.characteristics = NSArray.alloc().initWithObjects_(self.testCharacteristic)
+            self.testService._.characteristics = [self.testCharacteristic]
             
             self.manager.addService_(self.testService)
             
