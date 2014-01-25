@@ -169,7 +169,10 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
         if uuid != None:
             s = self.findServiceByUUID(uuid)
             if s != None:               
-                for char in service._.characteristics:             
+                for char in service._.characteristics:
+                    #discover descriptors for the characteristic
+                    peripheral.discoverDescriptorsForCharacteristic_(char)
+                                 
                     if (self.checkUUID(char._.UUID)) != None:
                         NSLog("didDiscoverCharacteristicsForService %@ %@", service._.UUID, char._.UUID)
                         self.appendCharacteristicForService(char, s, self.peripheral.instance)        
@@ -187,6 +190,22 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
                 
         else: 
             pass # found a service profile not listed in IOBluetooth.py
+        
+    def peripheral_didDiscoverDescriptorsForCharacteristic_error_(self,
+                                                                      peripheral,
+                                                                      characteristic,
+                                                                      error):
+        
+        NSLog("didDiscoverDescriptorsForCharacteristic %@", characteristic._.UUID)
+        peripheral.readValueForDescriptor_(characteristic._.descriptors[0])
+        
+    def peripheral_didUpdateValueForDescriptor_error(self, 
+                                                     peripheral,
+                                                     descriptor,
+                                                     error):
+        NSLog("didUpdateValueForDescriptor %@", descriptor._.UUID)
+        NSLog("descriptor's value is %@", descriptor._.value)
+
             
     def peripheral_didUpdateValueForCharacteristic_error_(self,
                                                           peripheral,
@@ -223,8 +242,8 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
                                                                       error):
         
         NSLog("char(%@) is auto-notify? %@", str(characteristic._.UUID), str(characteristic.isNotifying()))
-              
-
+             
+ 
         
 
   

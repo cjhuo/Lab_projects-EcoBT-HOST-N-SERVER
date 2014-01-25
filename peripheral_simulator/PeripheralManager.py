@@ -123,6 +123,7 @@ class PeripheralManagerWorker(NSObject):
     def peripheralManager_didReceiveReadRequest_(self, peripheral, request):
         NSLog("Peripheral received read request from central")
         print "Still advertising?", "Yes" if self.manager._.isAdvertising == 1 else "No"
+        #self.manager.stopAdvertising()
         if request._.characteristic._.UUID  == self.testCharacteristic._.UUID:
             testNSData = NSString.alloc().initWithString_(u'1234').dataUsingEncoding_(NSUTF8StringEncoding) # default value
             request._.value = NSData.alloc().initWithBytes_length_('bytes', 5)

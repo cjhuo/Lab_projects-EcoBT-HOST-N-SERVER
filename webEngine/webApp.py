@@ -14,6 +14,7 @@ from host.EcoBTWebSocket import EcoBTWebSocket
 
 from db.Models import DataSource, Device, DataLog
 from ecg.ECG_reader import ECG_reader
+import redis
 
 class Application(tornado.web.Application):
     def __init__(self, ecoBTApp):
@@ -58,10 +59,14 @@ class Application(tornado.web.Application):
             cookie_secret="BlaBlaBlaBlaBlaBlaBlaBlaBlaBlaBlaBlaBla",
             login_url="/login", 
             pycket = {
-                       'engine': 'memcached',
-                       'storage': {
-                                   'servers': ('localhost:11211',)
-                                   },
+                        'engine': 'redis',
+                        'storage': {
+                            'connection_pool': redis.ConnectionPool(max_connections=2 ** 31),
+                            'host': 'localhost',
+                            'port': 6379,
+                            'db_sessions': 10,
+                            'db_notifications': 11,
+                       },   
                        #'cookies': {
                        #            'expires_days': 120,
                        #            },

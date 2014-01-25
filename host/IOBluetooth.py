@@ -30,7 +30,8 @@ ProfileDict = {
 "FFA0": '',             # ACC Profile
 "FE10": '',             # SIDS SHT25 Profile
 "FF20": '',             # RTC Profile,
-"FEC0": '',             # ECG Profile
+"FEC0": '',             # ECG Profile,
+"7780": '',             # test Profile
 # Characteristic Profile
 "2A23": 'DeviceInfo',             # Device Info Characteristic Profile
 "FE11": 'SIDsCO2Status',             # SIDs Enable Characteristic Profile
