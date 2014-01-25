@@ -153,7 +153,7 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
     def peripheral_didDiscoverServices_(self, peripheral, error):
         print "Number of services:", len(peripheral._.services)
         for service in peripheral._.services:
-            NSLog("Service UUID %@", service._.UUID)
+            #NSLog("Service UUID %@", service._.UUID)
             if self.checkUUID(service._.UUID) != None and self.findServiceByUUID(self.checkUUID(service._.UUID)) == None: # already added service, no need to add again
                 NSLog("Service found with UUID: %@", service._.UUID)
                 self.appendService(service)
@@ -200,7 +200,6 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
                                                                       error):
         
         NSLog("didDiscoverDescriptorsForCharacteristic %@, %@", characteristic._.UUID, error)
-        print len(characteristic._.descriptors)
         for descriptor in characteristic._.descriptors:
             NSLog("Reading value of descriptor %@ for characteristic %@", descriptor._.UUID, str(characteristic._.UUID))
             peripheral.readValueForDescriptor_(descriptor)

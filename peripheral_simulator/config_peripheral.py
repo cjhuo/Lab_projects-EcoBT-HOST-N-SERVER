@@ -69,15 +69,15 @@ NSUTF8StringEncoding = 4
 # used to initialize service object and characteristic object
 ProfileDict = {
 # service UUID
-'7780': {
-         # characteristic UUID and implementation
-         '7788': 'TestCharacteristic'
-         },
 '7770': { # security
          '7771': 'SecurityType',
          '7772': 'SecurityKey',
          '7773': 'SecurityIV' 
-         }
+         },
+'7780': {
+         # characteristic UUID and implementation
+         '7781': 'TestCharacteristic'
+         },
                
 }
 

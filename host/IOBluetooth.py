@@ -40,7 +40,7 @@ ProfileDict = {
 "FF20": '',             # RTC Profile,
 "FEC0": '',             # ECG Profile,
 "7780": '',             # test Profile
-'7700': '',             # Security
+'7770': '',             # Security
 # Characteristic Profile
 "2A23": 'DeviceInfo',             # Device Info Characteristic Profile
 "FE11": 'SIDsCO2Status',             # SIDs Enable Characteristic Profile
