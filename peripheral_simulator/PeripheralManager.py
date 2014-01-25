@@ -11,6 +11,7 @@ from objc import *
 from PyObjCTools import AppHelper
 
 import ProfileHierarchyBuilder
+from SecurityHandler import SecurityHandler
 
 
 class PeripheralManagerWorker(NSObject):
@@ -25,6 +26,8 @@ class PeripheralManagerWorker(NSObject):
         '''
         self._state = 0
         self.services = []
+        self.authenticaionToken = None
+        self.securityHandler = SecurityHandler("AES_CFB")
         # initializing CBPeripheralManager
         NSLog("Initializing CBPeripheralManager")
         self.manager = CBPeripheralManager.alloc().initWithDelegate_queue_(self, nil)
@@ -145,7 +148,7 @@ class PeripheralManagerWorker(NSObject):
             if srv.UUID == service:
                 for chr in srv.characteristics:
                     if chr.UUID == char:
-                        request, error = chr.handleReadRequest(request)
+                        request, error = chr.handleReadRequest(request, self.securityHandler)
         self.manager.respondToRequest_withResult_(request, error)
         '''
         if request._.characteristic._.UUID  == self.testCharacteristic._.UUID:
