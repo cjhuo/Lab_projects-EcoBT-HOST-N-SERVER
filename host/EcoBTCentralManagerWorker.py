@@ -96,7 +96,8 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
             CBCentralManagerScanOptionAllowDuplicatesKey
         )
         self.manager.scanForPeripheralsWithServices_options_(
-            [CBUUID.UUIDWithString_(u"180D"), CBUUID.UUIDWithString_(u"7780"), CBUUID.UUIDWithString_(u"1801")],
+            nil,
+            #[CBUUID.UUIDWithString_(u"180D"), CBUUID.UUIDWithString_(u"7780"), CBUUID.UUIDWithString_(u"1801")],
             options
         )
         
