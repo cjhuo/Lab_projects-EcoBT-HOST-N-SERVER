@@ -9,8 +9,7 @@ from Foundation import *
 from IOBluetooth import *
 from objc import *
 
-import array
-import binascii
+import array, binascii, struct
 
 from Characteristic import *
 
@@ -21,4 +20,6 @@ class SecurityType(Characteristic):
         self.acc_enable = 0
         
     def process(self):
-        pass
+        tp, = struct.unpack("@B", self.instance._.value)
+        
+        print "Type is ", tp

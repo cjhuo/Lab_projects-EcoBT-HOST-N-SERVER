@@ -29,6 +29,8 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
         EcoBTWorker.__init__(self)
         self.peripheral = None
         self.services = []
+        self.securityKey = None
+        self.securityIV = None
         self.delegateWorker = EcoBTPeripheralDelegateWorker()
         NSLog("Initialize Peripheral Worker")
         return self
@@ -227,12 +229,19 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
                                                           characteristic,
                                                           error):
 #        print "Read Characteristic(%s) value" % characteristic._.UUID
+        NSLog("didUpdateValueForCharacteristic error %@", error)
         
         char = self.findCharacteristicByUUID(self.checkUUID(characteristic._.UUID))
         if char != None:
             # process the received data
             char.process()
-
+        
+        if self.securityIV != None and self.securityKey != None:
+            from Crypto.Cipher import AES
+            self.securityObj = AES.new(self.securityKey, AES.MODE_CFB, self.securityIV)
+            self.securityIV = None
+            self.securityKey = None
+            self.readValueForCharacteristic(self.findCharacteristicByUUID(u'7788'))
 
     def peripheral_didWriteValueForCharacteristic_error_(self,
                                                          peripheral,
