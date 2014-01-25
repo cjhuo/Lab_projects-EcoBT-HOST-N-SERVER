@@ -73,10 +73,10 @@ ProfileDict = {
          # characteristic UUID and implementation
          '7788': 'TestCharacteristic'
          },
-'7700': { # security
-         '7701': 'SecurityType',
-         '7702': 'SecurityKey',
-         '7703': 'SecurityIV' 
+'7770': { # security
+         '7771': 'SecurityType',
+         '7772': 'SecurityKey',
+         '7773': 'SecurityIV' 
          }
                
 }

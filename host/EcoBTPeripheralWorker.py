@@ -151,8 +151,9 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
         
     # CBPeripheral delegate methods
     def peripheral_didDiscoverServices_(self, peripheral, error):
-        print len(peripheral._.services)
+        print "Number of services:", len(peripheral._.services)
         for service in peripheral._.services:
+            NSLog("Service UUID %@", service._.UUID)
             if self.checkUUID(service._.UUID) != None and self.findServiceByUUID(self.checkUUID(service._.UUID)) == None: # already added service, no need to add again
                 NSLog("Service found with UUID: %@", service._.UUID)
                 self.appendService(service)

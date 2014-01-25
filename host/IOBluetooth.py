@@ -68,7 +68,9 @@ ProfileDict = {
 "FEC6": 'ECGGet',              # ECG characteristic first 6 channels
 "FEC7": 'ECGGet',              # ECG characteristic second 6 channels
 #"FEC8"              # ECG characteristic
-
+'7701': 'SecurityType',
+'7702': 'SecurityKey',
+'7703': 'SecurityIV' 
 }
 
 
