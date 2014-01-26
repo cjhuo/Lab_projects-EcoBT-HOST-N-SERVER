@@ -139,17 +139,32 @@ class PeripheralManagerWorker(NSObject):
     
     def peripheralManager_didReceiveReadRequest_(self, peripheral, request):
         NSLog("Peripheral received read request from central")
-        print "Still advertising?", "Yes" if self.manager._.isAdvertising == 1 else "No"
+        #print "Still advertising?", "Yes" if self.manager._.isAdvertising == 1 else "No"
         #self.manager.stopAdvertising()
         char = self.UUID2Str(request._.characteristic._.UUID)
         service = self.UUID2Str(request._.characteristic._.service._.UUID)
         error = None
         for srv in self.services:
             if srv.UUID == service:
+                # check if the security channel has already been established
+                if srv.UUID != SECURITY_SERVICE and self.securityHandler.isInitialized() == False:
+                    error = CBATTErrorReadNotPermitted
+                    self.manager.respondToRequest_withResult_(request, error)
+                    return             
+                # security channel has already been established 
                 for chr in srv.characteristics:
                     if chr.UUID == char:
-                        request, error = chr.handleReadRequest(request, self.securityHandler)
-        self.manager.respondToRequest_withResult_(request, error)
+                        if self.securityHandler.isInitialized() == True and srv.UUID != SECURITY_SERVICE: 
+                            message = chr.handleReadRequest()
+                            encrypt_data = self.securityHandler.encrypt(message)
+                            request._.value = NSData.alloc().initWithBytes_length_(encrypt_data, len(encrypt_data))
+                            error = CBATTErrorSuccess[0] # CBATTErrorSuccess is a tuple, only first one useful
+                            self.manager.respondToRequest_withResult_(request, error)
+                            return                            
+                        else: # initializing or reinitializing security channel
+                            request, error = chr.handleReadRequest(request, self.securityHandler)
+                            self.manager.respondToRequest_withResult_(request, error)
+                            return
         '''
         if request._.characteristic._.UUID  == self.testCharacteristic._.UUID:
             testNSData = NSString.alloc().initWithString_(u'1234').dataUsingEncoding_(NSUTF8StringEncoding) # default value

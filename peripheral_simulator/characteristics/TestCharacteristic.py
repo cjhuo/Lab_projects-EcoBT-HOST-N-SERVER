@@ -28,13 +28,12 @@ class TestCharacteristic(Characteristic):
                                             initWithType_value_(CBUUID.UUIDWithString_(CBUUIDCharacteristicUserDescriptionString),
                                                                 u'TestDescriptor')]
         
-    def handleReadRequest(self, request, securityHandler):
-        if securityHandler.getEncryptionObj() != None:
-            ciphertext = securityHandler.getEncryptionObj().encrypt("bytes")
-            data = struct.pack("@"+str(len(ciphertext))+"s", ciphertext)          
-            #testNSData = NSString.alloc().initWithString_(u'1234').dataUsingEncoding_(NSUTF8StringEncoding) # default value
-            request._.value = NSData.alloc().initWithBytes_length_(data, len(data))
-            return (request, CBATTErrorSuccess[0]) # CBATTErrorSuccess is a tuple, only first one useful
-        else:
-            return (request, CBATTErrorReadNotPermitted)
+    '''
+    return unencrypted return value, 
+    but should pre-packed into string
+    if value is not a string
+    '''
+    def handleReadRequest(self):
+        message = "bytes"
+        return message
         

@@ -27,7 +27,21 @@ class SecurityHandler(object):
     
     def getEncryptionObj(self):
         return self.encryptionObj
-
+    
+    def isInitialized(self):
+        return self.encryptionObj != None
+    
+    def encrypt(self, message):
+        if self.encryptionObj != None:
+            return self.encryptionObj.encrypt(message)
+        else:
+            return None
+        
+    def decrypt(self, message):
+        if self.encryptionObj != None:
+            return self.encryptionObj.decrypt(message)
+        else:
+            return None
         
     def setParameters(self, *args, **kwargs):
         for key, val in kwargs.iteritems():

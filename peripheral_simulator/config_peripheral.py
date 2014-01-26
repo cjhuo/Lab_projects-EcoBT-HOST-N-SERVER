@@ -65,6 +65,8 @@ CBATTErrorInsufficientResources                    = 0x11
 # NSString encoding CONSTS
 NSUTF8StringEncoding = 4
 
+SECURITY_SERVICE = '7770'
+
 # Profile Identifier dictionary 
 # used to initialize service object and characteristic object
 ProfileDict = {
