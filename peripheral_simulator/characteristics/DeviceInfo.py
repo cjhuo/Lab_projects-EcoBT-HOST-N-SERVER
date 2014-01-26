@@ -36,6 +36,7 @@ class DeviceInfo(Characteristic):
     if value is not a string
     '''
     def handleReadRequest(self):
-        message = 0xC8E0EBFFFE16B31A
-        return struct.pack("@Q", message)
+        message = 0xC8E0EBFFFE16B31A 
+        data = struct.pack("@Q", message)
+        return NSData.alloc().initWithBytes_length_(data, len(data))
         

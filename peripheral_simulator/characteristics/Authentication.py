@@ -3,31 +3,37 @@ Created on Jan 25, 2014
 
 @author: cjhuo
 '''
+
 from Foundation import *
 #from PyObjCTools import AppHelper
 from config_peripheral import *
 from objc import *
-import struct
+import struct, binascii
 
 from Characteristic import Characteristic
 
-class SecurityType(Characteristic):
+class Authentication(Characteristic):
     
+        
     def initializeInstance(self):
+        self.authenticationToken = None
         print "Initializing Characteristic Instance"
         self.instance = CBMutableCharacteristic.alloc().initWithType_properties_value_permissions_(CBUUID.UUIDWithString_(self.UUID),
-                                                       CBCharacteristicPropertyRead,
+                                                       CBCharacteristicPropertyWrite,
                                                        nil, # ensures the value is treated dynamically
-                                                       CBAttributePermissionsReadable)
+                                                       CBAttributePermissionsWriteable)
 
 
     def initializeDescriptors(self):
         print "Initializing descriptors.."
         self.instance._.descriptors = [CBMutableDescriptor.alloc().
                                             initWithType_value_(CBUUID.UUIDWithString_(CBUUIDCharacteristicUserDescriptionString),
-                                                                u'AES_CFB: uint8, parameters: 1. secret key: unicode16, 2. IV: unicode16')]        
+                                                                u'Authentication')]
+
+    def handleWriteRequest(self, data):
+        if self.authenticationToken == None: # first time assign a token
+            self.authenticationToken = data
+            return True
+        else: # compare with stored token
+            return self.authenticationToken == data
         
-    def handleReadRequest(self, securityHandler):
-        #testNSData = NSString.alloc().initWithString_(u'AES').dataUsingEncoding_(NSUTF8StringEncoding) # default value
-        data = struct.pack("@B", 1)
-        return NSData.alloc().initWithBytes_length_(data, len(data))

@@ -12,7 +12,10 @@ from PyObjCTools import AppHelper
 
 import ProfileHierarchyBuilder
 from SecurityHandler import SecurityHandler
+from datetime import datetime
+import struct
 
+EXPIRATION_INTERVAL = 10 # unit: second
 
 class PeripheralManagerWorker(NSObject):
     
@@ -26,7 +29,23 @@ class PeripheralManagerWorker(NSObject):
         '''
         self._state = 0
         self.services = []
-        self.authenticaionToken = None
+        
+        '''
+        Variables for security and authentication
+        There is no way for Peripheral to check whether connection
+        from central is lost or not. so there is no way to trigger
+        the peripheral to reset the security and authentication
+        status to check security and authentication for new
+        connection.
+        Workaround solution for now:
+        set a short time period t(e.g. 1 second), if no request received
+        from central, the peripheral assumes the connection is
+        lost and reset security and connection and forbid the central
+        to send request against any functionality profiles
+        '''
+        self.lastRequestTime = datetime.now()
+        self.expiration_interval = EXPIRATION_INTERVAL # unit: seconds
+        self.authorized = False
         self.securityHandler = SecurityHandler("AES_CFB")
         # initializing CBPeripheralManager
         NSLog("Initializing CBPeripheralManager")
@@ -57,6 +76,14 @@ class PeripheralManagerWorker(NSObject):
             for char in chars.keys():
                 if CBUUID.UUIDWithString_(char) == UUID:
                     return char
+        return None
+    
+    def findCharacteristicByUUID(self, srvUUID, chrUUID):
+        for srv in self.services:
+            if srv.UUID == srvUUID:
+                for chr in srv.characteristics:
+                    if chr.UUID == chrUUID:
+                        return chr
         return None
     
     ''' CBPeripheralManagerDelegate Methods From Below '''
@@ -141,38 +168,43 @@ class PeripheralManagerWorker(NSObject):
         NSLog("Peripheral received read request from central")
         #print "Still advertising?", "Yes" if self.manager._.isAdvertising == 1 else "No"
         #self.manager.stopAdvertising()
-        char = self.UUID2Str(request._.characteristic._.UUID)
-        service = self.UUID2Str(request._.characteristic._.service._.UUID)
+        
+        # check whether it has cross the interval from last request
+        if (datetime.now() - self.lastRequestTime).total_seconds() > self.expiration_interval:
+            # reset the security and authentication and lastRequestTime
+            print "Longest request interval expired"
+            self.authorized = False
+            self.securityHandler.encryptionObj = None
+        self.lastRequestTime = datetime.now()        
+        
+        charUUID = self.UUID2Str(request._.characteristic._.UUID)
+        serviceUUID = self.UUID2Str(request._.characteristic._.service._.UUID)
         error = None
-        for srv in self.services:
-            if srv.UUID == service:
-                for chr in srv.characteristics:
-                    if chr.UUID == char:
-                        if srv.UUID == SECURITY_SERVICE: ## initializing or reinitializing security channel
-                            request, error = chr.handleReadRequest(request, self.securityHandler)
-                            self.manager.respondToRequest_withResult_(request, error)
-                            return
-                        if srv.UUID == DEVICE_INFO:
-                            message = chr.handleReadRequest()
-                            request._.value = NSData.alloc().initWithBytes_length_(message, len(message))
-                            error = CBATTErrorSuccess[0] # CBATTErrorSuccess is a tuple, only first one useful
-                            self.manager.respondToRequest_withResult_(request, error)
-                            return                     
-                        else:                    
-                            # check if the security channel has already been established
-                            if self.securityHandler.isInitialized() == False:
-                                error = CBATTErrorReadNotPermitted
-                                self.manager.respondToRequest_withResult_(request, error)
-                                return   
-                            else:                                 
-                                # security channel has already been established                                 
-                                message = chr.handleReadRequest()
-                                encrypt_data = self.securityHandler.encrypt(message)
-                                request._.value = NSData.alloc().initWithBytes_length_(encrypt_data, len(encrypt_data))
-                                error = CBATTErrorSuccess[0] # CBATTErrorSuccess is a tuple, only first one useful
-                                self.manager.respondToRequest_withResult_(request, error)
-                                return                            
-            '''
+        char = self.findCharacteristicByUUID(serviceUUID, charUUID)
+
+        if serviceUUID == SECURITY_SERVICE: ## initializing or reinitializing security channel
+            request._.value = char.handleReadRequest(self.securityHandler)
+            self.manager.respondToRequest_withResult_(request, CBATTErrorSuccess[0])
+            return
+        if serviceUUID == DEVICE_INFO:
+            request._.value = char.handleReadRequest()
+            self.manager.respondToRequest_withResult_(request, CBATTErrorSuccess[0]) # CBATTErrorSuccess is a tuple, only first one useful
+            return                                       
+        # check if the security channel has already been established
+        if self.securityHandler.isInitialized() == False or serviceUUID == AUTHENTICATION_SERVICE \
+            or self.authorized == False:
+            error = CBATTErrorReadNotPermitted
+            self.manager.respondToRequest_withResult_(request, error)
+            return   
+        
+        # security channel has already been established  
+        # check if authentication is approved                                                            
+        message = char.handleReadRequest()       
+        data = self.securityHandler.encrypt(message)
+        request._.value = NSData.alloc().initWithBytes_length_(data, len(data))
+        self.manager.respondToRequest_withResult_(request, CBATTErrorSuccess[0])
+        return                            
+        '''
         if request._.characteristic._.UUID  == self.testCharacteristic._.UUID:
             testNSData = NSString.alloc().initWithString_(u'1234').dataUsingEncoding_(NSUTF8StringEncoding) # default value
             request._.value = NSData.alloc().initWithBytes_length_('bytes', 5)
@@ -191,7 +223,54 @@ class PeripheralManagerWorker(NSObject):
         
     def peripheralManager_didReceiveWriteRequests_(self, peripheral, requests):
         NSLog("Peripheral received write requests from central")
+        
+        # check whether it has cross the interval from last request
+        if (datetime.now() - self.lastRequestTime).total_seconds() > self.expiration_interval:
+            # reset the security and authentication
+            print "Longest request interval expired"
+            self.authorized = False
+            self.securityHandler.encryptionObj = None
+        self.lastRequestTime = datetime.now()
+        
+        # check if security channle has established
+        if self.securityHandler.isInitialized() == False:
+            error = CBATTErrorReadNotPermitted
+            self.manager.respondToRequest_withResult_(requests[0], error)
+            return
+        
+        # handle requests
+        for request in requests:
+            charUUID = self.UUID2Str(request._.characteristic._.UUID)
+            serviceUUID = self.UUID2Str(request._.characteristic._.service._.UUID)
+            char = self.findCharacteristicByUUID(serviceUUID, charUUID)
             
+            # descrypt first
+            data, = struct.unpack("@"+str(len(request._.value))+"s", request._.value)
+            message = self.securityHandler.decrypt(data)
+            
+            if serviceUUID == SECURITY_SERVICE:
+                char.handleWriteRequest(message)
+                continue
+
+            if self.securityHandler.isInitialized():
+                if serviceUUID == AUTHENTICATION_SERVICE and charUUID == AUTHENTICATION_CHAR:
+                    self.authorized = char.handleWriteRequest(message)
+                    if self.authorized == False:
+                        print "authentication not approved"  
+                        self.manager.respondToRequest_withResult_(requests[0], CBATTErrorInvalidPdu)
+                        return
+                    else:
+                        print "authentication approved"                
+                elif self.authorized:
+                    char.handleWriteRequest(message)
+            else:
+                self.manager.respondToRequest_withResult_(requests[0], CBATTErrorWriteNotPermitted)
+                return
+ 
+        self.manager.respondToRequest_withResult_(requests[0], CBATTErrorSuccess[0])
+        
+        
+                      
             
             
             

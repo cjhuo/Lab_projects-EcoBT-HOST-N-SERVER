@@ -71,7 +71,7 @@ ProfileDict = {
 '7771': 'SecurityType',
 '7772': 'SecurityKey',
 '7773': 'SecurityIV',
-'7788': 'TestCharacteristic',
+'7781': 'TestCharacteristic',
 }
 
 

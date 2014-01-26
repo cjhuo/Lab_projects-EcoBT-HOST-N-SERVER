@@ -67,7 +67,8 @@ NSUTF8StringEncoding = 4
 
 SECURITY_SERVICE = '7770'
 DEVICE_INFO = '180A'
-AUTHENTICATION = '7760'
+AUTHENTICATION_SERVICE = '7760'
+AUTHENTICATION_CHAR = '7761'
 
 # Profile Identifier dictionary 
 # used to initialize service object and characteristic object
@@ -84,7 +85,10 @@ ProfileDict = {
          },
 '180A': {
          '2A23': 'DeviceInfo'
-         },          
+         }, 
+'7760': {
+         '7761': 'Authentication'
+         },         
 }
 
 

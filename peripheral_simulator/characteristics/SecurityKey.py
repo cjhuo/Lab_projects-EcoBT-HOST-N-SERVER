@@ -27,12 +27,11 @@ class SecurityKey(Characteristic):
                                             initWithType_value_(CBUUID.UUIDWithString_(CBUUIDCharacteristicUserDescriptionString),
                                                                 u'secret key: unicode16')]
         
-    def handleReadRequest(self, request, securityHandler):
+    def handleReadRequest(self, securityHandler):
         #testNSData = NSString.alloc().initWithString_(u'AES').dataUsingEncoding_(NSUTF8StringEncoding) # default value
         self.key = self.randomword(16)
         securityHandler.setParameters(key=self.key)
-        request._.value = NSData.alloc().initWithBytes_length_(struct.pack("@16s", self.key), len(self.key))
-        return (request, CBATTErrorSuccess[0]) # CBATTErrorSuccess is a tuple, only first one useful
+        return NSData.alloc().initWithBytes_length_(struct.pack("@16s", self.key), len(self.key))
 
     def _lazysecret(self, secret, blocksize=16, padding='}'):
         if len(secret) != 16:

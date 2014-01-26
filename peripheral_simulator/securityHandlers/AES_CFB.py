@@ -14,5 +14,5 @@ class AES_CFB(object):
     def encrypt(self, message):
         return self.obj.encrypt(message)
     
-    def decript(self, message):
+    def decrypt(self, message):
         return self.obj.decrypt(message)

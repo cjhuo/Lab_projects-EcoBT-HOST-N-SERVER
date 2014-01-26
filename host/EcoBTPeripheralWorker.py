@@ -241,7 +241,7 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
             self.securityObj = AES.new(self.securityKey, AES.MODE_CFB, self.securityIV)
             self.securityIV = None
             self.securityKey = None
-            self.readValueForCharacteristic(self.findCharacteristicByUUID(u'7788'))
+            self.readValueForCharacteristic(self.findCharacteristicByUUID(u'7781'))
 
     def peripheral_didWriteValueForCharacteristic_error_(self,
                                                          peripheral,
