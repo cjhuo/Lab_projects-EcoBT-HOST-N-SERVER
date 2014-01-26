@@ -66,6 +66,8 @@ CBATTErrorInsufficientResources                    = 0x11
 NSUTF8StringEncoding = 4
 
 SECURITY_SERVICE = '7770'
+DEVICE_INFO = '180A'
+AUTHENTICATION = '7760'
 
 # Profile Identifier dictionary 
 # used to initialize service object and characteristic object
@@ -80,7 +82,9 @@ ProfileDict = {
          # characteristic UUID and implementation
          '7781': 'TestCharacteristic'
          },
-               
+'180A': {
+         '2A23': 'DeviceInfo'
+         },          
 }
 
 

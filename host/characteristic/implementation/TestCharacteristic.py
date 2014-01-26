@@ -21,8 +21,12 @@ class TestCharacteristic(Characteristic):
         
     def process(self):
         print "length of data ", len(self.instance._.value)
-        data, = struct.unpack("@"+str(len(self.instance._.value))+"s", self.instance._.value)
+        data = self.peripheralWorker.securityObj.decrypt(self.instance._.value)
+        message, = struct.unpack("@"+str(len(data))+"s", data)
+        
+        print "Data is ", message
+        #data, = struct.unpack("@"+str(len(self.instance._.value))+"s", self.instance._.value)
                 
-        print "Data is ", self.peripheralWorker.securityObj.decrypt(data)
+        #print "Data is ", self.peripheralWorker.securityObj.decrypt(data)
         
         #self.peripheralWorker.readValueForCharacteristic(self.peripheralWorker.findCharacteristicByUUID(u'7788'))

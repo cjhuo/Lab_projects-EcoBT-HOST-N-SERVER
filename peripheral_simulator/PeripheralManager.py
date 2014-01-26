@@ -146,26 +146,33 @@ class PeripheralManagerWorker(NSObject):
         error = None
         for srv in self.services:
             if srv.UUID == service:
-                # check if the security channel has already been established
-                if srv.UUID != SECURITY_SERVICE and self.securityHandler.isInitialized() == False:
-                    error = CBATTErrorReadNotPermitted
-                    self.manager.respondToRequest_withResult_(request, error)
-                    return             
-                # security channel has already been established 
                 for chr in srv.characteristics:
                     if chr.UUID == char:
-                        if self.securityHandler.isInitialized() == True and srv.UUID != SECURITY_SERVICE: 
-                            message = chr.handleReadRequest()
-                            encrypt_data = self.securityHandler.encrypt(message)
-                            request._.value = NSData.alloc().initWithBytes_length_(encrypt_data, len(encrypt_data))
-                            error = CBATTErrorSuccess[0] # CBATTErrorSuccess is a tuple, only first one useful
-                            self.manager.respondToRequest_withResult_(request, error)
-                            return                            
-                        else: # initializing or reinitializing security channel
+                        if srv.UUID == SECURITY_SERVICE: ## initializing or reinitializing security channel
                             request, error = chr.handleReadRequest(request, self.securityHandler)
                             self.manager.respondToRequest_withResult_(request, error)
                             return
-        '''
+                        if srv.UUID == DEVICE_INFO:
+                            message = chr.handleReadRequest()
+                            request._.value = NSData.alloc().initWithBytes_length_(message, len(message))
+                            error = CBATTErrorSuccess[0] # CBATTErrorSuccess is a tuple, only first one useful
+                            self.manager.respondToRequest_withResult_(request, error)
+                            return                     
+                        else:                    
+                            # check if the security channel has already been established
+                            if self.securityHandler.isInitialized() == False:
+                                error = CBATTErrorReadNotPermitted
+                                self.manager.respondToRequest_withResult_(request, error)
+                                return   
+                            else:                                 
+                                # security channel has already been established                                 
+                                message = chr.handleReadRequest()
+                                encrypt_data = self.securityHandler.encrypt(message)
+                                request._.value = NSData.alloc().initWithBytes_length_(encrypt_data, len(encrypt_data))
+                                error = CBATTErrorSuccess[0] # CBATTErrorSuccess is a tuple, only first one useful
+                                self.manager.respondToRequest_withResult_(request, error)
+                                return                            
+            '''
         if request._.characteristic._.UUID  == self.testCharacteristic._.UUID:
             testNSData = NSString.alloc().initWithString_(u'1234').dataUsingEncoding_(NSUTF8StringEncoding) # default value
             request._.value = NSData.alloc().initWithBytes_length_('bytes', 5)
