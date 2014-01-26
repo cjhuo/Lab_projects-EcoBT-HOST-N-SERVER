@@ -41,6 +41,7 @@ ProfileDict = {
 "FEC0": '',             # ECG Profile,
 "7780": '',             # test Profile
 '7770': '',             # Security
+'7760': '',             # Authentication
 # Characteristic Profile
 "2A23": 'DeviceInfo',             # Device Info Characteristic Profile
 "FE11": 'SIDsCO2Status',             # SIDs Enable Characteristic Profile
@@ -72,6 +73,7 @@ ProfileDict = {
 '7772': 'SecurityKey',
 '7773': 'SecurityIV',
 '7781': 'TestCharacteristic',
+'7761': 'Authentication'
 }
 
 
