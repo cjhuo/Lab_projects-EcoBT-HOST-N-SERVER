@@ -4,16 +4,31 @@ Created on Feb 5, 2013
 @author: cjhuo
 
 @summary: 
+maintains a profile hierarchy. The follows is an example:
 
+{'1800': {'2A00': {'descriptors': {}, 'properties': ['Read']},
+          '2A01': {'descriptors': {}, 'properties': ['Read']}},
+ '1801': {'2A05': {'descriptors': {}, 'properties': ['Read']}},
+ '180A': {'2A23': {'descriptors': {'2901': 'DeviceInformation'},
+                   'properties': ['Read']}},
+ '7760': {'7761': {'descriptors': {'2901': 'Authentication'},
+                   'properties': ['Write']}},
+ '7770': {'7771': {'descriptors': {'2901': 'AES_CFB: uint8, parameters: 1. secret key: unicode16, 2. IV: unicode16'},
+                   'properties': ['Read']},
+          '7772': {'descriptors': {'2901': 'secret key: unicode16'},
+                   'properties': ['Read', 'Write Without Response']},
+          '7773': {'descriptors': {'2901': 'IV : unicode16'},
+                   'properties': ['Read', 'Write Without Response']}},
+ '7780': {'7781': {'descriptors': {'2901': 'TestDescriptor',
+                                   '2902': '\x00\x00'},
+                   'properties': ['Read', 'Notify']}}}
 '''
 from Foundation import *
 #from PyObjCTools import AppHelper
-from IOBluetooth import *
+from config_gateway import *
 from objc import *
 
-import array
-import binascii
-import struct
+import array, binascii, struct, pprint
 
 from Service import *
 from characteristic import characteristicFactory
@@ -22,6 +37,7 @@ from characteristic.implementation import Characteristic
 class PeripheralWorker(NSObject):
     def init(self):
         self.instance = None
+        self.identifier = None
         self.profileHierarchyDict = {}
         NSLog("Initialize Peripheral Worker")
         return self
@@ -35,9 +51,6 @@ class PeripheralWorker(NSObject):
     def discoverServices(self):
         self.instance.discoverServices_(None)
 
-    def setWorker(self, worker):
-        self.worker = worker
-        
     def UUID2Str(self, UUID):
         tempStr = ""
         for index in range(len(UUID._.data)):
@@ -64,36 +77,24 @@ class PeripheralWorker(NSObject):
         return propertiesStrList
         
     def discoverCharacteristics_forService(self, service):
-        if type(service) == Service:
-            self.instance.discoverCharacteristics_forService_(nil, service.instance)
-        else:
-            self.instance.discoverCharacteristics_forService_(nil, service)
+        self.instance.discoverCharacteristics_forService_(nil, service)
         
     def readValueForCharacteristic(self, characteristic):
-        if isinstance(characteristic, Characteristic.Characteristic):
-            NSLog("READING CHARACTERISTIC VALUE FROM %@", characteristic.UUID)
-            self.instance.readValueForCharacteristic_(characteristic.instance)
-        else:
-            NSLog("READING CHARACTERISTIC VALUE FROM %@", characteristic._.UUID)
-            self.instance.readValueForCharacteristic_(characteristic)
+        NSLog("READING CHARACTERISTIC VALUE FROM %@", characteristic._.UUID)
+        self.instance.readValueForCharacteristic_(characteristic)
         
     def setNotifyValueForCharacteristic(self, flag, characteristic):
-        if isinstance(characteristic, Characteristic.Characteristic):
-            self.instance.setNotifyValue_forCharacteristic_(flag, characteristic.instance)
-        else:
-            self.instance.setNotifyValue_forCharacteristic_(flag, characteristic)
+        self.instance.setNotifyValue_forCharacteristic_(flag, characteristic)
             
-    def writeValueForCharacteristic(self, value, characteristic):
-        if isinstance(characteristic, Characteristic.Characteristic):
-            NSLog("WRITING CHARACTERISTIC %@ TO VALUE %@", characteristic.UUID, value)
-            self.instance.writeValue_forCharacteristic_type_(
-                                                               value, characteristic.instance,
-                                                               CBCharacteristicWriteWithResponse)
+    def writeValueForCharacteristic(self, value, characteristic, withResponse):
+        NSLog("WRITING CHARACTERISTIC %@ TO VALUE %@", characteristic._.UUID, value)
+        if withResponse:
+            self.instance.writeValue_forCharacteristic_type_(value, characteristic,
+                                                        CBCharacteristicWriteWithResponse)
         else:
-            NSLog("WRITING CHARACTERISTIC %@ TO VALUE %@", characteristic._.UUID, value)
-            self.instance.writeValue_forCharacteristic_type_(
-                                                               value, characteristic,
-                                                               CBCharacteristicWriteWithResponse)
+            self.instance.writeValue_forCharacteristic_type_(value, characteristic,
+                                                        CBCharacteristicWriteWithoutResponse)
+            
 
         
     # CBPeripheral delegate methods
@@ -114,7 +115,12 @@ class PeripheralWorker(NSObject):
             chrUUIDStr = self.UUID2Str(char._.UUID)                  
             self.profileHierarchyDict[srvUUIDStr][chrUUIDStr] = {}
             self.profileHierarchyDict[srvUUIDStr][chrUUIDStr]['properties'] = self.checkProperties(char._.properties)
+            
+            if chrUUIDStr == SYSTEM_ID_CHAR and srvUUIDStr == DEVICE_INFO_SERVICE:
+                self.readValueForCharacteristic(char)
+            
             #discover descriptors for the characteristic
+            self.profileHierarchyDict[srvUUIDStr][chrUUIDStr]['descriptors'] = {}
             peripheral.discoverDescriptorsForCharacteristic_(char)
                     
                                          
@@ -123,19 +129,24 @@ class PeripheralWorker(NSObject):
                                                                       characteristic,
                                                                       error):
         
-        NSLog("didDiscoverDescriptorsForCharacteristic %@, %@", characteristic._.UUID, error)
+        NSLog("didDiscoverDescriptorsForCharacteristic %@, %@", self.UUID2Str(characteristic._.UUID), error)
         for descriptor in characteristic._.descriptors:
-            NSLog("Reading value of descriptor %@ for characteristic %@", descriptor._.UUID, str(characteristic._.UUID))
+            #NSLog("Reading value of descriptor %@ for characteristic %@", self.UUID2Str(descriptor._.UUID), self.UUID2Str(characteristic._.UUID))   
             peripheral.readValueForDescriptor_(descriptor)
-            NSLog("value %@", descriptor._.value)
         
     def peripheral_didUpdateValueForDescriptor_error_(self, 
                                                      peripheral,
                                                      descriptor,
                                                      error):
-        NSLog("didUpdateValueForDescriptor %@ for characteristic %@, error %@", descriptor._.UUID, descriptor._.characteristic._.UUID, error)
-        NSLog("descriptor's value is %@", NSString.alloc().initWithData_encoding_(descriptor._.value, NSUTF8StringEncoding))
-        print str(NSString.alloc().initWithData_encoding_(descriptor._.value, NSUTF8StringEncoding))
+        NSLog("didUpdateValueForDescriptor %@, %@", descriptor._.characteristic._.UUID, error)
+        
+        srvUUIDStr = self.UUID2Str(descriptor._.characteristic._.service._.UUID)   
+        chrUUIDStr = self.UUID2Str(descriptor._.characteristic._.UUID)   
+        descyptUUIDStr = self.UUID2Str(descriptor._.UUID)        
+        descryptStr, = struct.unpack("@"+str(len(descriptor._.value))+"s", descriptor._.value)
+        self.profileHierarchyDict[srvUUIDStr][chrUUIDStr]['descriptors'][descyptUUIDStr] = descryptStr  
+        #NSLog("descriptor's value is %@", NSString.alloc().initWithData_encoding_(descriptor._.value, NSUTF8StringEncoding))
+        pprint.pprint(self.profileHierarchyDict)
 
     def peripheral_didWriteValueForDescriptor_error_(self,
                                                      peripheral,
@@ -152,34 +163,24 @@ class PeripheralWorker(NSObject):
                                                           error):
 #        print "Read Characteristic(%s) value" % characteristic._.UUID
         NSLog("didUpdateValueForCharacteristic error %@", error)
-        
-        char = self.findCharacteristicByUUID(self.checkUUID(characteristic._.UUID))
-        if char != None:
-            # process the received data
-            char.process()
-        
-        if self.securityIV != None and self.securityKey != None:
-            from Crypto.Cipher import AES
-            self.securityObj = AES.new(self.securityKey, AES.MODE_CFB, self.securityIV)
-            self.securityIV = None
-            self.securityKey = None
-            self.readValueForCharacteristic(self.findCharacteristicByUUID(u'7781'))
+        srvUUIDStr = self.UUID2Str(characteristic._.service._.UUID)   
+        chrUUIDStr = self.UUID2Str(characteristic._.UUID)
+        if chrUUIDStr == SYSTEM_ID_CHAR and srvUUIDStr == DEVICE_INFO_SERVICE:
+            idntfr, = struct.unpack('@Q', characteristic._.value)
+            self.identifier = idntfr
+            hex_str = binascii.hexlify(characteristic._.value)
+            a1, a2, a3, a4, a5, a6 = struct.unpack('cccxxccc', characteristic._.value)
+            address = str(binascii.hexlify(a6) + '-' + binascii.hexlify(a5) + '-' + binascii.hexlify(a4) + '-' + \
+             binascii.hexlify(a3) + '-' + binascii.hexlify(a2) + '-' + binascii.hexlify(a1))
+            print 'MAC Address: ', address, 'identifier is ', self.identifier
+                      
+
 
     def peripheral_didWriteValueForCharacteristic_error_(self,
                                                          peripheral,
                                                          characteristic,
                                                          error):
         NSLog("CHAR(%@) is updated", characteristic._.UUID)
-        char = self.findCharacteristicByUUID(self.checkUUID(characteristic._.UUID))
-        
-        # value sent out, start to read in new value
-        self.readValueForCharacteristic(char)
-        '''
-        if char != None:
-            # process the received data and put into queue
-            char.process()
-            pass
-        '''
             
 
     def peripheral_didUpdateNotificationStateForCharacteristic_error_(self,
@@ -187,7 +188,7 @@ class PeripheralWorker(NSObject):
                                                                       characteristic,
                                                                       error):
         
-        NSLog("char(%@) is auto-notify? %@", str(characteristic._.UUID), str(characteristic.isNotifying()))
+        NSLog("char(%@) is auto-notify? %@", characteristic._.UUID, characteristic.isNotifying())
              
  
         

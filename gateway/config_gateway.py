@@ -12,6 +12,11 @@ CBPeripheralManagerStateUnauthorized = 3
 CBPeripheralManagerStatePoweredOff = 4
 CBPeripheralManagerStatePoweredOn = 5
 
+# CBCharacteristicWriteType CONSTS
+CBCharacteristicWriteWithResponse = 0
+CBCharacteristicWriteWithoutResponse = 1
+
+
 # CBPeripheralManager advertisement key CONSTS from CBAdvertisementData.h
 CBAdvertisementDataServiceUUIDsKey = u'kCBAdvDataServiceUUIDs'
 CBAdvertisementDataLocalNameKey = u'kCBAdvDataLocalName'
@@ -65,4 +70,8 @@ CBATTErrorInsufficientResources                    = 0x11
 # NSString encoding CONSTS
 NSUTF8StringEncoding = 4
 
-
+SECURITY_SERVICE = '7770'
+DEVICE_INFO_SERVICE = '180A'
+SYSTEM_ID_CHAR = '2A23'
+AUTHENTICATION_SERVICE = '7760'
+AUTHENTICATION_CHAR = '7761'

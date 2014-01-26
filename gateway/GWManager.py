@@ -106,7 +106,7 @@ class GWManager(NSObject):
     def startScan(self):
         NSLog("STARTING SCAN")
         options = NSDictionary.dictionaryWithObject_forKey_(
-            NSNumber.numberWithBool_(YES),
+            NSNumber.numberWithBool_(NO),
             CBCentralManagerScanOptionAllowDuplicatesKey
         )
         self.manager.scanForPeripheralsWithServices_options_(
