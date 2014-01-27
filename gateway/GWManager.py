@@ -28,10 +28,46 @@ from objc import *
 from PyObjCTools import AppHelper
 from config_gateway import *
 from Queue import Queue 
-import time, json
+import time, json, threading
+from threading import Event
 
 from PeripheralWorker import PeripheralWorker
 
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+Serves for periodically send gateway snapshot to central.
+The snapshot includes:
+    all profile hierarchy of connected peripherals
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+class PeriodicUpdater(threading.Thread):
+    def __init__(self, gatewayManager):
+        threading.Thread.__init__(self,name = "GatewayPeriodicUpdater")
+        self.gatewayManager = gatewayManager
+        self.flag = Event()
+        
+    def stop(self):
+        self.flag.set()
+        
+    def run(self):
+        while not self.flag.isSet():
+            time.sleep(GATEWAY_UPDATE2CENTRAL_INTERVAL)
+            print 'sending snapshot to central'
+            gatewayOverview = {}
+            gatewayOverview['gateway_id'] = self.gatewayManager.getUUID()
+            gatewayOverview['connected_peripherals'] = []
+            for peripheralWorker in self.gatewayManager.getPeripheralWorkers():
+                temp = {}
+                temp['id'] = peripheralWorker.getIdentifier()
+                temp['profileHierarchy'] = peripheralWorker.getProfileHierarchy()
+                gatewayOverview['connected_peripherals'].append(temp)
+            message = {
+                       'type': 'snapshot',
+                       'value': gatewayOverview
+                       }
+            try:
+                self.gatewayManager.writeReport2Gateway(message)
+            except:
+                print 'error happened when sending update to central'
+                 
 
 class GWManager(NSObject):
     def init(self):
@@ -48,16 +84,33 @@ class GWManager(NSObject):
         # initialize manager with delegate
         NSLog("Initialize CBCentralManager Worker")
         self.manager = CBCentralManager.alloc().initWithDelegate_queue_(self, nil)
+   
         return self
+    
+    def getUUID(self):
+        return self.uuid
+
+    def getPeripheralWorkers(self):
+        return self.peripheralWorkers
 
     def setConnection2Gateway(self, connection2Gateway):
         self.connection2Gateway = connection2Gateway
         
+    def writeReport2Gateway(self, report):
+        self.connection2Gateway.send(json.dumps(report))
+        
     def handleRequestFromGateway(self, request):        
         if request['type'] == 'gatewayAuthentication':
-            message = json.dumps({'authorizationToken': GATEWAY_AUTHENTICATION_TOKEN
-                        })
-            self.connection2Gateway.send(message)
+            message = {
+                       'type': 'gatewayAuthenticationFeedback',
+                       'value': {
+                                 'authorizationToken': GATEWAY_AUTHENTICATION_TOKEN,
+                                 'gatewayUUID': self.uuid
+                                 }
+                       
+                       }
+            self.writeReport2Gateway(message)
+            #self.connection2Gateway.send(message)
             
         if request['type'] == 'gatewayUUID':
             self.uuid = request['value']
@@ -151,6 +204,9 @@ class GWManager(NSObject):
             self.updateState(1)
             
             self.startScan()
+            
+            self.periodicUpdater = PeriodicUpdater(self)
+            self.periodicUpdater.start()                 
 
     '''
     Invoked when the central discovers a EcoBT node while scanning.

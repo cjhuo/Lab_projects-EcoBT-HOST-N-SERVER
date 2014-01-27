@@ -4,7 +4,7 @@ Created on Jan 26, 2014
 @author: cjhuo
 '''
 
-import tornado.web, json, uuid
+import tornado.web, json, uuid, pprint
 
 from config_central import *
 from Gateway import Gateway
@@ -57,13 +57,16 @@ class GWWebsocket(tornado.websocket.WebSocketHandler):
         
         
     def on_message(self, message):
-        print 'got message ', message
         #self.handleMessage(message)
         report = json.loads(message)
+        
+        print 'got message '
+        pprint.pprint(report)
         if self.websockets[self].isAuthorized() == False: # check authorization first
             token = None
             try:
-                token = report['authorizationToken']
+                # assuming this is a message with type of gatewayAuthenticationFeedback
+                token = report['value']['authorizationToken']
             except: # un-authorized
                 print 'un-authorized gateway, closing connection...'
                 self.close()
@@ -72,12 +75,15 @@ class GWWebsocket(tornado.websocket.WebSocketHandler):
             
             if token == GATEWAY_AUTHENTICATION_TOKEN:
                 self.websockets[self].setAuthorized(True)
-                # assign an id to this gateway, and send to gateway
-                self.websockets[self].setUUID = uuid.uuid4().int
-                self.write_message({
-                                    'type': 'gatewayUUID',
-                                    'value': self.websockets[self].setUUID
-                                    })
+                if 'gatewayUUID' in (report['value']).keys() and report['value']['gatewayUUID'] != None:
+                    self.websockets[self].setUUID = report['value']['gatewayUUID']
+                else:
+                    # assign an id to this gateway, and send to gateway
+                    self.websockets[self].setUUID = uuid.uuid4().hex
+                    self.write_message({
+                                        'type': 'gatewayUUID',
+                                        'value': self.websockets[self].setUUID
+                                        })
                 print 'gateway', self.websockets[self].setUUID, ' is authorized'
             else:
                 print 'un-authorized gateway, closing connection...'

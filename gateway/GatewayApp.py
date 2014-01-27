@@ -87,9 +87,8 @@ class Connection2Gateway(object):
                     self.connection.connect()
                     success = True
                 except:
-                    waittime = 5 # unit: seconds
-                    print '\nConnection to gateway refused\nTry again in ', waittime, ' seconds'
-                    for i in range(waittime, 0, -1):
+                    print '\nConnection to gateway refused\nTry again in ', GATEWAY_RECONNECT_WAIT_INTERVAL, ' seconds'
+                    for i in range(GATEWAY_RECONNECT_WAIT_INTERVAL, 0, -1):
                         time.sleep(1)
                         if i !=0:
                             print i,
@@ -99,9 +98,8 @@ class Connection2Gateway(object):
             pass
     def reconnect(self):
         # wait a moment for reconnection
-        waittime = 5 # unit: seconds
-        print '\nConnection to gateway refused\nTry again in ', waittime, ' seconds'
-        for i in range(waittime, 0, -1):
+        print '\nConnection to gateway refused\nTry again in ', GATEWAY_RECONNECT_WAIT_INTERVAL, ' seconds'
+        for i in range(GATEWAY_RECONNECT_WAIT_INTERVAL, 0, -1):
             time.sleep(1)
             if i !=0:
                 print i,

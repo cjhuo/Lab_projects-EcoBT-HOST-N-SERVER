@@ -5,7 +5,9 @@ Created on Feb 5, 2013
 
 @summary: 
 maintains a profile hierarchy. The follows is an example:
-
+Format:
+{Services: {Characteristics: {'descriptors':{'uuid': }, 'properties':[]}}
+Example:
 {'1800': {'2A00': {'descriptors': {}, 'properties': ['Read']},
           '2A01': {'descriptors': {}, 'properties': ['Read']}},
  '1801': {'2A05': {'descriptors': {}, 'properties': ['Read']}},
@@ -38,6 +40,12 @@ class PeripheralWorker(NSObject):
         self.profileHierarchyDict = {}
         NSLog("Initialize Peripheral Worker")
         return self
+    
+    def getProfileHierarchy(self):
+        return self.profileHierarchyDict
+    
+    def getIdentifier(self):
+        return self.identifier
     
     def setInstance(self, instance):
         self.instance = instance   
