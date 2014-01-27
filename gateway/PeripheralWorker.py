@@ -30,9 +30,6 @@ from objc import *
 
 import array, binascii, struct, pprint
 
-from Service import *
-from characteristic import characteristicFactory
-from characteristic.implementation import Characteristic
 
 class PeripheralWorker(NSObject):
     def init(self):
@@ -43,8 +40,8 @@ class PeripheralWorker(NSObject):
         return self
     
     def setInstance(self, instance):
-        self.instance = instance
-        
+        self.instance = instance   
+    
     def stop(self):
         pass
     

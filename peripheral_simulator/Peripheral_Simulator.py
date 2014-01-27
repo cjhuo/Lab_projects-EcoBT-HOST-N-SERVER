@@ -14,7 +14,7 @@ from threading import Event
 from PeripheralManager import PeripheralManagerWorker
 
 
-class Simulator_MAIN(object):
+class Peripheral_Simulator(object):
     
     def __init__(self, enableKeyboardInterrupt):
         self.peripheralManagerWorker = PeripheralManagerWorker.alloc().init()
@@ -48,28 +48,13 @@ class Simulator_MAIN(object):
         NSNotificationCenter.defaultCenter().addObserver_selector_name_object_\
                         (self, s, NSFileHandleReadCompletionNotification, stdIn)
 
-
         stdIn.readInBackgroundAndNotify()
        
     def keyboardHandler_(self, notification): # handlder must has a function name ended by a single "_"        
         NSLog("Keyboard Interrupt Captured")
         self.running.set()
-        '''
-        data = notification.userInfo().objectForKey_(NSFileHandleNotificationDataItem)
-        string = NSString.alloc().initWithData_encoding_(data, NSUTF8StringEncoding).autorelease()
-        NSLog("Got string: %@", string)
-        print str(string)
-        
-        # stop NSRunLoop
-        if(string == 'stop\n'): 
-            self.running.set()
-        else:
-            stdIn = NSFileHandle.fileHandleWithStandardInput().retain()
-            stdIn.readInBackgroundAndNotify()
-            #self.handleKeyboardInterrupt()
-        '''
-        
-        
+
+
 # testing
 if __name__ == "__main__":
     app = Simulator_MAIN(True)

@@ -4,6 +4,23 @@ import objc
 objc.loadBundle('IOBluetooth', globals(),
                 bundle_path=objc.pathForFramework("IOBluetooth.framework"))
 
+# IOBluetooth CBCentralManager state CONSTS
+CBCentralManagerStateUnkown = 0
+CBCentralManagerStateResetting = 1
+CBCentralManagerStateUnsupported = 2
+CBCentralManagerStateUnauthorized = 3
+CBCentralManagerStatePoweredOff = 4
+CBCentralManagerStatePoweredOn = 5
+
+# CBCentralManager option keys
+CBCentralManagerScanOptionAllowDuplicatesKey = u"kCBScanOptionAllowDuplicates"
+CBConnectPeripheralOptionNotifyOnDisconnectionKey = u"kCBConnectOptionNotifyOnDisconnection"
+
+# CBCharacteristicWriteType CONSTS
+CBCharacteristicWriteWithResponse = 0
+CBCharacteristicWriteWithoutResponse = 1
+
+
 # CBPeripheralManager states CONSTS from CBPeripheralManager.h
 CBPeripheralManagerStateUnknown = 0
 CBPeripheralManagerStateResetting = 1
@@ -75,3 +92,5 @@ DEVICE_INFO_SERVICE = '180A'
 SYSTEM_ID_CHAR = '2A23'
 AUTHENTICATION_SERVICE = '7760'
 AUTHENTICATION_CHAR = '7761'
+
+GATEWAY_AUTHENTICATION_TOKEN = '123456'

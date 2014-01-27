@@ -3,13 +3,11 @@ sys.dont_write_bytecode = True
 
 from Foundation import * 
 from objc import *
-import threading
+import threading, json
+from config_gateway import *
 
 from GWManager import GWManager
 from threading import Event
-from Sockets import Sockets
-
-
 
 class GatewayApp(object):
 
@@ -17,7 +15,8 @@ class GatewayApp(object):
         #initialize CMManagerWorker
         self.managerWorker = GWManager.alloc().init()  
         self.enableKeyboardInterrupt = enableKeyboardInterrupt 
-        #self.managerWorker.setSockets(sockets)
+        self.connection2Gateway = Connection2Gateway(self.managerWorker)
+        self.managerWorker.setConnection2Gateway(self.connection2Gateway)
                 
     def start(self):
         # initialize NSAutoreleasePool
@@ -36,6 +35,7 @@ class GatewayApp(object):
          
         # clean up       
         self.managerWorker.stop()
+        self.connection2Gateway.close()
         NSLog("Program Terminated")
         del self.pool
                                
@@ -68,7 +68,76 @@ class GatewayApp(object):
             stdIn.readInBackgroundAndNotify()
             #self.handleKeyboardInterrupt()
         '''
+from ws4py.client.threadedclient import WebSocketClient
+import time
+class Connection2Gateway(object):
+    def __init__(self, peripheralWoker, connectionType='WebSocket'):
+        self.peripheralWorker = peripheralWoker
+        self.connection = None
+        self.connectionType = connectionType
+        self.connect(self.connectionType)      
+        
+    def connect(self, connectionType):    
+        if connectionType == 'WebSocket':
+            success = False
+            while not success:
+                try:
+                    self.connection = WebSocketConnection('ws://localhost:8888/socket', protocols=['http-only', 'chat'])
+                    self.connection.setOwner(self)
+                    self.connection.connect()
+                    success = True
+                except:
+                    waittime = 5 # unit: seconds
+                    print '\nConnection to gateway refused\nTry again in ', waittime, ' seconds'
+                    for i in range(waittime, 0, -1):
+                        time.sleep(1)
+                        if i !=0:
+                            print i,
+                        else:
+                            print i
+        else: # no other connection type implemented yet
+            pass
+    def reconnect(self):
+        # wait a moment for reconnection
+        waittime = 5 # unit: seconds
+        print '\nConnection to gateway refused\nTry again in ', waittime, ' seconds'
+        for i in range(waittime, 0, -1):
+            time.sleep(1)
+            if i !=0:
+                print i,
+            else:
+                print i
+        
+        self.connect(self.connectionType)
+    
+    def send(self, message):
+        self.connection.send(message)
+    
+    def close(self):
+        self.connection.close()
+        
+    def handleIcomingRequest(self, message):
+        self.peripheralWorker.handleRequestFromGateway(message)
 
+    
+class WebSocketConnection(WebSocketClient):
+    def setOwner(self, owner):
+        self.owner = owner
+        
+    def opened(self):
+        print 'Connection opened'    
+
+    def closed(self, code, reason):
+        print(("Closed down", code, reason))
+        # try to connect back
+        self.owner.reconnect()
+
+    def received_message(self, message):
+        print("=> %d %s" % (len(message), str(message)))       
+        request = json.loads(str(message))
+
+        self.owner.handleIcomingRequest(request)    
+        
 if __name__ == '__main__':
     #main()
     app = GatewayApp(True)

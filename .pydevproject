@@ -8,5 +8,8 @@
 <path>/Combined</path>
 <path>/Combined/host</path>
 <path>/Combined/webEngine</path>
+<path>/Combined/gateway</path>
+<path>/Combined/peripheral_simulator</path>
+<path>/Combined/central</path>
 </pydev_pathproperty>
 </pydev_project>

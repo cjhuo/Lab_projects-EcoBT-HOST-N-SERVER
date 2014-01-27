@@ -24,16 +24,13 @@ than the interval set on peripheral
 
 from Foundation import *
 #from PyObjCTools import AppHelper
-from IOBluetooth import *
 from objc import *
 from PyObjCTools import AppHelper
-
+from config_gateway import *
 from Queue import Queue 
-import time
+import time, json
 
 from PeripheralWorker import PeripheralWorker
-
-from Peripheral import Peripheral
 
 
 class GWManager(NSObject):
@@ -47,11 +44,26 @@ class GWManager(NSObject):
         4: stopScan, but has peripheral connected
         '''
         self._state = 0
+        self.uuid = None
         # initialize manager with delegate
         NSLog("Initialize CBCentralManager Worker")
         self.manager = CBCentralManager.alloc().initWithDelegate_queue_(self, nil)
         return self
-    
+
+    def setConnection2Gateway(self, connection2Gateway):
+        self.connection2Gateway = connection2Gateway
+        
+    def handleRequestFromGateway(self, request):        
+        if request['type'] == 'gatewayAuthentication':
+            message = json.dumps({'authorizationToken': GATEWAY_AUTHENTICATION_TOKEN
+                        })
+            self.connection2Gateway.send(message)
+            
+        if request['type'] == 'gatewayUUID':
+            self.uuid = request['value']
+            print self.uuid
+        
+     
     def updateState(self, state):
         self._state = state
         if self._state == 0:
@@ -159,7 +171,8 @@ class GWManager(NSObject):
             worker.setInstance(peripheral)
             self.peripheralWorkers.append(worker)            
             self.connectPeripheral(peripheral)
-            self.startScan()
+        
+        self.startScan()
             
 
     def centralManager_didRetrivePeripherals_(self, central, peripherals):
