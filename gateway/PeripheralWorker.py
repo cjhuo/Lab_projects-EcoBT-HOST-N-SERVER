@@ -143,7 +143,7 @@ class PeripheralWorker(NSObject):
         if characteristic == None:
             return   
         NSLog("WRITING CHARACTERISTIC %@ TO VALUE %@", characteristic._.UUID, value)
-        data = NSData.alloc().initWithBytes_length_(data, len(value))
+        data = NSData.alloc().initWithBytes_length_(value, len(value))
         if withResponse:
             self.instance.writeValue_forCharacteristic_type_(data, characteristic,
                                                         CBCharacteristicWriteWithResponse)

@@ -27,6 +27,12 @@ class SecurityHandler(object):
     def reset(self):
         pass
     
+    def encrypt(self, message):
+        pass
+    
+    def decrypt(self, data):
+        pass
+    
 class AES_CFB(SecurityHandler):
     def __init__(self):
         SecurityHandler.__init__(self)
@@ -60,5 +66,14 @@ class AES_CFB(SecurityHandler):
         self.IV = None
         self.encryptionObj = None
         
+    def encrypt(self, message):
+        if self.encryptionObj != None:
+            return self.encryptionObj.encrypt(message)
+        return None
+    
+    def decrypt(self, data):
+        if self.encryptionObj != None:
+            return self.encryptionObj.decrypt(data)
+        return None
             
             

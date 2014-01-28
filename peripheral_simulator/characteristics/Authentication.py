@@ -32,7 +32,8 @@ class Authentication(Characteristic):
 
     def handleWriteRequest(self, data):
         if self.authenticationToken == None: # first time assign a token
-            self.authenticationToken = data
+            self.authenticationToken, = struct.unpack("@Q", data)
+            print 'Authentication Token initialized: ', self.authenticationToken
             return True
         else: # compare with stored token
             return self.authenticationToken == data
