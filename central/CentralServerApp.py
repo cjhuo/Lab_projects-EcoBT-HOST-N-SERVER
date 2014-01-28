@@ -79,7 +79,7 @@ class GWWebsocket(tornado.websocket.WebSocketHandler):
                     self.websockets[self].setUUID = report['value']['gatewayUUID']
                 else:
                     # assign an id to this gateway, and send to gateway
-                    self.websockets[self].setUUID = uuid.uuid4().hex
+                    self.websockets[self].setUUID = uuid.uuid4().int
                     self.write_message({
                                         'type': 'gatewayUUID',
                                         'value': self.websockets[self].setUUID

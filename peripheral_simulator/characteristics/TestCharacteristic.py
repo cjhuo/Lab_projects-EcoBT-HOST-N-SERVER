@@ -24,9 +24,17 @@ class TestCharacteristic(Characteristic):
 
     def initializeDescriptors(self):
         print "Initializing descriptors.."
-        self.instance._.descriptors = [CBMutableDescriptor.alloc().
-                                            initWithType_value_(CBUUID.UUIDWithString_(CBUUIDCharacteristicUserDescriptionString),
-                                                                u'TestDescriptor')]
+        
+        '''
+        Format, Exponent, Unit, Namespace, Description
+        '''
+        data = struct.pack("@BbHBH", 8, 0, 1, 0, 0)
+        
+        self.instance._.descriptors = [CBMutableDescriptor.alloc().initWithType_value_(CBUUID.UUIDWithString_(CBUUIDCharacteristicUserDescriptionString),
+                                                                u'TestDescriptor'),
+                                       CBMutableDescriptor.alloc().initWithType_value_(CBUUID.UUIDWithString_(CBUUIDCharacteristicFormatString),
+                                                                NSData.alloc().initWithBytes_length_(data, len(data)))
+                                       ]
         
     '''
     return unencrypted return value, 
