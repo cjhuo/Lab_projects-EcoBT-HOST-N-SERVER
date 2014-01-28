@@ -89,20 +89,6 @@ class GWWebsocket(tornado.websocket.WebSocketHandler):
                                             'value': self.websockets[self].setUUID
                                             }))
                     print 'gateway', self.websockets[self].setUUID, ' is authorized'
-                    
-                    '''
-                    #test
-                    self.write_message(json.dumps({
-                                        'type': 'peripheralQuery',
-                                        'value': {
-                                                  'queryID': uuid.uuid4().int,
-                                                  'peripheralID': 14474828687080862490,
-                                                  'action': 'Read',
-                                                  'serviceUUID': '7780',
-                                                  'characteristicUUID': '7781'
-                                                  }
-                                        })) 
-                    '''
                 else:
                     print 'un-authorized gateway, closing connection...'
                     self.close()
@@ -135,6 +121,19 @@ class GWWebsocket(tornado.websocket.WebSocketHandler):
                                                           'authenticationHandlerObj': authenticationHandlerObj
                                                           }
                                                 }))
+                    # test
+                    if peripheralInfo['isSecured'] and peripheralInfo['isAuthorized']:
+                        self.write_message(json.dumps({
+                                            'type': 'peripheralQuery',
+                                            'value': {
+                                                      'queryID': uuid.uuid4().int,
+                                                      'peripheralID': peripheralInfo['id'],
+                                                      'action': 'Read',
+                                                      'serviceUUID': '7780',
+                                                      'characteristicUUID': '7781'
+                                                      }
+                                            })) 
+                            
         elif report['type'] == 'peripheralSecurityTypeCheck':
             securityHandlerObj = pickle.dumps(SecurityHandlerFactory(report['value']['securityType']))
             self.write_message(json.dumps({

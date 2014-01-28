@@ -43,5 +43,6 @@ class TestCharacteristic(Characteristic):
     '''
     def handleReadRequest(self):
         message = "bytes"
+        struct.pack("@5s", message)
         return message
         

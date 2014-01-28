@@ -17,7 +17,8 @@ class Authentication(object):
         # check if the peripheral's token is stored in central's knowledge base
         # TBD
         # else generate one and store it
-        self.token = random.getrandbits(64)
+        if self.token == None:
+            self.token = random.getrandbits(64)
     
     def checkAuthentication(self, securityHandler=None):
         from config_central import AUTHENTICATION_CHAR
@@ -31,6 +32,7 @@ class Authentication(object):
     
     def reset(self):
         self.authorized = None
+        self.initialize(peripheralWorker)
     
     def isAuthorized(self):
         return self.authorized

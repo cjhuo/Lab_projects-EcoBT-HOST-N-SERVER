@@ -254,8 +254,9 @@ class PeripheralWorker(NSObject):
                     self.authenticationHandler.checkAuthentication(self.securityHandler)          
                     return
                 print 'decryption required'
-                data, = struct.unpack("@"+str(len(self.instance._.value))+"s", self.instance._.value)
-                message = binascii.unhexlify(self.securityHandler.decrypt(data))
+                data, = struct.unpack("@"+str(len(characteristic._.value))+"s", characteristic._.value)
+                message = self.securityHandler.decrypt(data)
+                message = binascii.unhexlify(message)
             print bytes(characteristic._.value)
             print message
             if error == None:

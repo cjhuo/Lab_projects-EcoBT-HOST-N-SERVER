@@ -65,6 +65,7 @@ class AES_CFB(SecurityHandler):
         self.key = None
         self.IV = None
         self.encryptionObj = None
+        self.initialize(self.peripheralWorker)
         
     def encrypt(self, message):
         if self.encryptionObj != None:

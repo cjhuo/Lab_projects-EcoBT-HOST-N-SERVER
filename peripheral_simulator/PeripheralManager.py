@@ -198,7 +198,6 @@ class PeripheralManagerWorker(NSObject):
             return   
         
         # security channel has already been established  
-        # check if authentication is approved                                                            
         message = char.handleReadRequest()    
         binascii.hexlify(message)
         data = self.securityHandler.encrypt(message)

@@ -109,7 +109,10 @@ class Connection2Gateway(object):
         self.connect(self.connectionType)
     
     def send(self, message):
-        self.connection.send(message)
+        try:
+            self.connection.send(message)
+        except:
+            pass
     
     def close(self):
         self.connection.close()
