@@ -187,7 +187,7 @@ class GWManager(NSObject):
                           }
         else:                                      
             for request in self.processingQueue:
-                if request['value']['securityType'] == actionType and \
+                if request['value']['action'] == actionType and \
                     request['value']['serviceUUID'] == serviceUUIDStr and \
                     request['value']['characteristicUUID'] == characteristicUUIDStr:
                     # consider the first the met as the corresponding request
@@ -196,6 +196,8 @@ class GWManager(NSObject):
                               'value': {
                                         'queryID': request['value']['queryID'],
                                         'peripheralID': peripheralID,
+                                        'serviceUUID': serviceUUIDStr,
+                                        'characteristicUUID': characteristicUUIDStr,
                                         'rtValue': value,
                                         'error': error
                                         }

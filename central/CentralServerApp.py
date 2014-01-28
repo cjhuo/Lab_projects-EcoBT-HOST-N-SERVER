@@ -10,7 +10,7 @@ from config_central import *
 from Gateway import Gateway
 from Security import *
 from Authentication import *
-import pickle
+import pickle, struct, binascii
 
 class CentralServerApp(tornado.web.Application):
     def __init__(self):
@@ -146,7 +146,9 @@ class GWWebsocket(tornado.websocket.WebSocketHandler):
         elif report['type'] == 'peripheralQueryFeedback':
             #import binascii
             #print 'value is ', binascii.unhexlify(report['value']['rtValue']) 
-            print 'value is ', report['value']['rtValue']
+            
+            #test
+            print 'value is ', struct.unpack("@i",binascii.unhexlify(report['value']['rtValue']))
 
 
 class MainHandler(tornado.web.RequestHandler):
