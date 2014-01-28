@@ -12,13 +12,9 @@ class Authentication(object):
     
     def initialize(self, peripheralWorker):
         self.peripheralWorker = peripheralWorker
-        import random
         
-        # check if the peripheral's token is stored in central's knowledge base
-        # TBD
-        # else generate one and store it
-        if self.token == None:
-            self.token = random.getrandbits(64)
+    def setToken(self, token):
+        self.token = token
     
     def checkAuthentication(self, securityHandler=None):
         from config_central import AUTHENTICATION_CHAR

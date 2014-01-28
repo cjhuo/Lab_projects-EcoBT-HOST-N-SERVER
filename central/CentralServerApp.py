@@ -10,7 +10,35 @@ from config_central import *
 from Gateway import Gateway
 from Security import *
 from Authentication import *
-import pickle, struct, binascii
+import os, pickle, struct, binascii, random
+
+class KWDict(object):
+    def __init__(self):
+        self.kwfile = os.path.dirname(__file__)+'/KWDICT'
+        if not os.path.exists(self.kwfile):
+            pf = open(self.kwfile, 'wb', 0)
+            self.kwdict = {}
+            pickle.dump(self.kwdict, pf)
+            self.pf.close()
+        else:
+            pf = open(self.kwfile, 'rb', 0)
+            self.kwdict = pickle.load(pf)
+            pf.close()        
+    
+    def findTokenByID(self, id):
+        if id in self.kwdict.iterkeys():
+            print 'find token ', self.kwdict[id]
+            return self.kwdict[id]
+        return None
+    
+    def generateTokenForID(self, id):
+        token = random.getrandbits(64)
+        self.kwdict[id] = token
+        print 'token generated', token
+        pf = open(self.kwfile, 'wb', 0)
+        pickle.dump(self.kwdict, pf)
+        pf.close()
+        return token
 
 class CentralServerApp(tornado.web.Application):
     def __init__(self):
@@ -20,10 +48,12 @@ class CentralServerApp(tornado.web.Application):
         dict value: Gateway Object instance
         '''''''''''''''''''''''''''''''''''''''''''''       
         self.websockets = {}
+        self.kwdict = KWDict()
+         
         
         self.handlers = [
                 (r"/", MainHandler),
-                (r"/socket", GWWebsocket, dict(websockets = self.websockets)),
+                (r"/socket", GWWebsocket, dict(websockets = self.websockets, kwdict=self.kwdict)),
                 ]
 
         settings = dict(
@@ -36,8 +66,9 @@ class CentralServerApp(tornado.web.Application):
 import tornado.websocket
 
 class GWWebsocket(tornado.websocket.WebSocketHandler):
-    def initialize(self, websockets):
+    def initialize(self, websockets, kwdict):
         self.websockets = websockets    
+        self.kwdict = kwdict
         
     def open(self):
         # initialize gateway websocket
@@ -143,6 +174,20 @@ class GWWebsocket(tornado.websocket.WebSocketHandler):
                                                      'securityHandlerObj': securityHandlerObj
                                                      }
                                            }))
+        elif report['type'] == 'peripheralAuthenticationTokenQuery':        
+        # check if the peripheral's token is stored in central's knowledge base
+        # else generate one and store it
+            token = self.kwdict.findTokenByID(report['value']['peripheralID'])
+            if token == None:
+                token = self.kwdict.generateTokenForID(report['value']['peripheralID'])
+
+            self.write_message(json.dumps({
+                                           'type': 'peripheralAuthenticationTokenResponse',
+                                           'value': {
+                                                     'peripheralID': report['value']['peripheralID'],
+                                                     'authenticationToken': token
+                                                     }
+                                           }))                
         elif report['type'] == 'peripheralQueryFeedback':
             #import binascii
             #print 'value is ', binascii.unhexlify(report['value']['rtValue']) 

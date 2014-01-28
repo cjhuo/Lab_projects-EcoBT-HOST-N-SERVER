@@ -232,7 +232,8 @@ class PeripheralWorker(NSObject):
                 address = str(binascii.hexlify(a6) + '-' + binascii.hexlify(a5) + '-' + binascii.hexlify(a4) + '-' + \
                  binascii.hexlify(a3) + '-' + binascii.hexlify(a2) + '-' + binascii.hexlify(a1))
                 print 'MAC Address: ', address, 'identifier is ', self.identifier
-                # initialize authentication if any
+                self.gateway.receiveFeedbackFromPeripheral(self.identifier, 'Read', srvUUIDStr, chrUUIDStr, self.identifier, None)
+                # initialize authentication if any                
                 if self.authenticationHandler != None:
                     self.authenticationHandler.initialize(peripheral)
                 return
@@ -277,9 +278,7 @@ class PeripheralWorker(NSObject):
         if srvUUIDStr == SECURITY_SERVICE and chrUUIDStr != SECURITY_TYPE_CHARACTERISTIC:
             self.securityHandler.setParameter(characteristic)
         elif srvUUIDStr == AUTHENTICATION_SERVICE and chrUUIDStr == AUTHENTICATION_CHAR:
-            print characteristic._.value
-            print error
-             # ignore authentication service write feedback
+            pass# ignore authentication service write feedback
         elif error == None:
             print 'write success'
             self.gateway.receiveFeedbackFromPeripheral(self.identifier, 'Write', srvUUIDStr, chrUUIDStr, 0, None)

@@ -139,12 +139,27 @@ class GWManager(NSObject):
             peripheral.authenticationHandler = pickle.loads(request['value']['authenticationHandlerObj'])
             if peripheral.identifier != None:
                 peripheral.authenticationHandler.initialize(peripheral)
+            report = {
+                      'type': 'peripheralAuthenticationTokenQuery',
+                      'value': {
+                                'peripheralID': peripheralID,
+                                }
+                      }            
+            if report != None:
+                self.writeReport2Central(report)                 
             
         if request['type'] == 'peripheralSecurityHandlerObj':
             peripheralID = request['value']['peripheralID']
             peripheral = self.findPeripheralWorkerByIdentifier(peripheralID)
             peripheral.securityHandler = pickle.loads(request['value']['securityHandlerObj'])
             peripheral.securityHandler.initialize(peripheral)
+            
+        if request['type'] == 'peripheralAuthenticationTokenResponse':
+            peripheralID = request['value']['peripheralID']
+            peripheral = self.findPeripheralWorkerByIdentifier(peripheralID)
+            peripheral.authenticationHandler.setToken(request['value']['authenticationToken'])
+            if peripheral.securityHandler != None:
+                peripheral.authenticationHandler.checkAuthentication(peripheral.securityHandler)
             
             
     def processTaskQueue(self):
