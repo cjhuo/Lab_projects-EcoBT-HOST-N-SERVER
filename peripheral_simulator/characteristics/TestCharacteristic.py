@@ -42,7 +42,7 @@ class TestCharacteristic(Characteristic):
     if value is not a string
     '''
     def handleReadRequest(self):
-        message = "bytes"
-        struct.pack("@5s", message)
+        message = 1234
+        message = struct.pack("@i", message)
         return message
         

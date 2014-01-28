@@ -199,7 +199,7 @@ class PeripheralManagerWorker(NSObject):
         
         # security channel has already been established  
         message = char.handleReadRequest()    
-        binascii.hexlify(message)
+        message = binascii.hexlify(message)
         data = self.securityHandler.encrypt(message)
         request._.value = NSData.alloc().initWithBytes_length_(data, len(data))
         self.manager.respondToRequest_withResult_(request, CBATTErrorSuccess[0])
