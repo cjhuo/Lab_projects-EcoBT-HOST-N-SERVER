@@ -84,6 +84,8 @@ CBATTErrorInsufficientEncryption                = 0x0F
 CBATTErrorUnsupportedGroupType                    = 0x10
 CBATTErrorInsufficientResources                    = 0x11
 
+CBATTErrorDomain = u'CBATTErrorDomain'
+
 # NSString encoding CONSTS
 NSUTF8StringEncoding = 4
 

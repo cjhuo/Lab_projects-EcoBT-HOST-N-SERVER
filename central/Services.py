@@ -7,6 +7,7 @@ Created on Jan 21, 2014
 from ladon.ladonizer import ladonize
 from ladon.types.ladontype import LadonType
 from ladon.compat import PORTABLE_STRING
+import types
 
 class Band(LadonType):
     name = PORTABLE_STRING
@@ -42,7 +43,7 @@ class Calculator(object):
         @rtype: The result of the addition
         """
         return a+b
-    @ladonize(int, int, rtype=int)
+    @ladonize(int, int, rtype=types.NoneType)
     def delete(self, a, b):
         return a - b 
     

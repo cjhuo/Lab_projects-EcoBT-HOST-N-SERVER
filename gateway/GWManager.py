@@ -30,6 +30,7 @@ from config_gateway import *
 from Queue import Queue 
 import time, json, threading
 from threading import Event
+from collections import deque
 
 from PeripheralWorker import PeripheralWorker
 
@@ -81,6 +82,8 @@ class GWManager(NSObject):
         '''
         self._state = 0
         self.uuid = None
+        self.taskQueue = deque()
+        self.processingQueue = deque()
         # initialize manager with delegate
         NSLog("Initialize CBCentralManager Worker")
         self.manager = CBCentralManager.alloc().initWithDelegate_queue_(self, nil)
@@ -101,7 +104,7 @@ class GWManager(NSObject):
         
     def handleRequestFromGateway(self, request):        
         if request['type'] == 'gatewayAuthentication':
-            message = {
+            report = {
                        'type': 'gatewayAuthenticationFeedback',
                        'value': {
                                  'authorizationToken': GATEWAY_AUTHENTICATION_TOKEN,
@@ -109,13 +112,63 @@ class GWManager(NSObject):
                                  }
                        
                        }
-            self.writeReport2Gateway(message)
-            #self.connection2Gateway.send(message)
+            self.writeReport2Gateway(report)
+            #self.connection2Gateway.send(report)
             
         if request['type'] == 'gatewayUUID':
             self.uuid = request['value']
             print self.uuid
         
+        if request['type'] == 'peripheralQuery':
+            self.taskQueue.append(request)
+            self.processTaskQueue()
+            
+    def processTaskQueue(self):
+        request = None
+        if len(self.taskQueue) != 0:
+            request = self.taskQueue.popleft()
+            self.processingQueue.append(request)
+            
+            #queryID = request['value']['queryID']
+            peripheralID = request['value']['peripheralID']
+            peripheral = self.findPeripheralWorkerByIdentifier(peripheralID)
+            if peripheral == None: # not found 
+                print 'peripheral for this request not found'
+                self.processingQueue.remove(request)
+                return
+            serviceUUIDStr = request['value']['serviceUUID']
+            characteristicUUIDStr = request['value']['characteristicUUID']
+        
+            if request['value']['action'] == 'Read':
+                peripheral.readValueFromPeripheral(serviceUUIDStr, characteristicUUIDStr)
+            if request['value']['action'] == 'Write':
+                message = request['value']['message']
+                peripheral.writeValueForPeripheral(serviceUUIDStr, characteristicUUIDStr, message, True)
+            if request['value']['action'] == 'Write Without Response':
+                message = request['value']['message']
+                peripheral.writeValueForPeripheral(serviceUUIDStr, characteristicUUIDStr, message, False)
+               
+    def receiveFeedbackFromPeripheral(self, actionType, serviceUUIDStr, characteristicUUIDStr, value=None, error=None): 
+        request2del = None
+        report = None
+        for request in self.processingQueue:
+            if request['value']['action'] == actionType and \
+                request['value']['serviceUUID'] == serviceUUIDStr and \
+                request['value']['characteristicUUID'] == characteristicUUIDStr:
+                # consider the first the met as the corresponding request
+                report = {
+                          'type': 'peripheralQueryFeedback',
+                          'value': {
+                                    'queryID': request['value']['queryID'],
+                                    'rtValue': value,
+                                    'error': error
+                                    }
+                          }
+                request2del = request
+                break
+        if request2del != None and report != None:
+            self.processingQueue.remove(request)
+            self.writeReport2Gateway(report)
      
     def updateState(self, state):
         self._state = state
@@ -132,7 +185,6 @@ class GWManager(NSObject):
         
     def stop(self): # clean up
         NSLog("CLEANING UP..")
-
 
     def connectPeripheral(self, peripheralInstance):
         #NSLog("Trying to connnect peripheral %@", peripheral._.UUID)
@@ -154,11 +206,10 @@ class GWManager(NSObject):
     def cancelAllConnection(self):
         for worker in self.peripheralWorkers:
             self.cancelPeripheralConnection(worker.instance)
-            
-        
-    def findPeripheralWorkerByAddress(self, address):
+                    
+    def findPeripheralWorkerByIdentifier(self, identifier):
         for worker in self.peripheralWorkers:
-            if worker.address == address:
+            if worker.identifier == identifier:
                 return worker
         return None
     
@@ -225,6 +276,7 @@ class GWManager(NSObject):
         if found == None:            
             worker = PeripheralWorker.alloc().init()        
             worker.setInstance(peripheral)
+            worker.setGateway(self)
             self.peripheralWorkers.append(worker)            
             self.connectPeripheral(peripheral)
         

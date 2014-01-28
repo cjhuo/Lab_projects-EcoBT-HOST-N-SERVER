@@ -62,36 +62,60 @@ class GWWebsocket(tornado.websocket.WebSocketHandler):
         
         print 'got message '
         pprint.pprint(report)
-        if self.websockets[self].isAuthorized() == False: # check authorization first
-            token = None
-            try:
-                # assuming this is a message with type of gatewayAuthenticationFeedback
-                token = report['value']['authorizationToken']
-            except: # un-authorized
-                print 'un-authorized gateway, closing connection...'
-                self.close()
-                del self.websockets[self]
-                return
-            
-            if token == GATEWAY_AUTHENTICATION_TOKEN:
-                self.websockets[self].setAuthorized(True)
-                if 'gatewayUUID' in (report['value']).keys() and report['value']['gatewayUUID'] != None:
-                    self.websockets[self].setUUID = report['value']['gatewayUUID']
-                else:
-                    # assign an id to this gateway, and send to gateway
-                    self.websockets[self].setUUID = uuid.uuid4().int
+        if report['type'] == 'gatewayAuthenticationFeedback':
+            if self.websockets[self].isAuthorized() == False: # check authorization first
+                token = None
+                try:
+                    # assuming this is a message with type of gatewayAuthenticationFeedback
+                    token = report['value']['authorizationToken']
+                except: # un-authorized
+                    print 'un-authorized gateway, closing connection...'
+                    self.close()
+                    del self.websockets[self]
+                    return
+                
+                if token == GATEWAY_AUTHENTICATION_TOKEN:
+                    self.websockets[self].setAuthorized(True)
+                    if 'gatewayUUID' in (report['value']).keys() and report['value']['gatewayUUID'] != None:
+                        self.websockets[self].setUUID = report['value']['gatewayUUID']
+                    else:
+                        # assign an id to this gateway, and send to gateway
+                        self.websockets[self].setUUID = uuid.uuid4().int
+                        self.write_message({
+                                            'type': 'gatewayUUID',
+                                            'value': self.websockets[self].setUUID
+                                            })
+                    print 'gateway', self.websockets[self].setUUID, ' is authorized'
+                    
+                    #test
                     self.write_message({
-                                        'type': 'gatewayUUID',
-                                        'value': self.websockets[self].setUUID
-                                        })
-                print 'gateway', self.websockets[self].setUUID, ' is authorized'
-            else:
-                print 'un-authorized gateway, closing connection...'
-                self.close()
-                del self.websockets[self]
-                return
-        else:
-            pass
+                                        'type': 'peripheralQuery',
+                                        'value': {
+                                                  'queryID': uuid.uuid4().int,
+                                                  'peripheralID': 14474828687080862490,
+                                                  'action': 'Read',
+                                                  'serviceUUID': '7780',
+                                                  'characteristicUUID': '7781'
+                                                  }
+                                        }) 
+                else:
+                    print 'un-authorized gateway, closing connection...'
+                    self.close()
+                    del self.websockets[self]
+                    return
+            else: 
+                pass # already authorized, ingore
+        elif report['type'] == 'snapshot':
+            for peripheralInfo in report['value']['connected_peripherals']:
+                if SECURITY_SERVICE in peripheralInfo['profileHierarchy'].iterkeys():
+                    # ask what security approach it is
+                    pass
+                if AUTHENTICATION_SERVICE in peripheralInfo['profileHierarchy'].iterkeys():
+                    # provide authentication checking instance
+                    pass
+        elif report['type'] == 'peripheralQueryFeedback':
+            import binascii
+            print 'value is ', binascii.unhexlify(report['value']['rtValue']) 
 
 
 class MainHandler(tornado.web.RequestHandler):

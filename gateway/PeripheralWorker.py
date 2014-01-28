@@ -50,6 +50,9 @@ class PeripheralWorker(NSObject):
     def setInstance(self, instance):
         self.instance = instance   
     
+    def setGateway(self, gateway):
+        self.gateway = gateway
+    
     def stop(self):
         pass
     
@@ -84,6 +87,30 @@ class PeripheralWorker(NSObject):
     def discoverCharacteristics_forService(self, service):
         self.instance.discoverCharacteristics_forService_(nil, service)
         
+    def readValueFromPeripheral(self, serviceUUIDStr, characteristicUUIDStr):
+        for service in self.instance._.services:
+            if service._.UUID == CBUUID.UUIDWithString_(serviceUUIDStr):
+                for char in service._.characteristics:
+                    if char._.UUID == CBUUID.UUIDWithString_(characteristicUUIDStr):
+                        self.readValueForCharacteristic(char)
+                        return
+        # raise error if can't find a relevant characteristic            
+        
+    
+    def writeValueForPeripheral(self, serviceUUIDStr, characteristicUUIDStr, message, requireRespone):
+        for service in self.instance._.services:
+            if service._.UUID == CBUUID.UUIDWithString_(serviceUUIDStr):
+                for char in service._.characteristics:
+                    if char._.UUID == CBUUID.UUIDWithString_(characteristicUUIDStr):
+                        if requireRespone:
+                            self.writeValueForCharacteristic(char, NSData.alloc().initWithBytes_length_(message, len(message)), 
+                                                             CBCharacteristicWriteWithResponse)
+                        else:
+                            self.writeValueForCharacteristic(char, NSData.alloc().initWithBytes_length_(message, len(message)), 
+                                                             CBCharacteristicWriteWithoutResponse)
+                        return
+        # raise error if can't find a relevant characteristic            
+                            
     def readValueForCharacteristic(self, characteristic):
         NSLog("READING CHARACTERISTIC VALUE FROM %@", characteristic._.UUID)
         self.instance.readValueForCharacteristic_(characteristic)
@@ -153,6 +180,7 @@ class PeripheralWorker(NSObject):
         #NSLog("descriptor's value is %@", NSString.alloc().initWithData_encoding_(descriptor._.value, NSUTF8StringEncoding))
         pprint.pprint(self.profileHierarchyDict)
 
+
     def peripheral_didWriteValueForDescriptor_error_(self,
                                                      peripheral,
                                                      descriptor,
@@ -167,17 +195,30 @@ class PeripheralWorker(NSObject):
                                                           characteristic,
                                                           error):
 #        print "Read Characteristic(%s) value" % characteristic._.UUID
+#        print 'error equals to None? ', error == None
         NSLog("didUpdateValueForCharacteristic error %@", error)
         srvUUIDStr = self.UUID2Str(characteristic._.service._.UUID)   
         chrUUIDStr = self.UUID2Str(characteristic._.UUID)
         if chrUUIDStr == SYSTEM_ID_CHAR and srvUUIDStr == DEVICE_INFO_SERVICE:
-            idntfr, = struct.unpack('@Q', characteristic._.value)
+            idntfr, = struct.unpack('@Q', bytes(characteristic._.value))
             self.identifier = idntfr
             hex_str = binascii.hexlify(characteristic._.value)
             a1, a2, a3, a4, a5, a6 = struct.unpack('cccxxccc', characteristic._.value)
             address = str(binascii.hexlify(a6) + '-' + binascii.hexlify(a5) + '-' + binascii.hexlify(a4) + '-' + \
              binascii.hexlify(a3) + '-' + binascii.hexlify(a2) + '-' + binascii.hexlify(a1))
             print 'MAC Address: ', address, 'identifier is ', self.identifier
+        elif srvUUIDStr == SECURITY_SERVICE:
+            self.securityHandler.initialize(characteristic)            
+        elif self.securityHandler.isInitialized():
+            if self.authenticationHandler.isInitialized():
+                print bytes(characteristic._.value)
+                print len(characteristic._.value)
+                if error == None:
+                    self.gateway.receiveFeedbackFromPeripheral('Read', srvUUIDStr, chrUUIDStr, binascii.hexlify(characteristic._.value), None)
+                else:
+                    self.gateway.receiveFeedbackFromPeripheral('Read', srvUUIDStr, chrUUIDStr, binascii.hexlify(characteristic._.value), int(error._.code))
+            else:
+                self.authenticationHandler.initialize()
                       
 
 
@@ -186,7 +227,16 @@ class PeripheralWorker(NSObject):
                                                          characteristic,
                                                          error):
         NSLog("CHAR(%@) is updated", characteristic._.UUID)
-            
+        srvUUIDStr = self.UUID2Str(characteristic._.service._.UUID)   
+        chrUUIDStr = self.UUID2Str(characteristic._.UUID)
+        
+        if srvUUIDStr != SECURITY_SERVICE or srvUUIDStr != AUTHENTICATION_SERVICE: # ignore feedback from security and authentication       
+            if error == None:
+                print 'write success'
+                self.gateway.receiveFeedbackFromPeripheral('Write', srvUUIDStr, chrUUIDStr, 0, None)
+            else:
+                print 'write failed'
+                self.gateway.receiveFeedbackFromPeripheral('Write', srvUUIDStr, chrUUIDStr, -1, int(error._.code))
 
     def peripheral_didUpdateNotificationStateForCharacteristic_error_(self,
                                                                       peripheral,

@@ -26,7 +26,7 @@ class TestCharacteristic(Characteristic):
         print "Initializing descriptors.."
         
         '''
-        Format, Exponent, Unit, Namespace, Description
+        Format:8bit, Exponent:sint8, Unit:uint16, Namespace:8bit, Description:16bit
         '''
         data = struct.pack("@BbHBH", 8, 0, 1, 0, 0)
         

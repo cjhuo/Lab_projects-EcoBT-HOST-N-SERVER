@@ -64,6 +64,7 @@ CBATTErrorInsufficientResources                    = 0x11
 
 # NSString encoding CONSTS
 NSUTF8StringEncoding = 4
+CBATTErrorDomain = u'CBATTErrorDomain'
 
 SECURITY_SERVICE = '7770'
 DEVICE_INFO = '180A'

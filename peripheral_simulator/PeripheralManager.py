@@ -15,7 +15,7 @@ from SecurityHandler import SecurityHandler
 from datetime import datetime
 import struct
 
-EXPIRATION_INTERVAL = 10 # unit: second
+EXPIRATION_INTERVAL = 100 # unit: second
 
 class PeripheralManagerWorker(NSObject):
     
