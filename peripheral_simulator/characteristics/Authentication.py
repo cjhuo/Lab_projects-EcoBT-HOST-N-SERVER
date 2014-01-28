@@ -36,5 +36,5 @@ class Authentication(Characteristic):
             print 'Authentication Token initialized: ', self.authenticationToken
             return True
         else: # compare with stored token
-            return self.authenticationToken == data
+            return self.authenticationToken == (struct.unpack("@Q", data))[0]
         
