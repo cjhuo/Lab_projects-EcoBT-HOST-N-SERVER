@@ -148,7 +148,7 @@ class GWWebsocket(tornado.websocket.WebSocketHandler):
             #print 'value is ', binascii.unhexlify(report['value']['rtValue']) 
             
             #test
-            print 'value is ', struct.unpack("@i",binascii.unhexlify(report['value']['rtValue']))
+            print 'value is ', (struct.unpack("@i",binascii.unhexlify(report['value']['rtValue'])))[0]
 
 
 class MainHandler(tornado.web.RequestHandler):

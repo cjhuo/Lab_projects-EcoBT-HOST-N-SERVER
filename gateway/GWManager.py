@@ -51,24 +51,24 @@ class PeriodicUpdater(threading.Thread):
         
     def run(self):
         while not self.flag.isSet():
-            try:
-                time.sleep(GATEWAY_UPDATE2CENTRAL_INTERVAL)
-                print 'sending snapshot to central'
-                gatewayOverview = {}
-                gatewayOverview['gateway_id'] = self.gatewayManager.getUUID()
-                gatewayOverview['connected_peripherals'] = []
-                for peripheralWorker in self.gatewayManager.getPeripheralWorkers():
-                    temp = {}
-                    temp['isSecured'] = (peripheralWorker.securityHandler != None)
-                    temp['isAuthorized'] = (peripheralWorker.authenticationHandler != None)
-                    temp['id'] = peripheralWorker.getIdentifier()
-                    temp['profileHierarchy'] = peripheralWorker.getProfileHierarchy()
-                    gatewayOverview['connected_peripherals'].append(temp)
-                message = {
-                           'type': 'snapshot',
-                           'value': gatewayOverview
-                           }
-                
+            
+            time.sleep(GATEWAY_UPDATE2CENTRAL_INTERVAL)
+            print 'sending snapshot to central'
+            gatewayOverview = {}
+            gatewayOverview['gateway_id'] = self.gatewayManager.getUUID()
+            gatewayOverview['connected_peripherals'] = []
+            for peripheralWorker in self.gatewayManager.getPeripheralWorkers():
+                temp = {}
+                temp['isSecured'] = (peripheralWorker.securityHandler != None and peripheralWorker.securityHandler.isSecured())
+                temp['isAuthorized'] = (peripheralWorker.authenticationHandler != None and peripheralWorker.authenticationHandler.isAuthorized())
+                temp['id'] = peripheralWorker.getIdentifier()
+                temp['profileHierarchy'] = peripheralWorker.getProfileHierarchy()
+                gatewayOverview['connected_peripherals'].append(temp)
+            message = {
+                       'type': 'snapshot',
+                       'value': gatewayOverview
+                       }
+            try:    
                 self.gatewayManager.writeReport2Central(message)
             except:
                 print 'error happened when sending update to central'

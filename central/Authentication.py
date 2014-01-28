@@ -31,8 +31,8 @@ class Authentication(object):
         self.authorized = True
     
     def reset(self):
-        self.authorized = None
-        self.initialize(peripheralWorker)
+        self.authorized = False
+        self.initialize(self.peripheralWorker)
     
     def isAuthorized(self):
         return self.authorized

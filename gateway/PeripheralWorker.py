@@ -255,10 +255,7 @@ class PeripheralWorker(NSObject):
                     return
                 print 'decryption required'
                 data, = struct.unpack("@"+str(len(characteristic._.value))+"s", characteristic._.value)
-                print len(data)
                 message = self.securityHandler.decrypt(characteristic._.value)
-                #print message
-                #message = binascii.unhexlify(message)
                 #print struct.unpack("@i", binascii.unhexlify(message))
             if error == None:
                 self.gateway.receiveFeedbackFromPeripheral(self.identifier, 'Read', srvUUIDStr, chrUUIDStr, message, None)
@@ -280,7 +277,9 @@ class PeripheralWorker(NSObject):
         if srvUUIDStr == SECURITY_SERVICE and chrUUIDStr != SECURITY_TYPE_CHARACTERISTIC:
             self.securityHandler.setParameter(characteristic)
         elif srvUUIDStr == AUTHENTICATION_SERVICE and chrUUIDStr == AUTHENTICATION_CHAR:
-            pass # ignore authentication service write feedback
+            print characteristic._.value
+            print error
+             # ignore authentication service write feedback
         elif error == None:
             print 'write success'
             self.gateway.receiveFeedbackFromPeripheral(self.identifier, 'Write', srvUUIDStr, chrUUIDStr, 0, None)
