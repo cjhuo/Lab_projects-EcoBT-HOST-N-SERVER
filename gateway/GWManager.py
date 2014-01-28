@@ -31,6 +31,7 @@ from Queue import Queue
 import time, json, threading
 from threading import Event
 from collections import deque
+import pickle
 
 from PeripheralWorker import PeripheralWorker
 
@@ -50,22 +51,25 @@ class PeriodicUpdater(threading.Thread):
         
     def run(self):
         while not self.flag.isSet():
-            time.sleep(GATEWAY_UPDATE2CENTRAL_INTERVAL)
-            print 'sending snapshot to central'
-            gatewayOverview = {}
-            gatewayOverview['gateway_id'] = self.gatewayManager.getUUID()
-            gatewayOverview['connected_peripherals'] = []
-            for peripheralWorker in self.gatewayManager.getPeripheralWorkers():
-                temp = {}
-                temp['id'] = peripheralWorker.getIdentifier()
-                temp['profileHierarchy'] = peripheralWorker.getProfileHierarchy()
-                gatewayOverview['connected_peripherals'].append(temp)
-            message = {
-                       'type': 'snapshot',
-                       'value': gatewayOverview
-                       }
             try:
-                self.gatewayManager.writeReport2Gateway(message)
+                time.sleep(GATEWAY_UPDATE2CENTRAL_INTERVAL)
+                print 'sending snapshot to central'
+                gatewayOverview = {}
+                gatewayOverview['gateway_id'] = self.gatewayManager.getUUID()
+                gatewayOverview['connected_peripherals'] = []
+                for peripheralWorker in self.gatewayManager.getPeripheralWorkers():
+                    temp = {}
+                    temp['isSecured'] = (peripheralWorker.securityHandler != None)
+                    temp['isAuthorized'] = (peripheralWorker.authenticationHandler != None)
+                    temp['id'] = peripheralWorker.getIdentifier()
+                    temp['profileHierarchy'] = peripheralWorker.getProfileHierarchy()
+                    gatewayOverview['connected_peripherals'].append(temp)
+                message = {
+                           'type': 'snapshot',
+                           'value': gatewayOverview
+                           }
+                
+                self.gatewayManager.writeReport2Central(message)
             except:
                 print 'error happened when sending update to central'
                  
@@ -84,6 +88,7 @@ class GWManager(NSObject):
         self.uuid = None
         self.taskQueue = deque()
         self.processingQueue = deque()
+        self.connection2Gateway = None
         # initialize manager with delegate
         NSLog("Initialize CBCentralManager Worker")
         self.manager = CBCentralManager.alloc().initWithDelegate_queue_(self, nil)
@@ -96,13 +101,13 @@ class GWManager(NSObject):
     def getPeripheralWorkers(self):
         return self.peripheralWorkers
 
-    def setConnection2Gateway(self, connection2Gateway):
+    def setConnection2Central(self, connection2Gateway):
         self.connection2Gateway = connection2Gateway
         
-    def writeReport2Gateway(self, report):
+    def writeReport2Central(self, report):
         self.connection2Gateway.send(json.dumps(report))
         
-    def handleRequestFromGateway(self, request):        
+    def handleRequestFromCentral(self, request):        
         if request['type'] == 'gatewayAuthentication':
             report = {
                        'type': 'gatewayAuthenticationFeedback',
@@ -112,7 +117,7 @@ class GWManager(NSObject):
                                  }
                        
                        }
-            self.writeReport2Gateway(report)
+            self.writeReport2Central(report)
             #self.connection2Gateway.send(report)
             
         if request['type'] == 'gatewayUUID':
@@ -122,6 +127,25 @@ class GWManager(NSObject):
         if request['type'] == 'peripheralQuery':
             self.taskQueue.append(request)
             self.processTaskQueue()
+            
+        if request['type'] == 'peripheralSecurityTypeCheck':
+            peripheralID = request['value']['peripheralID']
+            peripheral = self.findPeripheralWorkerByIdentifier(peripheralID)
+            peripheral.readValueFromPeripheral(SECURITY_SERVICE, SECURITY_TYPE_CHARACTERISTIC)
+            
+        if request['type'] == 'peripheralAuthenticationHandlerObj':
+            peripheralID = request['value']['peripheralID']
+            peripheral = self.findPeripheralWorkerByIdentifier(peripheralID)
+            peripheral.authenticationHandler = pickle.loads(request['value']['authenticationHandlerObj'])
+            if peripheral.identifier != None:
+                peripheral.authenticationHandler.initialize(peripheral)
+            
+        if request['type'] == 'peripheralSecurityHandlerObj':
+            peripheralID = request['value']['peripheralID']
+            peripheral = self.findPeripheralWorkerByIdentifier(peripheralID)
+            peripheral.securityHandler = pickle.loads(request['value']['securityHandlerObj'])
+            peripheral.securityHandler.initialize(peripheral)
+            
             
     def processTaskQueue(self):
         request = None
@@ -148,27 +172,40 @@ class GWManager(NSObject):
                 message = request['value']['message']
                 peripheral.writeValueForPeripheral(serviceUUIDStr, characteristicUUIDStr, message, False)
                
-    def receiveFeedbackFromPeripheral(self, actionType, serviceUUIDStr, characteristicUUIDStr, value=None, error=None): 
+    def receiveFeedbackFromPeripheral(self, peripheralID, actionType, serviceUUIDStr, characteristicUUIDStr, value=None, error=None): 
         request2del = None
         report = None
-        for request in self.processingQueue:
-            if request['value']['action'] == actionType and \
-                request['value']['serviceUUID'] == serviceUUIDStr and \
-                request['value']['characteristicUUID'] == characteristicUUIDStr:
-                # consider the first the met as the corresponding request
+        
+        if serviceUUIDStr == SECURITY_SERVICE and characteristicUUIDStr == SECURITY_TYPE_CHARACTERISTIC:              
                 report = {
-                          'type': 'peripheralQueryFeedback',
+                          'type': 'peripheralSecurityTypeCheck',
                           'value': {
-                                    'queryID': request['value']['queryID'],
-                                    'rtValue': value,
+                                    'peripheralID': peripheralID,
+                                    'securityType': int(value),
                                     'error': error
                                     }
                           }
-                request2del = request
-                break
-        if request2del != None and report != None:
-            self.processingQueue.remove(request)
-            self.writeReport2Gateway(report)
+        else:                                      
+            for request in self.processingQueue:
+                if request['value']['securityType'] == actionType and \
+                    request['value']['serviceUUID'] == serviceUUIDStr and \
+                    request['value']['characteristicUUID'] == characteristicUUIDStr:
+                    # consider the first the met as the corresponding request
+                    report = {
+                              'type': 'peripheralQueryFeedback',
+                              'value': {
+                                        'queryID': request['value']['queryID'],
+                                        'peripheralID': peripheralID,
+                                        'rtValue': value,
+                                        'error': error
+                                        }
+                              }
+                    request2del = request
+                    break
+            if request2del != None:
+                self.processingQueue.remove(request)
+        if report != None:
+            self.writeReport2Central(report)
      
     def updateState(self, state):
         self._state = state

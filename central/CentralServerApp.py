@@ -8,6 +8,9 @@ import tornado.web, json, uuid, pprint
 
 from config_central import *
 from Gateway import Gateway
+from Security import *
+from Authentication import *
+import pickle
 
 class CentralServerApp(tornado.web.Application):
     def __init__(self):
@@ -81,14 +84,15 @@ class GWWebsocket(tornado.websocket.WebSocketHandler):
                     else:
                         # assign an id to this gateway, and send to gateway
                         self.websockets[self].setUUID = uuid.uuid4().int
-                        self.write_message({
+                        self.write_message(json.dumps({
                                             'type': 'gatewayUUID',
                                             'value': self.websockets[self].setUUID
-                                            })
+                                            }))
                     print 'gateway', self.websockets[self].setUUID, ' is authorized'
                     
+                    '''
                     #test
-                    self.write_message({
+                    self.write_message(json.dumps({
                                         'type': 'peripheralQuery',
                                         'value': {
                                                   'queryID': uuid.uuid4().int,
@@ -97,25 +101,53 @@ class GWWebsocket(tornado.websocket.WebSocketHandler):
                                                   'serviceUUID': '7780',
                                                   'characteristicUUID': '7781'
                                                   }
-                                        }) 
+                                        })) 
+                    '''
                 else:
                     print 'un-authorized gateway, closing connection...'
                     self.close()
                     del self.websockets[self]
                     return
             else: 
-                pass # already authorized, ingore
+                pass # already authorized, ignore
         elif report['type'] == 'snapshot':
             for peripheralInfo in report['value']['connected_peripherals']:
-                if SECURITY_SERVICE in peripheralInfo['profileHierarchy'].iterkeys():
-                    # ask what security approach it is
-                    pass
-                if AUTHENTICATION_SERVICE in peripheralInfo['profileHierarchy'].iterkeys():
-                    # provide authentication checking instance
-                    pass
+                if peripheralInfo['id'] != None:
+                    if peripheralInfo['isSecured'] == False:
+                        if SECURITY_SERVICE in peripheralInfo['profileHierarchy'].iterkeys():
+                            # ask what security approach it is
+                            self.write_message(json.dumps({
+                                                'type': 'peripheralSecurityTypeCheck',
+                                                'value': {
+                                                          'peripheralID': peripheralInfo['id'],
+                                                          'securityService': SECURITY_SERVICE,
+                                                          'securityTypeCharacteristic': SECURITY_TYPE_CHARACTERISTIC
+                                                          }
+                                                }))
+                    if peripheralInfo['isAuthorized'] == False:
+                        if AUTHENTICATION_SERVICE in peripheralInfo['profileHierarchy'].iterkeys():
+                            # provide authentication checking instance
+                            authenticationHandlerObj = pickle.dumps(Authentication())
+                            self.write_message(json.dumps({
+                                                'type': 'peripheralAuthenticationHandlerObj',
+                                                'value': {
+                                                          'peripheralID': peripheralInfo['id'],
+                                                          'authenticationHandlerObj': authenticationHandlerObj
+                                                          }
+                                                }))
+        elif report['type'] == 'peripheralSecurityTypeCheck':
+            securityHandlerObj = pickle.dumps(SecurityHandlerFactory(report['value']['securityType']))
+            self.write_message(json.dumps({
+                                           'type': 'peripheralSecurityHandlerObj',
+                                           'value': {
+                                                     'peripheralID': report['value']['peripheralID'],
+                                                     'securityHandlerObj': securityHandlerObj
+                                                     }
+                                           }))
         elif report['type'] == 'peripheralQueryFeedback':
-            import binascii
-            print 'value is ', binascii.unhexlify(report['value']['rtValue']) 
+            #import binascii
+            #print 'value is ', binascii.unhexlify(report['value']['rtValue']) 
+            print 'value is ', report['value']['rtValue']
 
 
 class MainHandler(tornado.web.RequestHandler):

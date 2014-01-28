@@ -13,7 +13,7 @@ from PyObjCTools import AppHelper
 import ProfileHierarchyBuilder
 from SecurityHandler import SecurityHandler
 from datetime import datetime
-import struct
+import struct, binascii
 
 EXPIRATION_INTERVAL = 100 # unit: second
 
@@ -199,7 +199,8 @@ class PeripheralManagerWorker(NSObject):
         
         # security channel has already been established  
         # check if authentication is approved                                                            
-        message = char.handleReadRequest()       
+        message = char.handleReadRequest()    
+        binascii.hexlify(message)
         data = self.securityHandler.encrypt(message)
         request._.value = NSData.alloc().initWithBytes_length_(data, len(data))
         self.manager.respondToRequest_withResult_(request, CBATTErrorSuccess[0])
@@ -244,25 +245,27 @@ class PeripheralManagerWorker(NSObject):
             serviceUUID = self.UUID2Str(request._.characteristic._.service._.UUID)
             char = self.findCharacteristicByUUID(serviceUUID, charUUID)
             
+            if serviceUUID == SECURITY_SERVICE: # no encryption
+                char.handleWriteRequest(message)
+                continue
+            
             # descrypt first
             data, = struct.unpack("@"+str(len(request._.value))+"s", request._.value)
             message = self.securityHandler.decrypt(data)
-            
-            if serviceUUID == SECURITY_SERVICE:
-                char.handleWriteRequest(message)
-                continue
+            message = binascii.unhexlify(message)
 
-            if self.securityHandler.isInitialized():
-                if serviceUUID == AUTHENTICATION_SERVICE and charUUID == AUTHENTICATION_CHAR:
-                    self.authorized = char.handleWriteRequest(message)
-                    if self.authorized == False:
-                        print "authentication not approved"  
-                        self.manager.respondToRequest_withResult_(requests[0], CBATTErrorInvalidPdu)
-                        return
-                    else:
-                        print "authentication approved"                
-                elif self.authorized:
-                    char.handleWriteRequest(message)
+            if serviceUUID == AUTHENTICATION_SERVICE and charUUID == AUTHENTICATION_CHAR:
+                self.authorized = char.handleWriteRequest(message)
+                if self.authorized == False:
+                    print "authentication not approved"  
+                    self.manager.respondToRequest_withResult_(requests[0], CBATTErrorInvalidPdu)
+                    return
+                else:
+                    print "authentication approved"
+                    continue                
+            
+            if self.authorized:
+                char.handleWriteRequest(message)
             else:
                 self.manager.respondToRequest_withResult_(requests[0], CBATTErrorWriteNotPermitted)
                 return

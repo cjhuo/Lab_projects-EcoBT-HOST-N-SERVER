@@ -16,7 +16,7 @@ class GatewayApp(object):
         self.managerWorker = GWManager.alloc().init()  
         self.enableKeyboardInterrupt = enableKeyboardInterrupt 
         self.connection2Gateway = Connection2Gateway(self.managerWorker)
-        self.managerWorker.setConnection2Gateway(self.connection2Gateway)
+        self.managerWorker.setConnection2Central(self.connection2Gateway)
                 
     def start(self):
         # initialize NSAutoreleasePool
@@ -115,7 +115,7 @@ class Connection2Gateway(object):
         self.connection.close()
         
     def handleIcomingRequest(self, message):
-        self.peripheralWorker.handleRequestFromGateway(message)
+        self.peripheralWorker.handleRequestFromCentral(message)
 
     
 class WebSocketConnection(WebSocketClient):
