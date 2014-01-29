@@ -8,6 +8,7 @@ from config_gateway import *
 
 from GWManager import GWManager
 from threading import Event
+from Queue import Queue
 
 class GatewayApp(object):
 
@@ -76,17 +77,20 @@ class Connection2Gateway(object):
         self.connection = None
         self.connectionType = connectionType
         self.connect(self.connectionType)      
+        self.inQueue = Queue()
+        self.outQueue = Queue()
         
     def connect(self, connectionType):    
         if connectionType == 'WebSocket':
             success = False
             while not success:
                 try:
-                    self.connection = WebSocketConnection('ws://localhost:8888/socket', protocols=['http-only', 'chat'])
+                    self.connection = WebSocketConnection('ws://ecocloud.eng.uci.edu:8881/socket', protocols=['http-only', 'chat'])
                     self.connection.setOwner(self)
                     self.connection.connect()
                     success = True
-                except:
+                except Exception as e:
+                    print e
                     print '\nConnection to gateway refused\nTry again in ', GATEWAY_RECONNECT_WAIT_INTERVAL, ' seconds'
                     for i in range(GATEWAY_RECONNECT_WAIT_INTERVAL, 0, -1):
                         time.sleep(1)
@@ -118,7 +122,8 @@ class Connection2Gateway(object):
         self.connection.close()
         
     def handleIcomingRequest(self, message):
-        self.peripheralWorker.handleRequestFromCentral(message)
+        self.inQueue.put(message)
+        #self.peripheralWorker.handleRequestFromCentral(message)
 
     
 class WebSocketConnection(WebSocketClient):

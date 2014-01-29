@@ -7,11 +7,12 @@ Created on Jan 27, 2014
 class Gateway(object):
     def __init__(self):
         self.authtorized = False
-        self.profileHierarchy = None
+        self.peripherals = None
         self.uuid = None
         
     def setUUID(self, uuid):
         self.uuid = uuid
+        return self.uuid
         
     def isAuthorized(self):
         return self.authtorized

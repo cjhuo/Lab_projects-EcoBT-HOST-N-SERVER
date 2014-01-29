@@ -17,13 +17,12 @@ class Authentication(object):
         self.token = token
     
     def checkAuthentication(self, securityHandler=None):
-        from config_central import AUTHENTICATION_CHAR
         import struct, binascii
         data = binascii.hexlify(struct.pack("@Q", self.token))
         print 'Assigning an authentication to peripheral', self.peripheralWorker.identifier, ': ', self.token
         if securityHandler != None:
             data = securityHandler.encrypt(data)
-        self.peripheralWorker.writeValueForCharacteristic(data, AUTHENTICATION_CHAR, True)
+        self.peripheralWorker.writeValueForCharacteristic(data, '7761', True)
         self.authorized = True
     
     def reset(self):

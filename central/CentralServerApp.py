@@ -49,11 +49,14 @@ class CentralServerApp(tornado.web.Application):
         '''''''''''''''''''''''''''''''''''''''''''''       
         self.websockets = {}
         self.kwdict = KWDict()
+        self.query_queue = {}
          
         
         self.handlers = [
                 (r"/", MainHandler),
-                (r"/socket", GWWebsocket, dict(websockets = self.websockets, kwdict=self.kwdict)),
+                (r"/socket", GWWebsocket, dict(websockets = self.websockets, kwdict=self.kwdict, query_queue=self.query_queue)),
+                (r"/check", checkHandler, dict(websockets = self.websockets)),
+                (r"/query", queryHandler, dict(websockets = self.websockets, query_queue=self.query_queue)),
                 ]
 
         settings = dict(
@@ -62,13 +65,60 @@ class CentralServerApp(tornado.web.Application):
                         )
         
         tornado.web.Application.__init__(self, self.handlers, **settings)
+        
+        
+class queryHandler(tornado.web.RequestHandler):
+    def initialize(self, websockets, query_queue):
+        self.websockets = websockets
+        self.query_queue = query_queue
+        
+    @tornado.web.asynchronous
+    def get(self):
+        qtype = self.get_argument('query_type')
+        gw_id = int(self.get_argument('gateway_id'))
+        prl_id = int(self.get_argument('peripheral_id'))
+        srv_id = self.get_argument('service_id')
+        chr_id = self.get_argument('characteristic_id')
+        try:
+            for websocket, gateway in self.websockets.iteritems():
+                if gateway.getUUID() == gw_id:
+                    if qtype != 'Notify':
+                        query_id = random.getrandbits(64)
+                        print 'new query', query_id
+                        websocket.write_message(json.dumps({
+                                            'type': 'peripheralQuery',
+                                            'value': {
+                                                      'queryID': query_id,
+                                                      'peripheralID': prl_id,
+                                                      'action': qtype,
+                                                      'serviceUUID': srv_id,
+                                                      'characteristicUUID': chr_id
+                                                      }
+                                            }))          
+                        self.query_queue[query_id] = self
+        except Exception as e:
+            print "Error on peripheral query format:", e
+        
+class checkHandler(tornado.web.RequestHandler):
+    def initialize(self, websockets):
+        self.websockets = websockets
+        
+    def get(self):
+        overview_map = {'gateways': []}
+        for websocket, gateway in self.websockets.iteritems():
+            overview_map['gateways'].append({
+                                            'gateway_id': gateway.getUUID(),
+                                            'peripherals': gateway.peripherals
+                                            })
+        self.write(json.dumps(overview_map))
 
 import tornado.websocket
 
 class GWWebsocket(tornado.websocket.WebSocketHandler):
-    def initialize(self, websockets, kwdict):
+    def initialize(self, websockets, kwdict, query_queue):
         self.websockets = websockets    
         self.kwdict = kwdict
+        self.query_queue = query_queue
         
     def open(self):
         # initialize gateway websocket
@@ -111,15 +161,16 @@ class GWWebsocket(tornado.websocket.WebSocketHandler):
                 if token == GATEWAY_AUTHENTICATION_TOKEN:
                     self.websockets[self].setAuthorized(True)
                     if 'gatewayUUID' in (report['value']).keys() and report['value']['gatewayUUID'] != None:
-                        self.websockets[self].setUUID = report['value']['gatewayUUID']
+                        self.websockets[self].setUUID(report['value']['gatewayUUID'])
                     else:
                         # assign an id to this gateway, and send to gateway
-                        self.websockets[self].setUUID = uuid.uuid4().int
+                        #self.websockets[self].setUUID(uuid.uuid4().int)
+                        self.websockets[self].setUUID(random.getrandbits(16))
                         self.write_message(json.dumps({
                                             'type': 'gatewayUUID',
-                                            'value': self.websockets[self].setUUID
+                                            'value': self.websockets[self].getUUID()
                                             }))
-                    print 'gateway', self.websockets[self].setUUID, ' is authorized'
+                    print 'gateway', self.websockets[self].getUUID(), ' is authorized'
                 else:
                     print 'un-authorized gateway, closing connection...'
                     self.close()
@@ -128,6 +179,7 @@ class GWWebsocket(tornado.websocket.WebSocketHandler):
             else: 
                 pass # already authorized, ignore
         elif report['type'] == 'snapshot':
+            self.websockets[self].peripherals = report['value']['connected_peripherals']
             for peripheralInfo in report['value']['connected_peripherals']:
                 if peripheralInfo['id'] != None:
                     if peripheralInfo['isSecured'] == False:
@@ -144,14 +196,18 @@ class GWWebsocket(tornado.websocket.WebSocketHandler):
                     if peripheralInfo['isAuthorized'] == False:
                         if AUTHENTICATION_SERVICE in peripheralInfo['profileHierarchy'].iterkeys():
                             # provide authentication checking instance
-                            authenticationHandlerObj = pickle.dumps(Authentication())
+                            fp = open(os.path.join(os.path.dirname(__file__), 'Authentication.py'), 'r')
+                            authenticationHandlerCls = fp.read()
+                            #authenticationHandlerObj = pickle.dumps(Authentication())
                             self.write_message(json.dumps({
-                                                'type': 'peripheralAuthenticationHandlerObj',
+                                                'type': 'peripheralAuthenticationHandlerCls',
                                                 'value': {
                                                           'peripheralID': peripheralInfo['id'],
-                                                          'authenticationHandlerObj': authenticationHandlerObj
+                                                          'authenticationHandlerCls': authenticationHandlerCls
                                                           }
                                                 }))
+                            fp.close()
+                    '''
                     # test
                     if peripheralInfo['isSecured'] and peripheralInfo['isAuthorized']:
                         self.write_message(json.dumps({
@@ -164,16 +220,21 @@ class GWWebsocket(tornado.websocket.WebSocketHandler):
                                                       'characteristicUUID': '7781'
                                                       }
                                             })) 
+                    '''
                             
         elif report['type'] == 'peripheralSecurityTypeCheck':
-            securityHandlerObj = pickle.dumps(SecurityHandlerFactory(report['value']['securityType']))
+            fp = open(os.path.join(os.path.dirname(__file__), 'Security.py'), 'r')
+            securityHandlerCls = fp.read()
+            #securityHandlerObj = pickle.dumps(SecurityHandlerFactory(report['value']['securityType']))
             self.write_message(json.dumps({
-                                           'type': 'peripheralSecurityHandlerObj',
+                                           'type': 'peripheralSecurityHandlerCls',
                                            'value': {
+                                                     'securityType': report['value']['securityType'],
                                                      'peripheralID': report['value']['peripheralID'],
-                                                     'securityHandlerObj': securityHandlerObj
+                                                     'securityHandlerCls': securityHandlerCls
                                                      }
                                            }))
+            fp.close()
         elif report['type'] == 'peripheralAuthenticationTokenQuery':        
         # check if the peripheral's token is stored in central's knowledge base
         # else generate one and store it
@@ -194,6 +255,14 @@ class GWWebsocket(tornado.websocket.WebSocketHandler):
             
             #test
             print 'value is ', (struct.unpack("@i",binascii.unhexlify(report['value']['rtValue'])))[0]
+            
+            query_id = report['value']['queryID']
+            print 'query feedback ', query_id
+            if query_id in self.query_queue.iterkeys():
+                self.query_queue[query_id].write(json.dumps({'query_id': query_id,
+                                                             'result': report['value']['rtValue']
+                                                             }))
+                self.query_queue[query_id].finish()
 
 
 class MainHandler(tornado.web.RequestHandler):

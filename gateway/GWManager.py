@@ -35,6 +35,55 @@ import pickle
 
 from PeripheralWorker import PeripheralWorker
 
+# Importing a dynamically generated module
+
+def importCode(code,name,add_to_sys_modules=0):
+    """
+    Import dynamically generated code as a module. code is the
+    object containing the code (a string, a file handle or an
+    actual compiled code object, same types as accepted by an
+    exec statement). The name is the name to give to the module,
+    and the final argument says wheter to add it to sys.modules
+    or not. If it is added, a subsequent import statement using
+    name will return this module. If it is not added to sys.modules
+    import will try to load it in the normal fashion.
+
+    import foo
+
+    is equivalent to
+
+    foofile = open("/path/to/foo.py")
+    foo = importCode(foofile,"foo",1)
+
+    Returns a newly generated module.
+    """
+    import sys,imp
+
+    module = imp.new_module(name)
+
+    exec code in module.__dict__
+    if add_to_sys_modules:
+        sys.modules[name] = module
+
+    return module
+'''
+# Example
+code = \
+"""
+def testFunc():
+    print "spam!"
+
+class testClass:
+    def testMethod(self):
+        print "eggs!"
+"""
+
+m = importCode(code,"test")
+m.testFunc()
+o = m.testClass()
+o.testMethod()
+'''
+
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 Serves for periodically send gateway snapshot to central.
 The snapshot includes:
@@ -72,7 +121,78 @@ class PeriodicUpdater(threading.Thread):
                 self.gatewayManager.writeReport2Central(message)
             except:
                 print 'error happened when sending update to central'
-                 
+                
+class InQueueHandler(threading.Thread):
+    def __init__(self, gwManager):
+        threading.Thread.__init__(self,name = "InQueueHandler")
+        self.gwManager = gwManager
+        self.flag = Event()
+        
+    def stop(self):
+        self.flag.set()
+        
+    def run(self):
+        while not self.flag.isSet():
+            request = self.gwManager.inQueue.get()
+            if request['type'] == 'gatewayAuthentication':
+                report = {
+                           'type': 'gatewayAuthenticationFeedback',
+                           'value': {
+                                     'authorizationToken': GATEWAY_AUTHENTICATION_TOKEN,
+                                     'gatewayUUID': self.gwManager.uuid
+                                     }
+                           
+                           }
+                self.gwManager.writeReport2Central(report)
+                #self.connection2Gateway.send(report)
+                
+            if request['type'] == 'gatewayUUID':
+                self.gwManager.uuid = request['value']
+                print self.gwManager.uuid
+            
+            if request['type'] == 'peripheralQuery':
+                print 'got query ', request['value']['queryID']
+                self.gwManager.taskQueue.append(request)
+                self.gwManager.processTaskQueue()
+                
+            if request['type'] == 'peripheralSecurityTypeCheck':
+                peripheralID = request['value']['peripheralID']
+                peripheral = self.gwManager.findPeripheralWorkerByIdentifier(peripheralID)
+                peripheral.readValueFromPeripheral(SECURITY_SERVICE, SECURITY_TYPE_CHARACTERISTIC)
+                
+            if request['type'] == 'peripheralAuthenticationHandlerCls':
+                peripheralID = request['value']['peripheralID']
+                peripheral = self.gwManager.findPeripheralWorkerByIdentifier(peripheralID)
+                authenticationHandlerCls = request['value']['authenticationHandlerCls']
+                m = importCode(authenticationHandlerCls, 'authentication')
+                peripheral.authenticationHandler = m.Authentication()
+                if peripheral.identifier != None:
+                    peripheral.authenticationHandler.initialize(peripheral)
+                report = {
+                          'type': 'peripheralAuthenticationTokenQuery',
+                          'value': {
+                                    'peripheralID': peripheralID,
+                                    }
+                          }            
+                if report != None:
+                    self.gwManager.writeReport2Central(report)                 
+                
+            if request['type'] == 'peripheralSecurityHandlerCls':
+                peripheralID = request['value']['peripheralID']
+                peripheral = self.gwManager.findPeripheralWorkerByIdentifier(peripheralID)
+                securityHandlerCls = request['value']['securityHandlerCls']
+                m = importCode(securityHandlerCls, 'security')
+                peripheral.securityHandler = m.SecurityHandlerFactory(request['value']['securityType'])
+                peripheral.securityHandler.initialize(peripheral)
+                
+            if request['type'] == 'peripheralAuthenticationTokenResponse':
+                peripheralID = request['value']['peripheralID']
+                peripheral = self.gwManager.findPeripheralWorkerByIdentifier(peripheralID)
+                peripheral.authenticationHandler.setToken(request['value']['authenticationToken'])
+                if peripheral.securityHandler != None:
+                    peripheral.authenticationHandler.checkAuthentication(peripheral.securityHandler)
+                
+                                 
 
 class GWManager(NSObject):
     def init(self):
@@ -89,6 +209,7 @@ class GWManager(NSObject):
         self.taskQueue = deque()
         self.processingQueue = deque()
         self.connection2Gateway = None
+        self.inQueueHandler = InQueueHandler(self)
         # initialize manager with delegate
         NSLog("Initialize CBCentralManager Worker")
         self.manager = CBCentralManager.alloc().initWithDelegate_queue_(self, nil)
@@ -103,11 +224,13 @@ class GWManager(NSObject):
 
     def setConnection2Central(self, connection2Gateway):
         self.connection2Gateway = connection2Gateway
+        self.inQueue = self.connection2Gateway.inQueue
+        self.inQueueHandler.start()
         
     def writeReport2Central(self, report):
         self.connection2Gateway.send(json.dumps(report))
         
-    def handleRequestFromCentral(self, request):        
+    def handleRequestFromCentral(self):                
         if request['type'] == 'gatewayAuthentication':
             report = {
                        'type': 'gatewayAuthenticationFeedback',
@@ -125,6 +248,7 @@ class GWManager(NSObject):
             print self.uuid
         
         if request['type'] == 'peripheralQuery':
+            print 'got query ', request['value']['queryID']
             self.taskQueue.append(request)
             self.processTaskQueue()
             
@@ -239,6 +363,10 @@ class GWManager(NSObject):
         
     def stop(self): # clean up
         NSLog("CLEANING UP..")
+        self.periodicUpdater.stop()
+        self.periodicUpdater.join()
+        self.inQueueHandler.stop()
+        self.inQueueHandler.join()
 
     def connectPeripheral(self, peripheralInstance):
         #NSLog("Trying to connnect peripheral %@", peripheral._.UUID)
