@@ -13,6 +13,7 @@ def getOverview():
     except httpclient.HTTPError as e:
         print "Error:", e
         http_client.close()    
+        return
     
     pprint.pprint(json.loads(response.body))
     
