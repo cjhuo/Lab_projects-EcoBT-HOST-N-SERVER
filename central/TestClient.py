@@ -35,13 +35,20 @@ def query(query_type, gateway_id, peripheral_id, service_id, characteristic_id, 
     except tornado.httpclient.HTTPError as e:
         print "Error:", e
         client.close()    
+
     try:
         pprint.pprint(json.loads(response.body))
+    except:
+        print response.body  
+        return
+    try:
         data = json.loads(response.body)
         value =struct.unpack("@i",binascii.unhexlify(data['result']))[0]
         print 'value is', value
     except Exception as e:
-        print response.body
+        return
+
+  
 
 
 if __name__ == "__main__":
