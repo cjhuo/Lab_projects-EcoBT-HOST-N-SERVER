@@ -9,6 +9,7 @@ class Gateway(object):
         self.authtorized = False
         self.peripherals = None
         self.uuid = None
+        self.pinger = None
         
     def setUUID(self, uuid):
         self.uuid = uuid
@@ -22,3 +23,9 @@ class Gateway(object):
     
     def setAuthorized(self, authorized):
         self.authtorized = authorized
+    
+    def setPeriodicPinger(self, pinger):
+        self.pinger = pinger
+        
+    def getPeriodicPinger(self):
+        return self.pinger

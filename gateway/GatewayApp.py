@@ -86,7 +86,7 @@ class Connection2Gateway(object):
             success = False
             while not success:
                 try:
-                    self.connection = WebSocketConnection('ws://ecocloud.eng.uci.edu:8881/socket', protocols=['http-only', 'chat'])
+                    self.connection = WebSocketConnection('ws://'+CENTRAL_SERVER_ADDRESS+'/socket', protocols=['http-only', 'chat'])
                     self.connection.setOwner(self)
                     self.connection.connect()
                     success = True
@@ -147,9 +147,8 @@ class WebSocketConnection(WebSocketClient):
             self.owner.reconnect()
 
     def received_message(self, message):
-        print("=> %d %s" % (len(message), str(message)))       
+        print("=> %d %s" % (len(message), str(message)))    
         request = json.loads(str(message))
-
         self.owner.handleIcomingRequest(request)    
         
 if __name__ == '__main__':

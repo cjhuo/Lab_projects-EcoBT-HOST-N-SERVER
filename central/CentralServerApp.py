@@ -112,8 +112,28 @@ class checkHandler(tornado.web.RequestHandler):
                                             })
         self.write(json.dumps(overview_map))
 
+"""
+for checking whether the websocket connect is still alive
+"""
+from threading import Thread, Event
+import time
+class PeriodicPinger(Thread):
+    def __init__(self, websocket):
+        Thread.__init__(self,name = "PeriodicPinger")
+        self.websocket = websocket
+        self.flag = Event()
+        
+    def run(self):
+        while not self.flag.isSet():
+            print 'sending ping to websocket', self.websocket
+            self.websocket.ping("ping")
+            time.sleep(5)
+    
+    def stop(self):
+        self.flag.set()
+        
+        
 import tornado.websocket
-
 class GWWebsocket(tornado.websocket.WebSocketHandler):
     def initialize(self, websockets, kwdict, query_queue):
         self.websockets = websockets    
@@ -123,6 +143,8 @@ class GWWebsocket(tornado.websocket.WebSocketHandler):
     def open(self):
         # initialize gateway websocket
         self.websockets[self] = Gateway()
+        self.websockets[self].setPeriodicPinger(PeriodicPinger(self))
+        self.websockets[self].getPeriodicPinger().start()
         
         print 'Number of Connected Gateway ', len(self.websockets)
 
@@ -135,6 +157,7 @@ class GWWebsocket(tornado.websocket.WebSocketHandler):
 
     def on_close(self):
         if self in self.websockets.keys():
+            self.websockets[self].getPeriodicPinger().stop()
             del self.websockets[self]
             print "WebSocket closed"
         print 'Number of Connected Gateway ', len(self.websockets)
@@ -144,8 +167,8 @@ class GWWebsocket(tornado.websocket.WebSocketHandler):
         #self.handleMessage(message)
         report = json.loads(message)
         
-        print 'got message '
-        pprint.pprint(report)
+        #print 'got message '
+        #pprint.pprint(report)
         if report['type'] == 'gatewayAuthenticationFeedback':
             if self.websockets[self].isAuthorized() == False: # check authorization first
                 token = None

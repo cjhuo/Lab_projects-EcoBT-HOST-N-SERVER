@@ -273,8 +273,7 @@ class PeripheralWorker(NSObject):
                                                          error):
         NSLog("CHAR(%@) is updated", characteristic._.UUID)
         srvUUIDStr = self.UUID2Str(characteristic._.service._.UUID)   
-        chrUUIDStr = self.UUID2Str(characteristic._.UUID)
-        
+        chrUUIDStr = self.UUID2Str(characteristic._.UUID)        
         if srvUUIDStr == SECURITY_SERVICE and chrUUIDStr != SECURITY_TYPE_CHARACTERISTIC:
             self.securityHandler.setParameter(characteristic)
         elif srvUUIDStr == AUTHENTICATION_SERVICE and chrUUIDStr == AUTHENTICATION_CHAR:

@@ -102,7 +102,7 @@ class PeriodicUpdater(threading.Thread):
         while not self.flag.isSet():
             
             time.sleep(GATEWAY_UPDATE2CENTRAL_INTERVAL)
-            print 'sending snapshot to central'
+            #print 'sending snapshot to central'
             gatewayOverview = {}
             gatewayOverview['gateway_id'] = self.gatewayManager.getUUID()
             gatewayOverview['connected_peripherals'] = []

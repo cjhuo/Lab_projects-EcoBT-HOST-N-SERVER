@@ -9,13 +9,13 @@ Created on Jan 28, 2014
           > Query('Read', gateway_id, peripheral_id. srv
 '''
 import tornado.httpclient, json, pprint, struct, binascii
-
+CENTRAL_SERVER_ADDRESS = 'ecocloud.eng.uci.edu:8881'
 def getOverview():
     client = tornado.httpclient.HTTPClient()
     
     try: 
-        response = client.fetch("http://ecocloud.eng.uci.edu:8881/check")
-    except httpclient.HTTPError as e:
+        response = client.fetch("http://" +CENTRAL_SERVER_ADDRESS+"/check")
+    except tornado.httpclient.HTTPError as e:
         print "Error:", e
         client.close()    
         return
@@ -26,7 +26,7 @@ def Query(query_type, gateway_id, peripheral_id, service_id, characteristic_id):
     client = tornado.httpclient.HTTPClient()
     
     try: 
-        response = client.fetch("http://ecocloud.eng.uci.edu:8881/query?"+
+        response = client.fetch("http://"+CENTRAL_SERVER_ADDRESS+"/query?"+
                                 "query_type="+str(query_type)+
                                 "&gateway_id="+str(gateway_id)+
                                 "&peripheral_id="+str(peripheral_id)+
