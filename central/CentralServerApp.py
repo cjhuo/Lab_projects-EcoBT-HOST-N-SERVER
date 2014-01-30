@@ -71,7 +71,7 @@ class queryHandler(tornado.web.RequestHandler):
     def initialize(self, websockets, query_queue):
         self.websockets = websockets
         self.query_queue = query_queue
-        
+
     @tornado.web.asynchronous
     def get(self):
         qtype = self.get_argument('query_type')
@@ -79,23 +79,49 @@ class queryHandler(tornado.web.RequestHandler):
         prl_id = int(self.get_argument('peripheral_id'))
         srv_id = self.get_argument('service_id')
         chr_id = self.get_argument('characteristic_id')
+        gw_found = False
+        prl_found = False
+        srv_found = False
+        chr_found = False
         try:
             for websocket, gateway in self.websockets.iteritems():
                 if gateway.getUUID() == gw_id:
-                    if qtype != 'Notify':
-                        query_id = random.getrandbits(64)
-                        print 'new query', query_id
-                        websocket.write_message(json.dumps({
-                                            'type': 'peripheralQuery',
-                                            'value': {
-                                                      'queryID': query_id,
-                                                      'peripheralID': prl_id,
-                                                      'action': qtype,
-                                                      'serviceUUID': srv_id,
-                                                      'characteristicUUID': chr_id
-                                                      }
-                                            }))          
-                        self.query_queue[query_id] = self
+                    gw_found = True
+                    for peripheral in gateway.peripherals:
+                        if peripheral['id'] == prl_id:
+                            prl_found = True
+                            for service in peripheral['profileHierarchy'].iterkeys():
+                                if service == srv_id:
+                                    srv_found = True
+                                    for char in peripheral['profileHierarchy'][srv_id].iterkeys():
+                                        if char == chr_id:
+                                            chr_found = True
+                                            if qtype != 'Notify':
+                                                query_id = random.getrandbits(64)
+                                                print 'new query', query_id
+                                                websocket.write_message(json.dumps({
+                                                                    'type': 'peripheralQuery',
+                                                                    'value': {
+                                                                              'queryID': query_id,
+                                                                              'peripheralID': prl_id,
+                                                                              'action': qtype,
+                                                                              'serviceUUID': srv_id,
+                                                                              'characteristicUUID': chr_id
+                                                                              }
+                                                                    }))          
+                                                self.query_queue[query_id] = self
+            if not gw_found:
+                self.write("gateway not found")
+                self.finish()
+            if not prl_found:
+                self.write("peripheral not found")
+                self.finish()                               
+            if not srv_found:
+                self.write("service not found")
+                self.finish()  
+            if not chr_found:
+                self.write("characteristic not found")
+                self.finish()  
         except Exception as e:
             print "Error on peripheral query format:", e
         

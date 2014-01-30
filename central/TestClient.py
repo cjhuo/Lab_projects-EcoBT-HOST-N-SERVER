@@ -19,7 +19,6 @@ def getOverview():
         print "Error:", e
         client.close()    
         return
-    
     pprint.pprint(json.loads(response.body))
     
 def Query(query_type, gateway_id, peripheral_id, service_id, characteristic_id):
@@ -35,11 +34,13 @@ def Query(query_type, gateway_id, peripheral_id, service_id, characteristic_id):
     except tornado.httpclient.HTTPError as e:
         print "Error:", e
         client.close()    
-    
-    pprint.pprint(json.loads(response.body))
-    data = json.loads(response.body)
-    value =struct.unpack("@i",binascii.unhexlify(data['result']))[0]
-    print 'value is', value
+    try:
+        pprint.pprint(json.loads(response.body))
+        data = json.loads(response.body)
+        value =struct.unpack("@i",binascii.unhexlify(data['result']))[0]
+        print 'value is', value
+    except Exception as e:
+        print response.body
 
 
 if __name__ == "__main__":
