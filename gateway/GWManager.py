@@ -212,6 +212,7 @@ class GWManager(NSObject):
         self.taskQueue = deque()
         self.processingQueue = deque()
         self.connection2Gateway = None
+        self.periodicUpdater = None
         #self.inQueueHandler = InQueueHandler(self)
         # initialize manager with delegate
         NSLog("Initialize CBCentralManager Worker")
