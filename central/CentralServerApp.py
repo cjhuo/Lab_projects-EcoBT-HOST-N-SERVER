@@ -140,8 +140,7 @@ class queryHandler(tornado.web.RequestHandler):
                                                                               'message': message
                                                                               }
                                                                     }))          
-                                                self.query_queue[query_id] = self
-                                            
+                                            self.query_queue[query_id] = self                                            
             if not gw_found:
                 self.write("gateway not found")
                 self.finish()

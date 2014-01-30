@@ -8,7 +8,7 @@ Created on Jan 28, 2014
           Example:
           > Query('Read', gateway_id, peripheral_id. srv
 '''
-import tornado.httpclient, json, pprint, struct, binascii
+import tornado.httpclient, json, pprint, struct, binascii, readline
 CENTRAL_SERVER_ADDRESS = 'ecocloud.eng.uci.edu:8881'
 def getOverview():
     client = tornado.httpclient.HTTPClient()
@@ -21,7 +21,7 @@ def getOverview():
         return
     pprint.pprint(json.loads(response.body))
     
-def Query(query_type, gateway_id, peripheral_id, service_id, characteristic_id, message=None):
+def query(query_type, gateway_id, peripheral_id, service_id, characteristic_id, message=None):
     client = tornado.httpclient.HTTPClient()
     
     try: 
