@@ -294,6 +294,8 @@ class GWManager(NSObject):
             
             
     def processTaskQueue(self):
+        print 'taskQueue', self.taskQueue
+        print 'processing Queue', self.processingQueue
         request = None
         if len(self.taskQueue) != 0:
             request = self.taskQueue.popleft()
@@ -317,6 +319,26 @@ class GWManager(NSObject):
             if request['value']['action'] == 'Write Without Response':
                 message = request['value']['message']
                 peripheral.writeValueForPeripheral(serviceUUIDStr, characteristicUUIDStr, message, False)
+                
+    def processProcessingQueue(self):
+        for request in self.processingQueue:
+            peripheralID = request['value']['peripheralID']
+            peripheral = self.findPeripheralWorkerByIdentifier(peripheralID)
+            if peripheral == None: # not found 
+                print 'peripheral for this request not found'
+                self.processingQueue.remove(request)
+                return
+            serviceUUIDStr = request['value']['serviceUUID']
+            characteristicUUIDStr = request['value']['characteristicUUID']
+        
+            if request['value']['action'] == 'Read':
+                peripheral.readValueFromPeripheral(serviceUUIDStr, characteristicUUIDStr)
+            if request['value']['action'] == 'Write':
+                message = request['value']['message']
+                peripheral.writeValueForPeripheral(serviceUUIDStr, characteristicUUIDStr, message, True)
+            if request['value']['action'] == 'Write Without Response':
+                message = request['value']['message']
+                peripheral.writeValueForPeripheral(serviceUUIDStr, characteristicUUIDStr, message, False)            
                
     def receiveFeedbackFromPeripheral(self, peripheralID, actionType, serviceUUIDStr, characteristicUUIDStr, value=None, error=None): 
         request2del = None

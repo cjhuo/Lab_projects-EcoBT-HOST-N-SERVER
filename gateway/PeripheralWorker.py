@@ -242,6 +242,7 @@ class PeripheralWorker(NSObject):
                     self.securityHandler.setParameter(characteristic)
                     if self.securityHandler.isSecured() and self.authenticationHandler != None and self.authenticationHandler.isAuthorized() == False:
                         self.authenticationHandler.checkAuthentication(self.securityHandler)
+                    return
                 else:
                     data = binascii.hexlify(characteristic._.value)
                     print data
@@ -250,14 +251,18 @@ class PeripheralWorker(NSObject):
                     else:
                         self.gateway.receiveFeedbackFromPeripheral(self.identifier, 'Read', srvUUIDStr, chrUUIDStr, data, int(error._.code)) 
                 return                    
-            if self.securityHandler != None and self.securityHandler.isSecured():
+            #if self.securityHandler != None and self.securityHandler.isSecured():
+                """
                 if self.authenticationHandler != None and self.authenticationHandler.isAuthorized() == False:
-                    self.authenticationHandler.checkAuthentication(self.securityHandler)          
+                    self.authenticationHandler.checkAuthentication(self.securityHandler) 
+                    if len(self.gateway.processingQueue) != 0: # query wait for processing
+                        self.gateway.processProcessingQueue()         
                     return
-                print 'decryption required'
-                data, = struct.unpack("@"+str(len(characteristic._.value))+"s", characteristic._.value)
-                message = self.securityHandler.decrypt(characteristic._.value)
-                #print struct.unpack("@i", binascii.unhexlify(message))
+                """
+            print 'decryption required'
+            data, = struct.unpack("@"+str(len(characteristic._.value))+"s", characteristic._.value)
+            message = self.securityHandler.decrypt(characteristic._.value)
+            #print struct.unpack("@i", binascii.unhexlify(message))
             if error == None:
                 self.gateway.receiveFeedbackFromPeripheral(self.identifier, 'Read', srvUUIDStr, chrUUIDStr, message, None)
             else:
@@ -277,7 +282,9 @@ class PeripheralWorker(NSObject):
         if srvUUIDStr == SECURITY_SERVICE and chrUUIDStr != SECURITY_TYPE_CHARACTERISTIC:
             self.securityHandler.setParameter(characteristic)
         elif srvUUIDStr == AUTHENTICATION_SERVICE and chrUUIDStr == AUTHENTICATION_CHAR:
-            pass# ignore authentication service write feedback
+            if len(self.gateway.processingQueue) != 0: # query wait for processing
+                self.gateway.processProcessingQueue()         
+            return                        
         elif error == None:
             print 'write success'
             self.gateway.receiveFeedbackFromPeripheral(self.identifier, 'Write', srvUUIDStr, chrUUIDStr, 0, None)
