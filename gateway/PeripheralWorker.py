@@ -8,22 +8,22 @@ maintains a profile hierarchy. The follows is an example:
 Format:
 {Services: {Characteristics: {'descriptors':{'uuid': }, 'properties':[]}}
 Example:
-{'1800': {'2A00': {'descriptors': {}, 'properties': ['Read']},
-          '2A01': {'descriptors': {}, 'properties': ['Read']}},
- '1801': {'2A05': {'descriptors': {}, 'properties': ['Read']}},
+{'1800': {'2A00': {'descriptors': {}, 'properties': ['READ']},
+          '2A01': {'descriptors': {}, 'properties': ['READ']}},
+ '1801': {'2A05': {'descriptors': {}, 'properties': ['READ']}},
  '180A': {'2A23': {'descriptors': {'2901': 'DeviceInformation'},
-                   'properties': ['Read']}},
+                   'properties': ['READ']}},
  '7760': {'7761': {'descriptors': {'2901': 'Authentication'},
                    'properties': ['Write']}},
  '7770': {'7771': {'descriptors': {'2901': 'AES_CFB: uint8, parameters: 1. secret key: unicode16, 2. IV: unicode16'},
-                   'properties': ['Read']},
+                   'properties': ['READ']},
           '7772': {'descriptors': {'2901': 'secret key: unicode16'},
-                   'properties': ['Read', 'Write Without Response']},
+                   'properties': ['READ', 'Write Without Response']},
           '7773': {'descriptors': {'2901': 'IV : unicode16'},
-                   'properties': ['Read', 'Write Without Response']}},
+                   'properties': ['READ', 'Write Without Response']}},
  '7780': {'7781': {'descriptors': {'2901': 'TestDescriptor',
                                    '2902': '\x00\x00'},
-                   'properties': ['Read', 'Notify']}}}
+                   'properties': ['READ', 'Notify']}}}
 '''
 from Foundation import *
 #from PyObjCTools import AppHelper
@@ -77,19 +77,19 @@ class PeripheralWorker(NSObject):
     def checkProperties(self, properties):
         propertiesStrList = []
         if properties & CBCharacteristicPropertyBroadcast == CBCharacteristicPropertyBroadcast:
-            propertiesStrList.append("Broadcast")
+            propertiesStrList.append("BROADCAST")
         if properties & CBCharacteristicPropertyRead == CBCharacteristicPropertyRead:
-            propertiesStrList.append("Read")
+            propertiesStrList.append("READ")
         if properties & CBCharacteristicPropertyWriteWithoutResponse == CBCharacteristicPropertyWriteWithoutResponse:
-            propertiesStrList.append("Write Without Response")
+            propertiesStrList.append("WRITE WITHOUT RESPONSE")
         if properties & CBCharacteristicPropertyWrite == CBCharacteristicPropertyWrite:
-            propertiesStrList.append("Write")
+            propertiesStrList.append("WRITE")
         if properties & CBCharacteristicPropertyNotify == CBCharacteristicPropertyNotify:
-            propertiesStrList.append("Notify")
+            propertiesStrList.append("NOTIFY")
         if properties & CBCharacteristicPropertyIndicate == CBCharacteristicPropertyIndicate:
-            propertiesStrList.append("Indicate")
+            propertiesStrList.append("INDICATE")
         if properties & CBCharacteristicPropertyAuthenticatedSignedWrites == CBCharacteristicPropertyAuthenticatedSignedWrites:
-            propertiesStrList.append("Authenticated Signed Writes")
+            propertiesStrList.append("AUTHENTICATED SIGNED WRITES")
             
         return propertiesStrList
         
@@ -101,8 +101,10 @@ class PeripheralWorker(NSObject):
             if service._.UUID == CBUUID.UUIDWithString_(serviceUUIDStr):
                 for char in service._.characteristics:
                     if char._.UUID == CBUUID.UUIDWithString_(characteristicUUIDStr):
+                        if "READ" not in self.checkProperties(char._.properties):
+                            self.gateway.receiveFeedbackFromPeripheral(self.identifier, 'READ', serviceUUIDStr, characteristicUUIDStr, "error", None)
+                            return
                         self.readValueForCharacteristic(char)
-                        return
         # raise error if can't find a relevant characteristic            
         
     
@@ -111,6 +113,10 @@ class PeripheralWorker(NSObject):
             if service._.UUID == CBUUID.UUIDWithString_(serviceUUIDStr):
                 for char in service._.characteristics:
                     if char._.UUID == CBUUID.UUIDWithString_(characteristicUUIDStr):
+                        if 'WRITE' not in self.checkProperties(char._.properties) and requireRespone:
+                            self.gateway.receiveFeedbackFromPeripheral(self.identifier, 'WRITE', serviceUUIDStr, characteristicUUIDStr, "error", None)                        
+                        if 'WRITE WITHOUT RESPONSE' not in self.checkProperties(char._.properties) and not requireRespone:
+                            self.gateway.receiveFeedbackFromPeripheral(self.identifier, 'WRITE WITHOUT RESPONSE', serviceUUIDStr, characteristicUUIDStr, "error", None)                        
                         if self.securityHandler != None and self.securityHandler.isSecured():
                             message = self.securityHandler.encrypt(message)
                         if requireRespone:
@@ -236,7 +242,7 @@ class PeripheralWorker(NSObject):
                  binascii.hexlify(a3) + '-' + binascii.hexlify(a2) + '-' + binascii.hexlify(a1))
                 print 'MAC Address: ', address, 'identifier is ', self.identifier
                 
-                self.gateway.receiveFeedbackFromPeripheral(self.identifier, 'Read', srvUUIDStr, chrUUIDStr, self.identifier, None)
+                self.gateway.receiveFeedbackFromPeripheral(self.identifier, 'READ', srvUUIDStr, chrUUIDStr, self.identifier, None)
                 return
             if srvUUIDStr == SECURITY_SERVICE:
                 if chrUUIDStr != SECURITY_TYPE_CHARACTERISTIC:
@@ -248,9 +254,9 @@ class PeripheralWorker(NSObject):
                     data = binascii.hexlify(characteristic._.value)
                     print data
                     if error == None:
-                        self.gateway.receiveFeedbackFromPeripheral(self.identifier, 'Read', srvUUIDStr, chrUUIDStr, data, None)
+                        self.gateway.receiveFeedbackFromPeripheral(self.identifier, 'READ', srvUUIDStr, chrUUIDStr, data, None)
                     else:
-                        self.gateway.receiveFeedbackFromPeripheral(self.identifier, 'Read', srvUUIDStr, chrUUIDStr, data, int(error._.code)) 
+                        self.gateway.receiveFeedbackFromPeripheral(self.identifier, 'READ', srvUUIDStr, chrUUIDStr, data, int(error._.code)) 
                 return                    
             #if self.securityHandler != None and self.securityHandler.isSecured():
                 """
@@ -266,11 +272,18 @@ class PeripheralWorker(NSObject):
                 message = self.securityHandler.decrypt(characteristic._.value)
                 #print struct.unpack("@i", binascii.unhexlify(message))
             else:
-                message, = struct.unpack("@"+str(len(characteristic._.value))+"s", characteristic._.value)
+                try:
+                    NSLog('Value is %@', characteristic._.value)
+                    message = binascii.hexlify(characteristic._.value)
+                    #message, = struct.unpack("@"+str(len(characteristic._.value))+"s", characteristic._.value)
+                except Exception as e:
+                    print 'Error on decoding received value', e
+                    self.gateway.receiveFeedbackFromPeripheral(self.identifier, 'READ', srvUUIDStr, chrUUIDStr, "error", None)
+                    
             if error == None:
-                self.gateway.receiveFeedbackFromPeripheral(self.identifier, 'Read', srvUUIDStr, chrUUIDStr, message, None)
+                self.gateway.receiveFeedbackFromPeripheral(self.identifier, 'READ', srvUUIDStr, chrUUIDStr, message, None)
             else:
-                self.gateway.receiveFeedbackFromPeripheral(self.identifier, 'Read', srvUUIDStr, chrUUIDStr, message, int(error._.code))                                  
+                self.gateway.receiveFeedbackFromPeripheral(self.identifier, 'READ', srvUUIDStr, chrUUIDStr, message, int(error._.code))                                  
         else: # security or authentication expired
             self.securityHandler.reset()
             self.authenticationHandler.reset()
