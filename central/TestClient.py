@@ -2,6 +2,11 @@
 Created on Jan 28, 2014
 
 @author: cjhuo
+@summary: 1. Test client send query with 'check' command to get overview under central including
+          gateways, peripherals under gateways, profile hierarchy in each peripherals
+          2. Send query to read, write value against any characteristic using 'Query' command
+          Example:
+          > Query('Read', gateway_id, peripheral_id. srv
 '''
 import tornado.httpclient, json, pprint, struct, binascii
 
@@ -12,7 +17,7 @@ def getOverview():
         response = client.fetch("http://ecocloud.eng.uci.edu:8881/check")
     except httpclient.HTTPError as e:
         print "Error:", e
-        http_client.close()    
+        client.close()    
         return
     
     pprint.pprint(json.loads(response.body))
