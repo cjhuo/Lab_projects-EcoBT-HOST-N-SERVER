@@ -392,8 +392,9 @@ class GWManager(NSObject):
         
     def stop(self): # clean up
         NSLog("CLEANING UP..")
-        self.periodicUpdater.stop()
-        self.periodicUpdater.join()
+        if self.periodicUpdater != None:
+            self.periodicUpdater.stop()
+            self.periodicUpdater.join()
         #self.inQueueHandler.stop()
         #self.inQueueHandler.join()
 
