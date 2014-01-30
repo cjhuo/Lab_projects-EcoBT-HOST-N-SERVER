@@ -127,7 +127,10 @@ class Connection2Gateway(object):
         
     def handleIcomingRequest(self, message):
         #self.inQueue.put(message)
-        self.peripheralWorker.handleRequestFromCentral(message)
+        try:
+            self.peripheralWorker.handleRequestFromCentral(message)
+        except Exception as e:
+            print 'Error when processing message from central', e
 
     
 class WebSocketConnection(WebSocketClient):
