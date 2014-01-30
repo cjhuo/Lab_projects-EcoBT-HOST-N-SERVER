@@ -121,7 +121,8 @@ class PeriodicUpdater(threading.Thread):
                 self.gatewayManager.writeReport2Central(message)
             except:
                 print 'error happened when sending update to central'
-                
+        print 'PeriodicUpdater exiting..'
+"""                
 class InQueueHandler(threading.Thread):
     def __init__(self, gwManager):
         threading.Thread.__init__(self,name = "InQueueHandler")
@@ -191,7 +192,9 @@ class InQueueHandler(threading.Thread):
                 peripheral.authenticationHandler.setToken(request['value']['authenticationToken'])
                 if peripheral.securityHandler != None:
                     peripheral.authenticationHandler.checkAuthentication(peripheral.securityHandler)
-                
+            self.gwManager.inQueue.task_done()
+        print 'InQueueHandler exiting..'
+"""                
                                  
 
 class GWManager(NSObject):
@@ -209,7 +212,7 @@ class GWManager(NSObject):
         self.taskQueue = deque()
         self.processingQueue = deque()
         self.connection2Gateway = None
-        self.inQueueHandler = InQueueHandler(self)
+        #self.inQueueHandler = InQueueHandler(self)
         # initialize manager with delegate
         NSLog("Initialize CBCentralManager Worker")
         self.manager = CBCentralManager.alloc().initWithDelegate_queue_(self, nil)
@@ -224,13 +227,13 @@ class GWManager(NSObject):
 
     def setConnection2Central(self, connection2Gateway):
         self.connection2Gateway = connection2Gateway
-        self.inQueue = self.connection2Gateway.inQueue
-        self.inQueueHandler.start()
+        #self.inQueue = self.connection2Gateway.inQueue
+        #self.inQueueHandler.start()
         
     def writeReport2Central(self, report):
         self.connection2Gateway.send(json.dumps(report))
         
-    def handleRequestFromCentral(self):                
+    def handleRequestFromCentral(self, request):                
         if request['type'] == 'gatewayAuthentication':
             report = {
                        'type': 'gatewayAuthenticationFeedback',
@@ -257,10 +260,12 @@ class GWManager(NSObject):
             peripheral = self.findPeripheralWorkerByIdentifier(peripheralID)
             peripheral.readValueFromPeripheral(SECURITY_SERVICE, SECURITY_TYPE_CHARACTERISTIC)
             
-        if request['type'] == 'peripheralAuthenticationHandlerObj':
+        if request['type'] == 'peripheralAuthenticationHandlerCls':
             peripheralID = request['value']['peripheralID']
             peripheral = self.findPeripheralWorkerByIdentifier(peripheralID)
-            peripheral.authenticationHandler = pickle.loads(request['value']['authenticationHandlerObj'])
+            authenticationHandlerCls = request['value']['authenticationHandlerCls']
+            m = importCode(authenticationHandlerCls, 'authentication')
+            peripheral.authenticationHandler = m.Authentication()
             if peripheral.identifier != None:
                 peripheral.authenticationHandler.initialize(peripheral)
             report = {
@@ -272,10 +277,12 @@ class GWManager(NSObject):
             if report != None:
                 self.writeReport2Central(report)                 
             
-        if request['type'] == 'peripheralSecurityHandlerObj':
+        if request['type'] == 'peripheralSecurityHandlerCls':
             peripheralID = request['value']['peripheralID']
             peripheral = self.findPeripheralWorkerByIdentifier(peripheralID)
-            peripheral.securityHandler = pickle.loads(request['value']['securityHandlerObj'])
+            securityHandlerCls = request['value']['securityHandlerCls']
+            m = importCode(securityHandlerCls, 'security')
+            peripheral.securityHandler = m.SecurityHandlerFactory(request['value']['securityType'])
             peripheral.securityHandler.initialize(peripheral)
             
         if request['type'] == 'peripheralAuthenticationTokenResponse':
@@ -365,8 +372,8 @@ class GWManager(NSObject):
         NSLog("CLEANING UP..")
         self.periodicUpdater.stop()
         self.periodicUpdater.join()
-        self.inQueueHandler.stop()
-        self.inQueueHandler.join()
+        #self.inQueueHandler.stop()
+        #self.inQueueHandler.join()
 
     def connectPeripheral(self, peripheralInstance):
         #NSLog("Trying to connnect peripheral %@", peripheral._.UUID)

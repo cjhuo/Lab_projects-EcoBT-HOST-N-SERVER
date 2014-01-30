@@ -77,8 +77,9 @@ class Connection2Gateway(object):
         self.connection = None
         self.connectionType = connectionType
         self.connect(self.connectionType)      
-        self.inQueue = Queue()
-        self.outQueue = Queue()
+        #self.inQueue = Queue()
+        #self.outQueue = Queue()
+        self.autoReconnect = True
         
     def connect(self, connectionType):    
         if connectionType == 'WebSocket':
@@ -90,7 +91,7 @@ class Connection2Gateway(object):
                     self.connection.connect()
                     success = True
                 except Exception as e:
-                    print e
+                    print 'Error on connection to central', e
                     print '\nConnection to gateway refused\nTry again in ', GATEWAY_RECONNECT_WAIT_INTERVAL, ' seconds'
                     for i in range(GATEWAY_RECONNECT_WAIT_INTERVAL, 0, -1):
                         time.sleep(1)
@@ -115,15 +116,18 @@ class Connection2Gateway(object):
     def send(self, message):
         try:
             self.connection.send(message)
-        except:
-            pass
+        except Exception as e:
+            print 'Error when sending message to central', e
     
     def close(self):
-        self.connection.close()
+        #print 'connect to server already closed'
+        #self.connection.terminate()
+        #self.connection.close()
+        self.autoReconnect = False
         
     def handleIcomingRequest(self, message):
-        self.inQueue.put(message)
-        #self.peripheralWorker.handleRequestFromCentral(message)
+        #self.inQueue.put(message)
+        self.peripheralWorker.handleRequestFromCentral(message)
 
     
 class WebSocketConnection(WebSocketClient):
@@ -136,7 +140,8 @@ class WebSocketConnection(WebSocketClient):
     def closed(self, code, reason):
         print(("Closed down", code, reason))
         # try to connect back
-        self.owner.reconnect()
+        if self.owner.autoReconnect:
+            self.owner.reconnect()
 
     def received_message(self, message):
         print("=> %d %s" % (len(message), str(message)))       
