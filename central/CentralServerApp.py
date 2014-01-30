@@ -77,8 +77,8 @@ class queryHandler(tornado.web.RequestHandler):
         qtype = self.get_argument('query_type')
         gw_id = int(self.get_argument('gateway_id'))
         prl_id = int(self.get_argument('peripheral_id'))
-        srv_id = self.get_argument('service_id')
-        chr_id = self.get_argument('characteristic_id')
+        srv_id = str(self.get_argument('service_id'))
+        chr_id = str(self.get_argument('characteristic_id'))
         gw_found = False
         prl_found = False
         srv_found = False
