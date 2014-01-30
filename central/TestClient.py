@@ -21,7 +21,7 @@ def getOverview():
         return
     pprint.pprint(json.loads(response.body))
     
-def Query(query_type, gateway_id, peripheral_id, service_id, characteristic_id):
+def Query(query_type, gateway_id, peripheral_id, service_id, characteristic_id, message=None):
     client = tornado.httpclient.HTTPClient()
     
     try: 
@@ -30,7 +30,8 @@ def Query(query_type, gateway_id, peripheral_id, service_id, characteristic_id):
                                 "&gateway_id="+str(gateway_id)+
                                 "&peripheral_id="+str(peripheral_id)+
                                 "&service_id="+str(service_id)+
-                                "&characteristic_id="+str(characteristic_id))
+                                "&characteristic_id="+str(characteristic_id)+
+                                "&message="+str(message))
     except tornado.httpclient.HTTPError as e:
         print "Error:", e
         client.close()    
@@ -47,7 +48,7 @@ if __name__ == "__main__":
     while True:
         s = raw_input('> ')
         
-        print s
+        #print s
         if s.strip() =='':
             print 'bye'
             break

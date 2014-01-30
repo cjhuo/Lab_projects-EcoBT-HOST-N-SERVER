@@ -79,6 +79,7 @@ class queryHandler(tornado.web.RequestHandler):
         prl_id = int(self.get_argument('peripheral_id'))
         srv_id = str(self.get_argument('service_id'))
         chr_id = str(self.get_argument('characteristic_id'))
+        message = self.get_argument('message', None)
         gw_found = False
         prl_found = False
         srv_found = False
@@ -93,10 +94,26 @@ class queryHandler(tornado.web.RequestHandler):
                             for service in peripheral['profileHierarchy'].iterkeys():
                                 if service == srv_id:
                                     srv_found = True
+                                    if service == SECURITY_SERVICE:
+                                        self.write("cannot operate on security service")
+                                        self.finish()
+                                        return                                    
+                                    if service == AUTHENTICATION_SERVICE:
+                                        self.write("cannot operate on authentication service")
+                                        self.finish()
+                                        return                                    
+                                    if service == GAP_SERVICE:
+                                        self.write("cannot operate on GAP service")
+                                        self.finish()
+                                        return                                    
+                                    if service == GATT_SERVICE:
+                                        self.write("cannot operate on GATT service")
+                                        self.finish()
+                                        return                                    
                                     for char in peripheral['profileHierarchy'][srv_id].iterkeys():
                                         if char == chr_id:
                                             chr_found = True
-                                            if qtype != 'Notify':
+                                            if qtype == 'Read':
                                                 query_id = random.getrandbits(64)
                                                 print 'new query', query_id
                                                 websocket.write_message(json.dumps({
@@ -109,7 +126,22 @@ class queryHandler(tornado.web.RequestHandler):
                                                                               'characteristicUUID': chr_id
                                                                               }
                                                                     }))          
+                                            if qtype == 'Write':
+                                                query_id = random.getrandbits(64)
+                                                print 'new query', query_id
+                                                websocket.write_message(json.dumps({
+                                                                    'type': 'peripheralQuery',
+                                                                    'value': {
+                                                                              'queryID': query_id,
+                                                                              'peripheralID': prl_id,
+                                                                              'action': qtype,
+                                                                              'serviceUUID': srv_id,
+                                                                              'characteristicUUID': chr_id,
+                                                                              'message': message
+                                                                              }
+                                                                    }))          
                                                 self.query_queue[query_id] = self
+                                            
             if not gw_found:
                 self.write("gateway not found")
                 self.finish()
@@ -303,10 +335,10 @@ class GWWebsocket(tornado.websocket.WebSocketHandler):
             #print 'value is ', binascii.unhexlify(report['value']['rtValue']) 
             
             #test
-            print 'value is ', (struct.unpack("@i",binascii.unhexlify(report['value']['rtValue'])))[0]
+            #print 'value is ', (struct.unpack("@i",binascii.unhexlify(report['value']['rtValue'])))[0]
             
             query_id = report['value']['queryID']
-            print 'query feedback ', query_id
+            print 'query feedback', query_id, 'result', report['value']['rtValue']
             if query_id in self.query_queue.iterkeys():
                 self.query_queue[query_id].write(json.dumps({'query_id': query_id,
                                                              'result': report['value']['rtValue']

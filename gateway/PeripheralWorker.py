@@ -227,15 +227,14 @@ class PeripheralWorker(NSObject):
             if chrUUIDStr == SYSTEM_ID_CHAR and srvUUIDStr == DEVICE_INFO_SERVICE:
                 idntfr, = struct.unpack('@Q', bytes(characteristic._.value))
                 self.identifier = idntfr
+                
                 hex_str = binascii.hexlify(characteristic._.value)
                 a1, a2, a3, a4, a5, a6 = struct.unpack('cccxxccc', characteristic._.value)
                 address = str(binascii.hexlify(a6) + '-' + binascii.hexlify(a5) + '-' + binascii.hexlify(a4) + '-' + \
                  binascii.hexlify(a3) + '-' + binascii.hexlify(a2) + '-' + binascii.hexlify(a1))
                 print 'MAC Address: ', address, 'identifier is ', self.identifier
+                
                 self.gateway.receiveFeedbackFromPeripheral(self.identifier, 'Read', srvUUIDStr, chrUUIDStr, self.identifier, None)
-                # initialize authentication if any                
-                if self.authenticationHandler != None:
-                    self.authenticationHandler.initialize(peripheral)
                 return
             if srvUUIDStr == SECURITY_SERVICE:
                 if chrUUIDStr != SECURITY_TYPE_CHARACTERISTIC:
