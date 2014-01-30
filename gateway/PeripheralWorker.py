@@ -111,6 +111,8 @@ class PeripheralWorker(NSObject):
             if service._.UUID == CBUUID.UUIDWithString_(serviceUUIDStr):
                 for char in service._.characteristics:
                     if char._.UUID == CBUUID.UUIDWithString_(characteristicUUIDStr):
+                        if self.securityHandler != None and self.securityHandler.isSecured():
+                            message = self.securityHandler.encrypt(message)
                         if requireRespone:
                             self.writeValueForCharacteristic(char, NSData.alloc().initWithBytes_length_(message, len(message)), 
                                                              CBCharacteristicWriteWithResponse)
@@ -202,7 +204,7 @@ class PeripheralWorker(NSObject):
         descryptStr, = struct.unpack("@"+str(len(descriptor._.value))+"s", descriptor._.value)
         self.profileHierarchyDict[srvUUIDStr][chrUUIDStr]['descriptors'][descyptUUIDStr] = descryptStr  
         #NSLog("descriptor's value is %@", NSString.alloc().initWithData_encoding_(descriptor._.value, NSUTF8StringEncoding))
-        pprint.pprint(self.profileHierarchyDict)
+        #pprint.pprint(self.profileHierarchyDict)
 
 
     def peripheral_didWriteValueForDescriptor_error_(self,
@@ -259,9 +261,12 @@ class PeripheralWorker(NSObject):
                     return
                 """
             print 'decryption required'
-            data, = struct.unpack("@"+str(len(characteristic._.value))+"s", characteristic._.value)
-            message = self.securityHandler.decrypt(characteristic._.value)
-            #print struct.unpack("@i", binascii.unhexlify(message))
+            if self.securityHandler != None:
+                data, = struct.unpack("@"+str(len(characteristic._.value))+"s", characteristic._.value)
+                message = self.securityHandler.decrypt(characteristic._.value)
+                #print struct.unpack("@i", binascii.unhexlify(message))
+            else:
+                message, = data, = struct.unpack("@"+str(len(characteristic._.value))+"s", characteristic._.value)
             if error == None:
                 self.gateway.receiveFeedbackFromPeripheral(self.identifier, 'Read', srvUUIDStr, chrUUIDStr, message, None)
             else:
