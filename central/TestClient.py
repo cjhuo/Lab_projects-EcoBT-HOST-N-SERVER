@@ -21,7 +21,7 @@ def getOverview():
         return
     pprint.pprint(json.loads(response.body))
     
-def query(query_type, gateway_id, peripheral_id, service_id, characteristic_id, message=None):
+def QUERY(query_type, gateway_id, peripheral_id, service_id, characteristic_id, message=None):
     client = tornado.httpclient.HTTPClient()
     
     try: 
@@ -63,7 +63,7 @@ if __name__ == "__main__":
             getOverview()
         else:
             try:
-                eval(s.strip())
+                eval(s.strip().upper())
             except Exception as e:
                 print "Error: ", e
     

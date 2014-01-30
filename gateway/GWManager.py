@@ -312,12 +312,12 @@ class GWManager(NSObject):
             serviceUUIDStr = request['value']['serviceUUID']
             characteristicUUIDStr = request['value']['characteristicUUID']
         
-            if request['value']['action'] == 'Read':
+            if request['value']['action'] == 'READ':
                 peripheral.readValueFromPeripheral(serviceUUIDStr, characteristicUUIDStr)
-            if request['value']['action'] == 'Write':
+            if request['value']['action'] == 'WRITE':
                 message = request['value']['message']
                 peripheral.writeValueForPeripheral(serviceUUIDStr, characteristicUUIDStr, message, True)
-            if request['value']['action'] == 'Write Without Response':
+            if request['value']['action'] == 'WRITE WITHOUT RESPONSE':
                 message = request['value']['message']
                 peripheral.writeValueForPeripheral(serviceUUIDStr, characteristicUUIDStr, message, False)
                 
@@ -332,12 +332,12 @@ class GWManager(NSObject):
             serviceUUIDStr = request['value']['serviceUUID']
             characteristicUUIDStr = request['value']['characteristicUUID']
         
-            if request['value']['action'] == 'Read':
+            if request['value']['action'] == 'READ':
                 peripheral.readValueFromPeripheral(serviceUUIDStr, characteristicUUIDStr)
-            if request['value']['action'] == 'Write':
+            if request['value']['action'] == 'WRITE':
                 message = request['value']['message']
                 peripheral.writeValueForPeripheral(serviceUUIDStr, characteristicUUIDStr, message, True)
-            if request['value']['action'] == 'Write Without Response':
+            if request['value']['action'] == 'WRITE WITHOUT RESPONSE':
                 message = request['value']['message']
                 peripheral.writeValueForPeripheral(serviceUUIDStr, characteristicUUIDStr, message, False)            
                

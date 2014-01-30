@@ -74,7 +74,7 @@ class queryHandler(tornado.web.RequestHandler):
 
     @tornado.web.asynchronous
     def get(self):
-        qtype = self.get_argument('query_type')
+        qtype = str(self.get_argument('query_type')).upper()
         gw_id = int(self.get_argument('gateway_id'))
         prl_id = int(self.get_argument('peripheral_id'))
         srv_id = str(self.get_argument('service_id'))
@@ -113,7 +113,7 @@ class queryHandler(tornado.web.RequestHandler):
                                     for char in peripheral['profileHierarchy'][srv_id].iterkeys():
                                         if char == chr_id:
                                             chr_found = True
-                                            if qtype == 'Read':
+                                            if qtype == 'READ':
                                                 query_id = random.getrandbits(64)
                                                 print 'new query', query_id
                                                 websocket.write_message(json.dumps({
@@ -126,7 +126,7 @@ class queryHandler(tornado.web.RequestHandler):
                                                                               'characteristicUUID': chr_id
                                                                               }
                                                                     }))          
-                                            if qtype == 'Write':
+                                            if qtype == 'WRITE':
                                                 query_id = random.getrandbits(64)
                                                 print 'new query', query_id
                                                 websocket.write_message(json.dumps({

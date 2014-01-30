@@ -260,13 +260,13 @@ class PeripheralWorker(NSObject):
                         self.gateway.processProcessingQueue()         
                     return
                 """
-            print 'decryption required'
             if self.securityHandler != None:
+                print 'de-encryption required'
                 data, = struct.unpack("@"+str(len(characteristic._.value))+"s", characteristic._.value)
                 message = self.securityHandler.decrypt(characteristic._.value)
                 #print struct.unpack("@i", binascii.unhexlify(message))
             else:
-                message, = data, = struct.unpack("@"+str(len(characteristic._.value))+"s", characteristic._.value)
+                message, = struct.unpack("@"+str(len(characteristic._.value))+"s", characteristic._.value)
             if error == None:
                 self.gateway.receiveFeedbackFromPeripheral(self.identifier, 'Read', srvUUIDStr, chrUUIDStr, message, None)
             else:
