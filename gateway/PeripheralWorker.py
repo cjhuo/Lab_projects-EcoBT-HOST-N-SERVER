@@ -210,6 +210,7 @@ class PeripheralWorker(NSObject):
         descryptStr, = struct.unpack("@"+str(len(descriptor._.value))+"s", descriptor._.value)
         self.profileHierarchyDict[srvUUIDStr][chrUUIDStr]['descriptors'][descyptUUIDStr] = descryptStr  
         #NSLog("descriptor's value is %@", NSString.alloc().initWithData_encoding_(descriptor._.value, NSUTF8StringEncoding))
+        NSLog("descriptor's value is %@", descryptStr)
         #pprint.pprint(self.profileHierarchyDict)
 
 

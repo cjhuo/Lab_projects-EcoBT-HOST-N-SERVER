@@ -12,7 +12,11 @@ CBCentralManagerStateUnauthorized = 3
 CBCentralManagerStatePoweredOff = 4
 CBCentralManagerStatePoweredOn = 5
 
-# CBCentralManager option keys
+# CBCentralManager initialization option keys
+CBCentralManagerOptionRestoreIdentifierKey = u'kCBInitOptionRestoreIdentifier'
+CBCentralManagerOptionShowPowerAlertKey = u'kCBInitOptionShowPowerAlert'
+
+# CBCentralManager scan option keys
 CBCentralManagerScanOptionAllowDuplicatesKey = u"kCBScanOptionAllowDuplicates"
 CBConnectPeripheralOptionNotifyOnDisconnectionKey = u"kCBConnectOptionNotifyOnDisconnection"
 
@@ -95,6 +99,8 @@ DEVICE_INFO_SERVICE = '180A'
 SYSTEM_ID_CHAR = '2A23'
 AUTHENTICATION_SERVICE = '7760'
 AUTHENTICATION_CHAR = '7761'
+GAP_SERVICE = '1800'
+GATT_SERVICE ='1801'
 
 GATEWAY_AUTHENTICATION_TOKEN = '123456'
 

@@ -216,7 +216,10 @@ class GWManager(NSObject):
         #self.inQueueHandler = InQueueHandler(self)
         # initialize manager with delegate
         NSLog("Initialize CBCentralManager Worker")
-        self.manager = CBCentralManager.alloc().initWithDelegate_queue_(self, nil)
+        self.manager = CBCentralManager.alloc().initWithDelegate_queue_options_(self, nil, {
+                                                                               CBCentralManagerOptionShowPowerAlertKey: True,
+                                                                               CBCentralManagerOptionRestoreIdentifierKey: 'RimwareGateway'
+                                                                               })
    
         return self
     
@@ -393,6 +396,7 @@ class GWManager(NSObject):
         
     def stop(self): # clean up
         NSLog("CLEANING UP..")
+        self.cancelAllConnections()
         if self.periodicUpdater != None:
             self.periodicUpdater.stop()
             self.periodicUpdater.join()
@@ -411,12 +415,12 @@ class GWManager(NSObject):
         NSLog("DISCONNECTING FROM PERIPHERAL %@", peripheralInstance._.identifier.UUIDString())        
         self.manager.cancelPeripheralConnection_(peripheralInstance)
             
-    def cancelAllConnectionExcept(self, peripheralInstance):
+    def cancelAllConnectionsExcept(self, peripheralInstance):
         for worker in self.peripheralWorkers:
             if worker.instance != peripheralInstance:
                 self.cancelPeripheralConnection(worker.instance)
                 
-    def cancelAllConnection(self):
+    def cancelAllConnections(self):
         for worker in self.peripheralWorkers:
             self.cancelPeripheralConnection(worker.instance)
                     
@@ -446,8 +450,11 @@ class GWManager(NSObject):
     def stopScan(self):
         NSLog("stop scan")
         self.manager.stopScan()
-        
-
+    
+    def retrieveConnectedPeripherals(self):
+        NSLog("Trying to retrieve connected peripherals")
+        self.manager.retrieveConnectedPeripherals()
+       
     # CBCentralManager delegate methods
     def centralManagerDidUpdateState_(self, central):
         ble_state = central._.state
@@ -468,6 +475,8 @@ class GWManager(NSObject):
             self.updateState(1)
             
             self.startScan()
+            self.retrieveConnectedPeripherals()
+            
             
             self.periodicUpdater = PeriodicUpdater(self)
             self.periodicUpdater.start()                 
@@ -498,6 +507,22 @@ class GWManager(NSObject):
 
     def centralManager_didRetrivePeripherals_(self, central, peripherals):
         NSLog("Retrive peripherals")
+
+    def centralManager_didRetrieveConnectedPeripherals_(self, central, peripherals):
+        NSLog("didRetrievePeripherals")
+        if len(peripherals) != 0:
+            for peripheral in peripherals:
+                NSLog("Previously connected peripheral %@", peripheral)
+                # check if the peripheral has already been added to the list
+                found = self.findWorkerForPeripheralInstance(peripheral)       
+                if found == None:            
+                    worker = PeripheralWorker.alloc().init()        
+                    worker.setInstance(peripheral)
+                    worker.setGateway(self)
+                    self.peripheralWorkers.append(worker)            
+                    self.connectPeripheral(peripheral)               
+            self.startScan()
+        
 
     def centralManager_didConnectPeripheral_(self, central, peripheral):        
         NSLog("Connected to peripheral %@", peripheral._.name)
@@ -531,8 +556,7 @@ class GWManager(NSObject):
                                                          central,
                                                          peripheral,
                                                          error):
-        NSLog("Fail to Connect")
-
+        NSLog("Fail to Connect")        
     
 
 

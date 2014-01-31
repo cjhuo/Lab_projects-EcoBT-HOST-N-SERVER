@@ -32,7 +32,7 @@ class GatewayApp(object):
                 # do nothing
                 pass
         except:
-            print >> sys.stderr, 'Exception caught found in EcoBTApp'
+            print >> sys.stderr, 'Exception caught found in GatewayApp'
          
         # clean up       
         self.managerWorker.stop()
@@ -69,6 +69,7 @@ class GatewayApp(object):
             stdIn.readInBackgroundAndNotify()
             #self.handleKeyboardInterrupt()
         '''
+        
 from ws4py.client.threadedclient import WebSocketClient
 import time
 class Connection2Gateway(object):
