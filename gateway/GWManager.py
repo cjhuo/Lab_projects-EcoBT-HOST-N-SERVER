@@ -304,6 +304,8 @@ class GWManager(NSObject):
         if len(self.taskQueue) != 0:
             request = self.taskQueue.popleft()
             self.processingQueue.append(request)
+            serviceUUIDStr = request['value']['serviceUUID']
+            characteristicUUIDStr = request['value']['characteristicUUID']
             
             #queryID = request['value']['queryID']
             peripheralID = request['value']['peripheralID']
@@ -311,9 +313,8 @@ class GWManager(NSObject):
             if peripheral == None: # not found 
                 print 'peripheral for this request not found'
                 self.processingQueue.remove(request)
+                self.receiveFeedbackFromPeripheral(peripheralID, serviceUUIDStr, characteristicUUIDStr, "error", 'peripheral not found')
                 return
-            serviceUUIDStr = request['value']['serviceUUID']
-            characteristicUUIDStr = request['value']['characteristicUUID']
         
             if request['value']['action'] == 'READ':
                 peripheral.readValueFromPeripheral(serviceUUIDStr, characteristicUUIDStr)
@@ -327,14 +328,16 @@ class GWManager(NSObject):
     def processProcessingQueue(self):
         for request in self.processingQueue:
             peripheralID = request['value']['peripheralID']
+            serviceUUIDStr = request['value']['serviceUUID']
+            characteristicUUIDStr = request['value']['characteristicUUID']
+ 
             peripheral = self.findPeripheralWorkerByIdentifier(peripheralID)
             if peripheral == None: # not found 
                 print 'peripheral for this request not found'
                 self.processingQueue.remove(request)
+                self.receiveFeedbackFromPeripheral(peripheralID, serviceUUIDStr, characteristicUUIDStr, "error", 'peripheral not found')
                 return
-            serviceUUIDStr = request['value']['serviceUUID']
-            characteristicUUIDStr = request['value']['characteristicUUID']
-        
+       
             if request['value']['action'] == 'READ':
                 peripheral.readValueFromPeripheral(serviceUUIDStr, characteristicUUIDStr)
             if request['value']['action'] == 'WRITE':
