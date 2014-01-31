@@ -21,7 +21,7 @@ class GatewayApp(object):
                 
     def start(self):
         # initialize NSAutoreleasePool
-        self.pool = NSAutoreleasePool.alloc().init()
+        #self.pool = NSAutoreleasePool.alloc().init()
         if self.enableKeyboardInterrupt != False:
             self.handleKeyboardInterrupt()
         self.running = Event()
@@ -38,7 +38,7 @@ class GatewayApp(object):
         self.managerWorker.stop()
         self.connection2Gateway.close()
         NSLog("Program Terminated")
-        del self.pool
+        #del self.pool
                                
     def handleKeyboardInterrupt(self):
         # handle keyboard interrupt. Hit "Enter" to exit the program
