@@ -14,14 +14,26 @@ $(function () {
 					//updateACCChart(data.data);
 				}
 				if(data.data.type == 'SIDsRead'){ //real data
+                    console.log("CO2 raw reading");
 					console.log(data.data.value);
 				}
-				if(data.data.type == 'Audio') { // update audio chart
-		        	if(data.data.leftAvg > 0.0 && data.data.rightAvg > 0.0){
-		        		chart.series[0].addPoint(data.data.leftAvg, false, true);
-		        		chart.series[1].addPoint(-data.data.rightAvg, true, true);
-		        	}
-				}
+                if(data.data.type == 'CO2'){
+                    console.log("CO2 reading");
+                    var val = data.data.value;
+                    console.log(val);
+                    var point = chartHum.series[0].points[0];
+                    point.update(parseFloat(val), true);
+                }
+                if (data.data.type == 'Audio') {
+                    console.log("Audio Indicators");
+                    console.log(data.data.series);
+                    series = data.data.series;
+                    for (var i = 0; i < series.length; i++) {
+                        val = (series[i] * 2 + 0.0) / 65536;
+                        chart.series[0].addPoint(val, false, true);
+                        chart.series[1].addPoint(-val, true, true);
+                    }
+                }
 				if(data.data.type == 'BodyTemp'){ // update body temp chart
 					if(tempMonEnable){
 						slider.setValue(data.data.value);
@@ -117,8 +129,8 @@ $(function () {
 			
 			//set CO2 to 0.05;
 			//update Hum chart
-			var point = chartHum.series[0].points[0];			
-			point.update(0.05, true);
+//			var point = chartHum.series[0].points[0];			
+//			point.update(0.05, true);
 
 			
 			//set risk level to Low
@@ -131,12 +143,12 @@ $(function () {
 	        	}
 	        	var val = 0.7-(Math.random()*0.2)-gradual;
 	        	if(val > 0.0){
-	        		chart.series[0].addPoint(val, false, true);
-	        		chart.series[1].addPoint(-val, true, true);
+//	        		chart.series[0].addPoint(val, false, true);
+//	        		chart.series[1].addPoint(-val, true, true);
 	        	}
 	        	else{
-	        		chart.series[0].addPoint(0, false, true);
-	        		chart.series[1].addPoint(0, true, true);
+//	        		chart.series[0].addPoint(0, false, true);
+//	        		chart.series[1].addPoint(0, true, true);
 	        		//clearInterval(fakeItrv);
 	        		//no sound over 5 sec
 	        		setTimeout(function(){
@@ -154,7 +166,7 @@ $(function () {
 	var faceDownTime;
 	function fakeCheckCondition(data){
 		//data is from acc
-		if(data.value.z < -0.5 && riskLvl < 1){ // face down
+		if(data.type == "orientation" && data.value.z < -0.5 && riskLvl < 1){ // face down
 			
 			if(faceDownTime == null){
 				faceDownTime = new Date();
@@ -911,24 +923,24 @@ $(function () {
 	        // the value axis
 	        yAxis: {
 	            min: 0,
-	            max: 6,
+	            max: 100,
 	            
 	            minorTickInterval: 'auto',
-	            minorTickWidth: 1,
-	            minorTickLength: 10,
+	            minorTickWidth: 3,
+	            minorTickLength: 3,
 	            minorTickPosition: 'inside',
 	            minorTickColor: '#666',
 	    
-	            tickInterval: 1,
+                tickInterval: 10,
 	            tickWidth: 3,
 	            tickPosition: 'inside',
 	            tickLength: 10,
 	            tickColor: '#666',
 	            labels: {
-	                step: 1,
+	                step: 2,
 	                rotation: 'auto',
 	                style: {
-	                	fontSize: '28px'
+	                	fontSize: '22px'
 	                },
 	                distance: -40
 	            },
@@ -940,19 +952,23 @@ $(function () {
 	                }
 	            },
 	            */
-	            plotBands: [{
-	                from: humRangeMin,
-	                to: humRangeMax,
-	                color: '#55BF3B' // green
-	            }, {
-	                from: humRangeMax,
-	                to: 3,
-	                color: '#DDDF0D' // yellow
-	            }, {
-	                from: 3,
-	                to: 6,
-	                color: '#DF5353' // red
-	            }]
+	            plotBands: [
+                    {
+	                    from: 0,
+	                    to: 35,
+	                    color: '#55BF3B' // green
+	                },
+                    {
+	                    from: 35,
+	                    to: 65,
+	                    color: '#DDDF0D' // yellow
+	                },
+                    {
+	                    from: 65,
+	                    to: 100,
+	                    color: '#DF5353' // red
+	                }
+                ]
 	        },
 	    
 	        series: [{

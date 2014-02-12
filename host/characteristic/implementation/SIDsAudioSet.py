@@ -17,22 +17,29 @@ from Characteristic import *
 '''
 structure:
 window: 2 bytes in ms
-run/stop: 1 byte  
+run/stop: 1 byte
 '''
 class SIDsAudioSet(Characteristic):
     def __init__(self):
         Characteristic.__init__(self)
         self.privilege = 2
-        
+
     def process(self):
         value = self.instance._.value
-        window, enable = struct.unpack("<HB", value)
-        print "SIDsAudioSet %d%d" % (window, enable)
-        
-        if(enable != 0x01): # if not enabled, enable it
-            self.peripheralWorker.writeValueForCharacteristic(self.createEnableAudioRead(window), self)
+        power, enable, record = struct.unpack("<BBB", value)
+        print "SIDsAudioSet %d%d%d" % (power, enable, record)
+
+        if (power != 0x01):
+            self.peripheralWorker.writeValueForCharacteristic(self.createAudioReadConf(0x01, 0x01, 0x00), self)
+#        if(enable != 0x01): # if not enabled, enable it
+#            self.peripheralWorker.writeValueForCharacteristic(self.createEnableAudioRead(window), self)
 
     def createEnableAudioRead(self, window):
         settings = struct.pack("<HB", window, 0x01)
+        val_data = NSData.dataWithBytes_length_(settings, len(settings))
+        return val_data
+
+    def createAudioReadConf(self, power, enable, record):
+        settings = struct.pack("BBB", power, enable, record)
         val_data = NSData.dataWithBytes_length_(settings, len(settings))
         return val_data

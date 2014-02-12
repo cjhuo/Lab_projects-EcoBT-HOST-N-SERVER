@@ -33,18 +33,15 @@ class SIDsAudioRead(Characteristic):
         print "SIDSAudioRead", dataSet
 
         # calculate mean value of left channel and right channel
-        leftSum, rightSum = 0, 0
-        for idx in range(4):
-            leftSum += dataSet[idx*2]
-            rightSum += dataSet[idx*2+1]
-        leftAvg = leftSum / (len(dataSet)/2)
-        rightAvg = rightSum / (len(dataSet)/2)
-
+#        leftSum, rightSum = 0, 0
+#        for idx in range(4):
+#            leftSum += dataSet[idx*2]
+#            rightSum += dataSet[idx*2+1]
+#        leftAvg = leftSum / (len(dataSet)/2)
+#        rightAvg = rightSum / (len(dataSet)/2)
         data = {
-                'type': 'Audio',
-                'leftAvg': leftAvg,
-                'rightAvg': rightAvg
-                }
-
-#        self.peripheralWorker.delegateWorker.getQueue().put(data)
+            'type': 'Audio',
+            'series': list(dataSet)
+        }
+        self.peripheralWorker.delegateWorker.getQueue().put(data)
 
