@@ -75,7 +75,7 @@ class ECG_reader():
             wavedata = self.wavech   
         return wavedata
     
-    def getBinInfo(self, qpoint, tpoint, bin=10, channelNo = 2, correlationVal=0.50) :
+    def getBinInfo(self, qpoint, tpoint, bin=10, channelNo = 2, correlationVal=0.50, indicator=[1,1,1,1,1,1,1,1,1,1,1,1]) :
         ErrorCode = 0
         Qtcs = []
         AvgHR = 0
@@ -89,24 +89,33 @@ class ECG_reader():
         from datetime import datetime
         s1=datetime.now()
 
-#        self.wavech = Filterbank.FilterAllChannel(12, 5, self.samplingrate, self.wavech)
         Wavedata = numpy.array(self.wavech)
 
         # ECG R peak detection
-        index_rangeQ = range( 1, len( self.peakdata ) - 1 )
-        index_rangeT = range( 0, len( self.peakdata ) - 1 )
+        if self.peakdata[0]>CAPS.tempsize :
+            index_rangeQ = range( 0, len( self.peakdata ) - 1  )
+            index_rangeT = range( 0, len( self.peakdata ) - 1 )
+        else :
+            index_rangeQ = range( 1, len( self.peakdata ) - 1  )
+            index_rangeT = range( 1, len( self.peakdata ) - 1 )
 
         # Searching similar point from manually selected Q point
-        template, offset, stepsize = CAPS.get_templateParam(qpoint, Wavedata)
+        template, offset = CAPS.get_templateParam(qpoint, Wavedata, indicator)
 
-        SearchingQ = partial( CAPS.get_correlation, 'Q', offset, template, stepsize, self.peakdata, Wavedata, correlationVal )
+        SearchingQ = partial( CAPS.get_correlation, 'Q', offset, template, self.peakdata, Wavedata, correlationVal, indicator )
         Qpoint = self.qpool.map( SearchingQ, index_rangeQ )
 
-        # Searching similar point from manually selected T point
-        template, offset, stepsize = CAPS.get_templateParam(tpoint, Wavedata)
+#        print Qpoint
 
-        SearchingT = partial( CAPS.get_correlation, 'T', offset, template, stepsize,  self.peakdata, Wavedata, correlationVal )
+        # Searching similar point from manually selected T point
+        template, offset = CAPS.get_templateParam(tpoint, Wavedata, indicator)
+
+        SearchingT = partial( CAPS.get_correlation, 'T', offset, template, self.peakdata, Wavedata, correlationVal, indicator )
         Tpoint = self.tpool.map( SearchingT, index_rangeT )
+
+#        print Tpoint
+
+#        print self.peakdata.tolist()
 
         # Calculate the Qtc value
         Qtcs, AvgHR, LongQTc, ShortQTc, NumofHR, PercentOverQTc, RangeRR, MeanQTc, MedianQTc = Qtc.CalculateQtc(self.peakdata, Qpoint, Tpoint, int(self.samplingrate))
@@ -116,7 +125,7 @@ class ECG_reader():
         histodata = histo.Histogram(Qtcs, bin)
 
         s2=datetime.now()
-        print(histodata)
+
         print(s2-s1)
 
         return histodata, [AvgHR, str(RangeRR[0]) + '~' + str(RangeRR[1]), NumofHR, LongQTc, ShortQTc, MeanQTc, MedianQTc, PercentOverQTc]#, ErrorCode

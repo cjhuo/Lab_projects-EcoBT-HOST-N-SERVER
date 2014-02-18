@@ -713,7 +713,8 @@ $(function () {
 	*/						
 	function onDataReceived(data) { //setup plot after retrieving data
 	    extractDatasets(data); //JSON {'dspData': datasets, 'peaks': indice of peak points}         
-		addChoices(); //add channel radio buttons
+		addSelector();
+        addChoices(); //add channel radio buttons
 		addReferenceImg();
 		addFileUploadDiv();
 		//addPlot();  //generate main plot div
@@ -728,7 +729,38 @@ $(function () {
 		pointInterval = data.pointInterval;
 		base = data.base;
 	}
-    
+
+    function addSelector() {
+        var selector_form = $('<form>',{
+            id: 'chan-selector'
+        }).css({
+                position: 'relative',
+                //width: '10%',
+                cssFloat: 'center',
+                fontWeight: 'bold',
+                margin: '10px 10px 10px 10px'
+                //textAlign: 'center'
+            });
+
+        $.each(datasets, function(key, val){
+            var check = $('<input>',{
+                type     : 'checkbox',
+                name     : key,
+                checked  : 'checked',
+                id       : 'checkbox_' + val.label,
+                'class'  : 'checkbox-chan-selector'
+            })
+            var label = $('<label>',{
+                for: 'checkbox_' + val.label
+            }).text(val.label);
+
+            check.appendTo(selector_form);
+            label.appendTo(selector_form);
+        });
+
+        selector_form.appendTo("body");
+
+    }
     function addChoices() {
         var i = 1;
         choice = $('<div id="choices">Show:</div>').css( {
@@ -1138,13 +1170,24 @@ $(function () {
     				'selectedPoints': array of peak, e.g. [[1, 20], [5, 40]]
     		}
     	*/
+
+        selected_array = [0,0,0,0,0,0,0,0,0,0,0,0];
+
+        selected = $( '#chan-selector' ).serializeArray();
+
+        $.each(selected, function(key, val){
+            onIndex = parseInt( val.name );
+            selected_array[onIndex] = 1;
+        });
+
     	//console.log(choice.find('input').filter('[checked=checked]').attr("value"));
     	var pdata = {//'channel': selectedPoints[0].series.label.substring(8),
     			'qPoint': [Math.round((qPoint.x-Date.UTC(0, 0, 0, 0, 0, 0, 0))/xPointInterval), qPoint.y/xPointInterval],
     			'tPoint': [Math.round((tPoint.x-Date.UTC(0, 0, 0, 0, 0, 0, 0))/xPointInterval), tPoint.y/xPointInterval],
     			'bin': parseInt(bin.val()),
                 'correlation':parseInt(correlation.val()),
-    			'lead': choice.find('input').filter('[checked=checked]').attr("value")	
+    			'lead': choice.find('input').filter('[checked=checked]').attr("value"),
+                'selected' : selected_array
     			};
 
 		$.ajax({

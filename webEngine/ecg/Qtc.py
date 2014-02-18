@@ -13,6 +13,7 @@ def CalculateQtc(peakdata, Qpoint, Tpoint, samplingrate) :
     RR  = []
 
     Validated = ValidateData(peakdata, Qpoint, Tpoint)
+
     if (len(Validated)!=0) :
 
         for i in range(0,len(Validated)) :
@@ -24,18 +25,19 @@ def CalculateQtc(peakdata, Qpoint, Tpoint, samplingrate) :
                     RR.append(IntervalRR)
                     QTc.append(IntervalQTc)
 
-            FilteredQTc = []
-            FilteredRR = []
+        FilteredQTc = []
+        FilteredRR = []
 
-            Outlier = int(len(QTc) * 0.05)
-            SortedIndex = sorted(range(len(QTc)), key=QTc.__getitem__)
-            QTcIndex = SortedIndex[Outlier:len(SortedIndex)-Outlier]
+        Outlier = int(len(RR) * 0.05)
+        #        SortedIndex = sorted(range(len(QTc)), key=QTc.__getitem__)
+        #        QTcIndex = SortedIndex[Outlier:len(SortedIndex)-Outlier]
+        SortedIndex = sorted(range(len(RR)), key=RR.__getitem__)
+        RRIndex = SortedIndex[Outlier:len(SortedIndex)-Outlier]
 
-            #            for i in QTcIndex :
-            for i in QTcIndex :
-                FilteredQTc.append(QTc[i])
-                FilteredRR.append(RR[i])
-
+        for i in RRIndex :
+            FilteredQTc.append(QTc[i])
+            FilteredRR.append(RR[i])
+        if ((len(FilteredQTc)!=0) | (len(FilteredRR)!=0)) :
 
             AvgHR = round( float(60) / numpy.mean(FilteredRR), 3 )
             LongQTc = round( max(FilteredQTc), 3 )
@@ -46,6 +48,17 @@ def CalculateQtc(peakdata, Qpoint, Tpoint, samplingrate) :
             RangeRR = round(float(60)/max(FilteredRR), 3 ), round(float(60)/min(FilteredRR), 3 )
             MeanQTc = round(numpy.mean(FilteredQTc),3)
             MedianQTc = round(numpy.median(FilteredQTc),3)
+        else :
+            FilteredQTc=[]
+            AvgHR = 0
+            LongQTc = 0
+            ShortQTc = 0
+            NumofHR = 0
+            PercentOverQTc = 0
+            RangeRR = 0
+            MeanQTc = 0
+            MedianQTc = 0
+
     else :
         FilteredQTc=[]
         AvgHR = 0
@@ -72,5 +85,4 @@ def ValidateData(peakdata, Qpoint, Tpoint) :
             validatedataset.append(temp)
         else :
             continue
- #   print validatedataset
     return validatedataset

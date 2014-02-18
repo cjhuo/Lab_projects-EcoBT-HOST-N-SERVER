@@ -291,12 +291,11 @@ class ECGHandler(BaseHandler):
     def get(self): 
         data = json.loads(self.get_argument("data"))
         correlationVal = float(data.get('correlation'))/100
-
-        print data
+        indicator = data.get('selected')
 
         try:
             #format of getBinInfo(): [[min, max, value],[min,max,value],...]
-            bins, info = self.ecg.getBinInfo(data['qPoint'][0], data['tPoint'][0], data['bin'], data['lead'], correlationVal);
+            bins, info = self.ecg.getBinInfo(data['qPoint'][0], data['tPoint'][0], data['bin'], data['lead'], correlationVal, indicator);
             
             print bins, info
             self.write({
