@@ -881,6 +881,12 @@ $(function () {
 	}
 	var chartHum, humRangeMin=0, humRangeMax=1;
 	function initHumidityChart(){
+        Highcharts.setOptions({
+            lang: {
+                customButtonTitle: "Calibration"
+            }
+        });
+
 		chartHum = new Highcharts.Chart({
 	        
 	        chart: {
@@ -893,7 +899,22 @@ $(function () {
 	            plotShadow: false
 	        },
 	        exporting:{
-	        	enabled: false
+                buttons: {
+                    printButton: {
+                        enabled: false
+                    },
+                    exportButton: {
+                        enabled: false
+                    },
+                    customButton: {
+                        _titleKey: "customButtonTitle",
+                        x: -10,
+                        onclick: function(){
+                            alert('Clicked');
+                        },
+                        symbol: 'circle'
+                    }
+                }
 	        },
 	        credits: {
 	        	href: "",//"http://cps.eng.uci.edu",
