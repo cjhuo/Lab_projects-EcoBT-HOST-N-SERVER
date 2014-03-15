@@ -9,8 +9,8 @@
 <div id="name" style="display: inline">{% if nodeName==None %}Demo{% else %}{{ nodeName }} {% end %}</div>
 </div>
 <br>
-<div id="serverAddr" style="display:none">{{ serverAddr }}</div>
-<div id="soundServerAddr" style="display:none">{{ soundServerAddr }}</div>
+<div id="serverAddr" style="display:None">{{ serverAddr }}</div>
+<div id="soundServerAddr" style="display:None">{{ soundServerAddr }}</div>
 
 <!-- <div class="ui-layout-north">Outer North</div> -->
 
@@ -32,10 +32,33 @@
 
 <div id="charts" class="ui-layout-west">
 
+	<div id='co2Reading' style="display:none">
+    	<div id="co2ReadingContainer" class="ui-widget">
+    	<table id='dataTable' class="ui-widget ui-widget-content">
+    		<thead>
+    			<tr class="ui-widget-header">
+    				<th>Time</th>
+    				<th>LED 1 Signale 1</th>
+    				<th>LED 1 Signale 2</th>
+    				<th>LED 2 Signale 1</th>
+    				<th>LED 2 Signale 2</th>
+    				<th>Ambient 1</th>
+    				<th>Ambient 2</th>
+    				<th>RH</th>
+    				<th>T</th>
+    			</tr>
+    		</thead>
+    		<tbody>
+    			<tr>
+    			</tr>
+    		</tbody>
+    	</table>
+    	</div>
+    </div>
 
 
 	<!-- <div class="ui-layout-north">Middle North</div> -->
-	<div class="ui-layout-center">
+	<div id="charts_center" class="ui-layout-center">
 
 		<div id='acceleration' class="ui-layout-west"><!-- Orientation --></div>
 
@@ -49,7 +72,7 @@
 
 	</div>
 	
-	<div class="ui-layout-south">
+	<div id="charts_south" class="ui-layout-south">
     
 		<div id='temperature' class="ui-layout-west" style="text-align:center"></div>
 
