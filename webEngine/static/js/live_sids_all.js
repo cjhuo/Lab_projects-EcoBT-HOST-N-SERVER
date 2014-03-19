@@ -2203,29 +2203,128 @@ $(function() {
 	}
 
 	var settingContainer, inputs;
+	var fakeSettings = [
+		{name: "setting1", value: "1"},
+		{name: "setting2", value: "2"},
+		{name: "setting3", value: "3"},
+		{name: "setting4", value: "4"}
+	];
 
 	function addSettingContainer() {
 		settingContainer = $("<div id='settingContainer'/>").css({
 			"z-index": 99999
 		});
 		settingContainer.insertBefore("#co2ReadingContainer");
+		addSettings(null);
 	}
 
 	function addSettings(settings) {
+		settingTable = $("<table id='settingTable' border='0'></table>")
+		if (inputs == null){
+			inputs = [];
+			var rowDom, tdDom1, tdDom2, counter = 1, numOfCol = 4;
+			$.each(fakeSettings, function(key, val){
+				console.log(key);
+				console.log(val);
+				if (counter == 1){
+					rowDom = $("<tr></tr>");
+				}
+				if (counter % numOfCol == 1){
+					rowDom.appendTo(settingTable);
+					rowDom = $("<tr></tr>");
+				}
+				var label = $("<lable for='" + val['name'] + "'>" + val['name'] + "</label><br>").css({
+					fontSize: 'small',
+					width: '40px'
+				});
+				var input = $("<input  id='" + val['name'] + "' value='" + val['value'] + "'/>").css({
+					fontSize: 'small',
+					width: '40px'
+				});
+				inputs.push(input);
 
+				tdDom1 = $("<td></td>");
+				label.appendTo(tdDom1);
+				tdDom2 = $("<td></td>");
+				input.appendTo(tdDom2);
+				input.spinner();
+
+				tdDom1.appendTo(rowDom);
+				tdDom2.appendTo(rowDom);
+				counter++;
+			});
+			rowDom.appendTo(settingTable);
+			settingTable.appendTo(settingContainer);
+		}
 	}
+
+	var formulaContainer, formulaInputs;
+	function addFormulaContainer() {
+		formulaContainer = $("<div id='settingContainer'/>").css({
+			"z-index": 99999
+		});
+		formulaContainer.insertBefore("#co2ReadingContainer");
+		addFormulaParams(null);
+	}
+
+	function addFormulaParams(settings) {
+		formulaTable = $("<table id='formulaTable' border='0'></table>")
+		if (formulaInputs == null){
+			formulaInputs = [];
+			var rowDom, tdDom1, tdDom2, counter = 1, numOfCol = 4;
+			$.each(fakeSettings, function(key, val){
+				console.log(key);
+				console.log(val);
+				if (counter == 1){
+					rowDom = $("<tr></tr>");
+				}
+				if (counter % numOfCol == 1){
+					rowDom.appendTo(formulaTable);
+					rowDom = $("<tr></tr>");
+				}
+				var label = $("<lable for='" + val['name'] + "'>" + val['name'] + "</label><br>").css({
+					fontSize: 'small',
+					width: '40px'
+				});
+				var input = $("<input  id='" + val['name'] + "' value='" + (val['value'] + 1) + "'/>").css({
+					fontSize: 'small',
+					width: '40px'
+				});
+				formulaInputs.push(input);
+
+				tdDom1 = $("<td></td>");
+				label.appendTo(tdDom1);
+				tdDom2 = $("<td></td>");
+				input.appendTo(tdDom2);
+				input.spinner();
+
+				tdDom1.appendTo(rowDom);
+				tdDom2.appendTo(rowDom);
+				counter++;
+			});
+			rowDom.appendTo(formulaTable);
+			formulaTable.appendTo(formulaContainer);
+		}
+	}
+
 
 	function showReadingDiv() {
 		$("#dataTable").css({
 			width: '100%'
 		});
+//		$("#co2Reading").attr('class', 'ui-layout-west');
 		$("#co2Reading").toggle();
+//		$("#co2Reading").removeClass('ui-layout-west');
+//		$("#charts").toggle();
 		$("#charts_center").toggle();
 //		$("#charts_south").toggle();
 	}
 
 	function hideReadingDiv() {
+//		$("#co2Reading").removeClass('ui-layout-west');
 		$("#co2Reading").toggle();
+//		$("#charts").attr('class', 'ui-layout-west');
+//		$("#charts").toggle();
 		$("#charts_center").toggle();
 //		$("#charts_south").toggle();
 	}
@@ -2283,6 +2382,7 @@ $(function() {
 	function initHumidityChart() {
 		// init. CO2 Reading Div
 		addSettingContainer();
+		addFormulaContainer();
 		addClearReadingButton();
 		addCloseReadingButton();
 		addUpdateConfButton();

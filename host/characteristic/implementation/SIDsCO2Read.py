@@ -40,18 +40,29 @@ class SIDsCO2Read(Characteristic):
     def __init__(self):
         Characteristic.__init__(self)
         self.privilege = 0
+        self.conv_params = {
+            'C': 1,
+            'Ref0': 700.0,
+            'Tc': 1.5,
+            'b': 5.8,
+            'S0A': 200,
+            'o': -1.7,
+            'p': 1.359,
+            'm': 1,
+            'n': 1,
+        }
 
     def conversion(self, PD1, PD2, AMB1, AMB2, T, RH):
         # Constants
-        C = 1
-        Ref0 = 700.0
-        Tc = 1.5
-        b = 5.8
-        S0A = 200
-        o = -1.7
-        p = 1.359
-        m = 1
-        n = 1
+        C = self.conv_params['C']
+        Ref0 = self.conv_params['Ref0']
+        Tc = self.conv_params['Tc']
+        b = self.conv_params['b']
+        S0A = self.conv_params['S0A']
+        o = self.conv_params['o']
+        p = self.conv_params['p']
+        m = self.conv_params['m']
+        n = self.conv_params['n']
         PD1 = PD1 + 0.0
         PD2 = PD2 + 0.0
         AMB1 = AMB1 + 0.0
