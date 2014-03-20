@@ -6,6 +6,8 @@ $(function () {
     var datasets; //store datasets
     var tempMonEnable = true;
 
+    var CO2FormulaParams;
+
     function onDataReceived(data) { //setup plot after retrieving data
         //console.log(data);
         if (data.from == 'node') {
@@ -17,6 +19,24 @@ $(function () {
             if (data.data.type == 'SIDsRead') { //real data
                 console.log("CO2 raw reading");
                 console.log(data.data.value);
+            }
+            if (data.data.type == 'SIDsSettings') {
+                console.log("CO2 Settings");
+                console.log(data.data.value);
+            }
+            if (data.data.type == 'CO2FormulaParams') {
+                console.log("CO2 Conversion parameters");
+                //console.log(data.data.value);
+                if (CO2FormulaParams == null) {
+                    CO2FormulaParams = data.data.value;
+                    //$.each(data.data.value, function (key, val) {
+                    //    console.log(key, val);
+                    //});
+                } else {
+                    $each(data.data.value, function (key, val) {
+                        console.log(key, val);
+                    });
+                }
             }
             if (data.data.type == 'CO2') {
                 console.log("CO2 reading");

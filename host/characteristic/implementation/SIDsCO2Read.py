@@ -9,7 +9,6 @@ from Foundation import *
 from IOBluetooth import *
 from objc import *
 
-import array
 import binascii
 import struct
 import csv
@@ -121,6 +120,7 @@ class SIDsCO2Read(Characteristic):
             'value': "%.2f" % co2
         }
         self.peripheralWorker.delegateWorker.getQueue().put(data)
+        self.sendParamsToFrontend()
         '''
         self.start = int(hex_str, base=16) # 1: enabled; 0: disabled
         print "SIDS SHT25 Start?(%s) %d" % (self.instance._.UUID, self.start)
@@ -131,6 +131,19 @@ class SIDsCO2Read(Characteristic):
                 }
         return data
         '''
+
+    def sendParamsToFrontend(self):
+        data = {
+            'type': 'CO2FormulaParams',
+            'value': self.conv_params
+        }
+        self.peripheralWorker.delegateWorker.getQueue().put(data)
+
+    def updateParamsByDict(self, params):
+        pass
+
+    def udpateParamsByFile(self, fname):
+        pass
 
     def logToFile(self, hour, minute, sec, LED00, LED01, LED10, LED11, amb0, amb1, rh, temp):
         if not hasattr(self.service, 'log_file') or self.service.log_file == False: # try to open a file
