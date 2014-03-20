@@ -17,12 +17,13 @@ $(function () {
                     //updateACCChart(data.data);
                 }
             if (data.data.type == 'SIDsRead') { //real data
-                console.log("CO2 raw reading");
-                console.log(data.data.value);
+                //console.log("CO2 raw reading");
+                //console.log(data.data.value);
+                updateDataTable(data.data.value);
             }
             if (data.data.type == 'SIDsSettings') {
                 console.log("CO2 Settings");
-                console.log(data.data.value);
+                addSettings(data.data.value);
             }
             if (data.data.type == 'CO2FormulaParams') {
                 console.log("CO2 Conversion parameters");
@@ -32,8 +33,9 @@ $(function () {
                     //$.each(data.data.value, function (key, val) {
                     //    console.log(key, val);
                     //});
+
                 } else {
-                    $each(data.data.value, function (key, val) {
+                    $.each(data.data.value, function (key, val) {
                         console.log(key, val);
                     });
                 }
@@ -2403,6 +2405,27 @@ $(function () {
         });
         updateConfButton.button();
         updateConfButton.insertBefore("#co2ReadingContainer");
+    }
+
+    function updateDataTable(data) {
+        console.log("raw CO2 reading");
+        console.log(data);
+        var row = "<tr>" +
+            "<td>" + data[0] + ":" + data[1] + ":" + data[2] + "</td>" +
+            "<td>" + data[3] + "</td>" +
+            "<td>" + data[4] + "</td>" +
+            "<td>" + data[5] + "</td>" +
+            "<td>" + data[6] + "</td>" +
+            "<td>" + data[7] + "</td>" +
+            "<td>" + data[8] + "</td>" +
+            "<td>" + parseFloat(data[9]).toFixed(2) + "</td>" +
+            "<td>" + parseFloat(data[10]).toFixed(2) + "</td>" +
+            "<td>" + parseFloat(data[11]).toFixed(2) + "</td>" +
+            "</tr>";
+        $("#dataTable tbody").prepend(row);
+        $("#dataTable").css({
+            fontSize: 'small'
+        });
     }
 
     var chartHum, humRangeMin = 0,
