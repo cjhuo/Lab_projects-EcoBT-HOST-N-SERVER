@@ -1,7 +1,8 @@
 $(function () {
     var url = $('#serverAddr').text(); //push url, need to change this to server's url, 
     var name = $('#name').text();
-    var soundUrl = $('#soundServerAddr').text();;
+    var soundUrl = $('#soundServerAddr').text();
+    var configUrl = 'config';
 
     var datasets; //store datasets
     var tempMonEnable = true;
@@ -35,9 +36,9 @@ $(function () {
                     //});
 
                 } else {
-                    $.each(data.data.value, function (key, val) {
-                        console.log(key, val);
-                    });
+                    //$.each(data.data.value, function (key, val) {
+                    //    console.log(key, val);
+                    //});
                 }
             }
             if (data.data.type == 'CO2') {
@@ -2243,7 +2244,7 @@ $(function () {
             "z-index": 99999
         });
         settingContainer.insertBefore("#co2ReadingContainer");
-        addSettings(null);
+        //        addSettings(null);
     }
 
     function addSettings(settings) {
@@ -2252,7 +2253,7 @@ $(function () {
             inputs = [];
             var rowDom, tdDom1, tdDom2, counter = 1,
                 numOfCol = 4;
-            $.each(fakeSettings, function (key, val) {
+            $.each(settings, function (key, val) {
                 console.log(key);
                 console.log(val);
                 if (counter == 1) {
@@ -2284,6 +2285,10 @@ $(function () {
             });
             rowDom.appendTo(settingTable);
             settingTable.appendTo(settingContainer);
+        } else {
+            $.each(inputs, function (key, val) {
+                val[0].value = settings[val[0].id];
+            });
         }
     }
 
@@ -2294,7 +2299,7 @@ $(function () {
             "z-index": 99999
         });
         formulaContainer.insertBefore("#co2ReadingContainer");
-        addFormulaParams(null);
+        //addFormulaParams(null);
     }
 
     function addFormulaParams(settings) {
@@ -2303,7 +2308,7 @@ $(function () {
             formulaInputs = [];
             var rowDom, tdDom1, tdDom2, counter = 1,
                 numOfCol = 4;
-            $.each(fakeSettings, function (key, val) {
+            $.each(settings, function (key, val) {
                 console.log(key);
                 console.log(val);
                 if (counter == 1) {
@@ -2345,6 +2350,9 @@ $(function () {
         });
         //		$("#co2Reading").attr('class', 'ui-layout-west');
         $("#co2Reading").toggle();
+        $("#dataTable").css({
+            fontSize: 'small'
+        });
         //		$("#co2Reading").removeClass('ui-layout-west');
         //		$("#charts").toggle();
         $("#charts_center").toggle();
@@ -2407,11 +2415,20 @@ $(function () {
         updateConfButton.insertBefore("#co2ReadingContainer");
     }
 
+    var MAX_ROW_NUM_DATATABLE = 10;
+
     function updateDataTable(data) {
-        console.log("raw CO2 reading");
-        console.log(data);
+        //console.log("raw CO2 reading");
+        //console.log(data);
+        var sec = parseInt(data[2]);
+        var sec_str;
+        if (sec < 10) {
+            sec_str = "0" + sec;
+        } else {
+            sec_str = sec;
+        }
         var row = "<tr>" +
-            "<td>" + data[0] + ":" + data[1] + ":" + data[2] + "</td>" +
+            "<td>" + data[0] + ":" + data[1] + ":" + sec_str + "</td>" +
             "<td>" + data[3] + "</td>" +
             "<td>" + data[4] + "</td>" +
             "<td>" + data[5] + "</td>" +
@@ -2423,6 +2440,9 @@ $(function () {
             "<td>" + parseFloat(data[11]).toFixed(2) + "</td>" +
             "</tr>";
         $("#dataTable tbody").prepend(row);
+        if ($("#dataTable tr").length > MAX_ROW_NUM_DATATABLE) {
+            $("#dataTable tr:last").remove();
+        }
         $("#dataTable").css({
             fontSize: 'small'
         });
