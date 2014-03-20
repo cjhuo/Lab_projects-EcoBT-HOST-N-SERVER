@@ -111,7 +111,7 @@ class SIDsCO2Read(Characteristic):
 
         data = {
                 'type': 'SIDsRead',
-                'value': [hour, minute, sec, LED00, LED01, LED10, LED11, amb0, amb1, rh, temp]
+                'value': [hour, minute, sec, LED00, LED01, LED10, LED11, amb0, amb1, rh, temp, co2]
                 }
 
         self.peripheralWorker.delegateWorker.getQueue().put(data)
