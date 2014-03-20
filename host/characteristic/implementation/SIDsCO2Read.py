@@ -120,7 +120,6 @@ class SIDsCO2Read(Characteristic):
             'value': "%.2f" % co2
         }
         self.peripheralWorker.delegateWorker.getQueue().put(data)
-        self.sendParamsToFrontend()
         '''
         self.start = int(hex_str, base=16) # 1: enabled; 0: disabled
         print "SIDS SHT25 Start?(%s) %d" % (self.instance._.UUID, self.start)

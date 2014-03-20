@@ -80,6 +80,10 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
             elif message.startswith("sendSIDsSet"): 
                 address = message[11:]
                 self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsSet().sendSettingsToFrontend()   
+            elif message.startswith("sendCO2Formula"):
+                address = message[len("sendCO2Formula"):]
+                sids = self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsRead()
+                sids.sendParamsToFrontend()
             else: #json
                 data = json.loads(message)
                 emailContent = "This is an alert sent from SIDs monitor\

@@ -138,6 +138,9 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
     
     def findSIDsSet(self):
         return self.findCharacteristicByUUID("FE12")
+
+    def findSIDsRead(self):
+        return self.findCharacteristicByUUID("FE13")
   
     '''  
     # for the purpose of test, enable some certain characteristic(s) at the starting point

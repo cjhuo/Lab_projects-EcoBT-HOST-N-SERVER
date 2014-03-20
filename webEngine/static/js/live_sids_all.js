@@ -7,8 +7,6 @@ $(function () {
     var datasets; //store datasets
     var tempMonEnable = true;
 
-    var CO2FormulaParams;
-
     function onDataReceived(data) { //setup plot after retrieving data
         //console.log(data);
         if (data.from == 'node') {
@@ -28,18 +26,7 @@ $(function () {
             }
             if (data.data.type == 'CO2FormulaParams') {
                 console.log("CO2 Conversion parameters");
-                //console.log(data.data.value);
-                if (CO2FormulaParams == null) {
-                    CO2FormulaParams = data.data.value;
-                    //$.each(data.data.value, function (key, val) {
-                    //    console.log(key, val);
-                    //});
-
-                } else {
-                    //$.each(data.data.value, function (key, val) {
-                    //    console.log(key, val);
-                    //});
-                }
+                addFormulaParams(data.data.value);
             }
             if (data.data.type == 'CO2') {
                 console.log("CO2 reading");
@@ -2253,9 +2240,8 @@ $(function () {
             inputs = [];
             var rowDom, tdDom1, tdDom2, counter = 1,
                 numOfCol = 4;
-            $.each(settings, function (key, val) {
-                console.log(key);
-                console.log(val);
+            tmpSettings = sortOnKeys(settings);
+            $.each(tmpSettings, function (key, val) {
                 if (counter == 1) {
                     rowDom = $("<tr></tr>");
                 }
@@ -2263,11 +2249,11 @@ $(function () {
                     rowDom.appendTo(settingTable);
                     rowDom = $("<tr></tr>");
                 }
-                var label = $("<lable for='" + val['name'] + "'>" + val['name'] + "</label><br>").css({
+                var label = $("<lable for='" + key + "'>" + key + "</label><br>").css({
                     fontSize: 'small',
                     width: '40px'
                 });
-                var input = $("<input  id='" + val['name'] + "' value='" + val['value'] + "'/>").css({
+                var input = $("<input  id='" + key + "' value='" + val + "'/>").css({
                     fontSize: 'small',
                     width: '40px'
                 });
@@ -2292,10 +2278,25 @@ $(function () {
         }
     }
 
+    function sortOnKeys(dict) {
+        var sorted = [];
+        for (var key in dict) {
+            sorted[sorted.length] = key;
+        }
+        sorted.sort();
+
+        var tempDict = {};
+        for (var i = 0; i < sorted.length; i++) {
+            tempDict[sorted[i]] = dict[sorted[i]];
+        }
+
+        return tempDict;
+    }
+
     var formulaContainer, formulaInputs;
 
     function addFormulaContainer() {
-        formulaContainer = $("<div id='settingContainer'/>").css({
+        formulaContainer = $("<div id='formulaContainer'/>").css({
             "z-index": 99999
         });
         formulaContainer.insertBefore("#co2ReadingContainer");
@@ -2308,21 +2309,14 @@ $(function () {
             formulaInputs = [];
             var rowDom, tdDom1, tdDom2, counter = 1,
                 numOfCol = 4;
+            tmpSettings = sortOnKeys(settings);
+            rowDom = $("<tr></tr>");
             $.each(settings, function (key, val) {
-                console.log(key);
-                console.log(val);
-                if (counter == 1) {
-                    rowDom = $("<tr></tr>");
-                }
-                if (counter % numOfCol == 1) {
-                    rowDom.appendTo(formulaTable);
-                    rowDom = $("<tr></tr>");
-                }
-                var label = $("<lable for='" + val['name'] + "'>" + val['name'] + "</label><br>").css({
+                var label = $("<lable for='" + key + "'>" + key + "</label><br>").css({
                     fontSize: 'small',
                     width: '40px'
                 });
-                var input = $("<input  id='" + val['name'] + "' value='" + (val['value'] + 1) + "'/>").css({
+                var input = $("<input  id='" + key + "' value='" + val + "'/>").css({
                     fontSize: 'small',
                     width: '40px'
                 });
@@ -2336,7 +2330,6 @@ $(function () {
 
                 tdDom1.appendTo(rowDom);
                 tdDom2.appendTo(rowDom);
-                counter++;
             });
             rowDom.appendTo(formulaTable);
             formulaTable.appendTo(formulaContainer);
@@ -2366,6 +2359,54 @@ $(function () {
         //		$("#charts").toggle();
         $("#charts_center").toggle();
         //		$("#charts_south").toggle();
+    }
+
+    var showConfigButton;
+
+    function addShowConfigButton() {
+        showConfigButton = $('<button></button>');
+        showConfigButton.text("Show Config");
+        showConfigButton.button();
+        showConfigButton.css({
+            "zIndex": 99999,
+            float: 'right',
+            fontSize: '30%',
+            position: 'relative',
+            top: '0px',
+            display: "inline-box",
+            width: '75px',
+            height: '20px'
+        });
+        showConfigButton.click(showConfig);
+        showConfigButton.insertBefore("#co2ReadingContainer");
+    }
+
+    function requestCO2Configs() {
+        socket.send("sendSIDsSet" + name.trim());
+    }
+
+    function requestCO2Formula() {
+        socket.send("sendCO2Formula" + name.trim());
+    }
+
+    function showConfig() {
+        $("#formulaContainer").show();
+        $("#settingContainer").show();
+        requestCO2Configs();
+        requestCO2Formula();
+        MAX_ROW_NUM_DATATABLE = 7;
+        showConfigButton.text("Close Config");
+        showConfigButton.click(hideConfig);
+        updateDataTable(null);
+    }
+
+    function hideConfig() {
+        $("#formulaContainer").toggle();
+        $("#settingContainer").toggle();
+        MAX_ROW_NUM_DATATABLE = 15;
+        showConfigButton.text("Show Config");
+        showConfigButton.click(showConfig);
+        updateDataTable(null);
     }
 
     var closeReadingButton;
@@ -2415,37 +2456,59 @@ $(function () {
         updateConfButton.insertBefore("#co2ReadingContainer");
     }
 
-    var MAX_ROW_NUM_DATATABLE = 10;
+    var MAX_ROW_NUM_DATATABLE = 15;
 
     function updateDataTable(data) {
         //console.log("raw CO2 reading");
         //console.log(data);
-        var sec = parseInt(data[2]);
-        var sec_str;
-        if (sec < 10) {
-            sec_str = "0" + sec;
-        } else {
-            sec_str = sec;
+        if (data != null) {
+            var sec = parseInt(data[2]);
+            var sec_str;
+            if (sec < 10) {
+                sec_str = "0" + sec;
+            } else {
+                sec_str = sec;
+            }
+            var row = "<tr>" +
+                "<td>" + data[0] + ":" + data[1] + ":" + sec_str + "</td>" +
+                "<td>" + data[3] + "</td>" +
+                "<td>" + data[4] + "</td>" +
+                "<td>" + data[5] + "</td>" +
+                "<td>" + data[6] + "</td>" +
+                "<td>" + data[7] + "</td>" +
+                "<td>" + data[8] + "</td>" +
+                "<td>" + parseFloat(data[9]).toFixed(2) + "</td>" +
+                "<td>" + parseFloat(data[10]).toFixed(2) + "</td>" +
+                "<td>" + parseFloat(data[11]).toFixed(2) + "</td>" +
+                "</tr>";
+            $("#dataTable tbody").prepend(row);
+            $("#dataTable").css({
+                fontSize: 'small'
+            });
         }
-        var row = "<tr>" +
-            "<td>" + data[0] + ":" + data[1] + ":" + sec_str + "</td>" +
-            "<td>" + data[3] + "</td>" +
-            "<td>" + data[4] + "</td>" +
-            "<td>" + data[5] + "</td>" +
-            "<td>" + data[6] + "</td>" +
-            "<td>" + data[7] + "</td>" +
-            "<td>" + data[8] + "</td>" +
-            "<td>" + parseFloat(data[9]).toFixed(2) + "</td>" +
-            "<td>" + parseFloat(data[10]).toFixed(2) + "</td>" +
-            "<td>" + parseFloat(data[11]).toFixed(2) + "</td>" +
-            "</tr>";
-        $("#dataTable tbody").prepend(row);
-        if ($("#dataTable tr").length > MAX_ROW_NUM_DATATABLE) {
+        while ($("#dataTable tr").length > MAX_ROW_NUM_DATATABLE) {
             $("#dataTable tr:last").remove();
         }
-        $("#dataTable").css({
-            fontSize: 'small'
+
+    }
+
+    function startSIDs() {
+        //disable all setting inputs
+        $.each(inputs, function (key, val) {
+            val.spinner("disable");
         });
+        //fileInput.hide();
+        //startButton.hide();
+        //stopButton.show();
+        //updateButton.hide();
+        //socket.send("startSIDs" + name.trim());
+        /*
+        socket.send("startECG"+name.trim());
+        startButton.hide();
+        redoButton.hide();
+        stopButton.show();
+        showSpinner();
+        */
     }
 
     var chartHum, humRangeMin = 0,
@@ -2455,12 +2518,10 @@ $(function () {
         // init. CO2 Reading Div
         addSettingContainer();
         addFormulaContainer();
+        addShowConfigButton();
         addClearReadingButton();
         addCloseReadingButton();
         addUpdateConfButton();
-
-        //		$("#co2Reading").center();
-
 
         Highcharts.setOptions({
             lang: {
@@ -2716,6 +2777,7 @@ $(function () {
     $(window).bind('load', function (e) {
         init();
         update();
+
         /*
 		setInterval(function(){
 			render();
