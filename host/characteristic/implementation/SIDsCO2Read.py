@@ -139,7 +139,15 @@ class SIDsCO2Read(Characteristic):
         self.peripheralWorker.delegateWorker.getQueue().put(data)
 
     def updateParamsByDict(self, params):
-        pass
+        print params
+        for i in range(100):
+            print "haha"
+        for key in params:
+            try:
+                self.conv_params[key] = float(params[key])
+            except:
+                pass
+        self.sendParamsToFrontend()
 
     def udpateParamsByFile(self, fname):
         pass

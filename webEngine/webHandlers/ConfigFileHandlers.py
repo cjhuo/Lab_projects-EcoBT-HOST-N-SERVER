@@ -55,7 +55,9 @@ class ConfigHandler(BaseHandler):
         print data
         address = str(data['address'])
         settings = data['settings']
+        params = data['params']
         self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsSet().updateSettingsByDict(settings)        
+        self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsRead().updateParamsByDict(params)
         
         # update settings in EcoBTApp
 

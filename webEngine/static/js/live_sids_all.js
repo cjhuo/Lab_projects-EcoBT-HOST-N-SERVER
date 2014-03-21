@@ -2212,19 +2212,6 @@ $(function () {
     }
 
     var settingContainer, inputs;
-    var fakeSettings = [{
-        name: "setting1",
-        value: "1"
-    }, {
-        name: "setting2",
-        value: "2"
-    }, {
-        name: "setting3",
-        value: "3"
-    }, {
-        name: "setting4",
-        value: "4"
-    }];
 
     function addSettingContainer() {
         settingContainer = $("<div id='settingContainer'/>").css({
@@ -2292,6 +2279,7 @@ $(function () {
 
         return tempDict;
     }
+
 
     var formulaContainer, formulaInputs;
 
@@ -2398,6 +2386,7 @@ $(function () {
         showConfigButton.text("Close Config");
         showConfigButton.click(hideConfig);
         updateDataTable(null);
+        updateConfButton.prop('disabled', false);
     }
 
     function hideConfig() {
@@ -2407,6 +2396,7 @@ $(function () {
         showConfigButton.text("Show Config");
         showConfigButton.click(showConfig);
         updateDataTable(null);
+        updateConfButton.prop('disabled', true);
     }
 
     var closeReadingButton;
@@ -2453,7 +2443,44 @@ $(function () {
             top: '0px'
         });
         updateConfButton.button();
+        updateConfButton.prop('disabled', true);
+        updateConfButton.click(updateConfig);
         updateConfButton.insertBefore("#co2ReadingContainer");
+    }
+
+    function updateConfig() {
+        var config = {}, formulaParam = {};
+        $.each(inputs, function (key, val) {
+            config[val[0].id] = val[0].value;
+        });
+        $.each(formulaInputs, function (key, val) {
+            formulaParam[val[0].id] = val[0].value;
+        });
+        console.log(config);
+        console.log(formulaParam);
+        var data = {
+            'address': name.trim(),
+            'settings': config,
+            'params': formulaParam
+        };
+        $.ajax({
+            type: 'put',
+            url: configUrl,
+            dataType: 'json',
+            cache: false,
+            data: {
+                "data": JSON.stringify(data)
+            },
+            beforeSend: showSpinner,
+            success: function () {
+                hideSpinner();
+                alert("Update sent to Node and Backend successfully!");
+            },
+            error: function () {
+                hideSpinner();
+                alert("Update Failed!");
+            }
+        });
     }
 
     var MAX_ROW_NUM_DATATABLE = 15;
