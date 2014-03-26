@@ -2795,7 +2795,7 @@ $(function () {
             // the value axis
             yAxis: {
                 min: 0,
-                max: 100,
+                max: 6,
 
                 minorTickInterval: 'auto',
                 minorTickWidth: 3,
@@ -2803,13 +2803,13 @@ $(function () {
                 minorTickPosition: 'inside',
                 minorTickColor: '#666',
 
-                tickInterval: 10,
+                tickInterval: 1,
                 tickWidth: 3,
                 tickPosition: 'inside',
                 tickLength: 10,
                 tickColor: '#666',
                 labels: {
-                    step: 2,
+                    step: 1,
                     rotation: 'auto',
                     style: {
                         fontSize: '22px'
@@ -2826,15 +2826,15 @@ $(function () {
                 */
                 plotBands: [{
                     from: 0,
-                    to: 35,
+                    to: 1,
                     color: '#55BF3B' // green
                 }, {
-                    from: 35,
-                    to: 65,
+                    from: 1,
+                    to: 4,
                     color: '#DDDF0D' // yellow
                 }, {
-                    from: 65,
-                    to: 100,
+                    from: 4,
+                    to: 6,
                     color: '#DF5353' // red
                 }]
             },
