@@ -40,27 +40,31 @@ class SIDsCO2Read(Characteristic):
         Characteristic.__init__(self)
         self.privilege = 0
         self.conv_params = {
-            'C': 1,
-            'Ref0': 700.0,
-            'Tc': 1.5,
-            'b': 5.8,
-            'S0A': 200,
-            'o': -1.7,
-            'p': 1.359,
-            'm': 1,
+#            'C': 1,
+#            'Ref0': 700.0,
+            'Tc': 12,
+#            'b': 5.8,
+            'S0A': 400,
+            'o': -5.443,
+            'p': -0.07764,
+            'q': 4.472,
+            'r': 0.07798,
+            'm': 0,
             'n': 1,
         }
         self.didLoadByFile = False
 
     def conversion(self, PD1, PD2, AMB1, AMB2, T, RH):
         # Constants
-        C = self.conv_params['C']
-        Ref0 = self.conv_params['Ref0']
+#        C = self.conv_params['C']
+#        Ref0 = self.conv_params['Ref0']
         Tc = self.conv_params['Tc']
-        b = self.conv_params['b']
+#        b = self.conv_params['b']
         S0A = self.conv_params['S0A']
         o = self.conv_params['o']
         p = self.conv_params['p']
+        q = self.conv_params['q']
+        r = self.conv_params['r']
         m = self.conv_params['m']
         n = self.conv_params['n']
         PD1 = PD1 + 0.0
@@ -72,26 +76,40 @@ class SIDsCO2Read(Characteristic):
         print "AMB1 ", AMB1
         print "AMB2 ", AMB2
         # Conversion
-        S = PD1 - AMB1
-        print "S ", S
-        Ref = PD2 - AMB2
-        if Ref == 0:
-            Ref = 1
-        print "Ref ", Ref
-        d = (Ref0 - Ref) / Ref
-        print "d ", d
-        SC = S * (1 + d * C)
+#        S = PD1 - AMB1
+#        print "S ", S
+#        Ref = PD2 - AMB2
+#        if Ref == 0:
+#            Ref = 1
+#        print "Ref ", Ref
+#        d = (Ref0 - Ref) / Ref
+#        print "d ", d
+#        SC = S * (1 + d * C)
+#        print "SC ", SC
+#        SCT = SC + (T - 30) * Tc
+#        print "SCT ", SCT
+#        S0 = m + n * S0A
+#        print "S0 ", S0
+#        SCTN = S0 / SCT
+#        print "SCTN ", SCTN
+#        a = o + p * RH
+#        print "a ", a
+#        CO2 = a * math.exp(b * SCTN) # uint: percentage
+#        print "CO2: ",  CO2
+        SC = PD1 - AMB1
         print "SC ", SC
         SCT = SC + (T - 30) * Tc
         print "SCT ", SCT
         S0 = m + n * S0A
         print "S0 ", S0
-        SCTN = S0 / SCT
+        SCTN = SCT / S0
         print "SCTN ", SCTN
-        a = o + p * RH
+        a = o + p * (RH - 45)
         print "a ", a
-        CO2 = a * math.exp(b * SCTN) # uint: percentage
-        print "CO2: ",  CO2
+        b = q + r * (RH - 45)
+        print "b ", b
+        CO2 = 1 + a * SCTN + b * SCTN * SCTN
+        print "CO2: ", CO2
         return CO2
 
     def process(self):
