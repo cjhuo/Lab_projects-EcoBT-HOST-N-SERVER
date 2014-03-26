@@ -23,16 +23,26 @@ class SIDsAudioSet(Characteristic):
     def __init__(self):
         Characteristic.__init__(self)
         self.privilege = 2
+        self.power = 0
+        self.enable = 0
+        self.record = 0
 
     def process(self):
         value = self.instance._.value
-        power, enable, record = struct.unpack("<BBB", value)
+        self.power, self.enable, self.record = struct.unpack("<BBB", value)
         print "SIDsAudioSet %d%d%d" % (power, enable, record)
 
-        if (power != 0x01):
-            self.peripheralWorker.writeValueForCharacteristic(self.createAudioReadConf(0x01, 0x01, 0x00), self)
+#        if (power != 0x01):
+#            self.peripheralWorker.writeValueForCharacteristic(self.createAudioReadConf(0x01, 0x01, 0x00), self)
+
 #        if(enable != 0x01): # if not enabled, enable it
 #            self.peripheralWorker.writeValueForCharacteristic(self.createEnableAudioRead(window), self)
+
+    def startAudioRead(self):
+        self.peripheralWorker.writeValueForCharacteristic(self.createAudioReadConf(0x01, 0x01, 0x00), self)
+
+    def stopAudioRead(self):
+        self.peripheralWorker.writeValueForCharacteristic(self.createAudioReadConf(0x00, 0x00, 0x00), self)        
 
     def createEnableAudioRead(self, window):
         settings = struct.pack("<HB", window, 0x01)

@@ -33,11 +33,8 @@ class ACCEnable(Characteristic):
             NSLog(log)
             self.peripheralWorker.writeValueForCharacteristic(self.createDisableFlag(), self)
         '''
-        if self.acc_enable == DISABLE_FALG:
-            #log = "DISABLING ACC" if self.acc_enable == 0 else "ENABLING ACC"
-            log = "ENABLING ACC"
-            NSLog(log)
-            self.peripheralWorker.writeValueForCharacteristic(self.createEnableFlag(), self)
+#        if self.acc_enable == DISABLE_FALG:
+#           self.startAcc()
         
         '''
         data = {'type': 'ACCEnable', 
@@ -46,7 +43,16 @@ class ACCEnable(Characteristic):
                 }
         return data
         '''
-    
+    def startACC(self):
+        log = "ENABLING ACC"
+        NSLog(log)
+        self.peripheralWorker.writeValueForCharacteristic(self.createEnableFlag(), self)
+
+    def stopAcc(self):
+        log = "Stopping ACC"
+        NSLog(log)
+        self.peripheralWorker.writeValueForCharacteristic(self.createDisableFlag(), self)
+
     def createEnableFlag(self):
         return self.createFlag(ENABLE_FALG)
         

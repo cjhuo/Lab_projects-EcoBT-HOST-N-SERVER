@@ -15,6 +15,19 @@ $(function () {
                     updateSimulation(data.data);
                     //updateACCChart(data.data);
                 }
+            if (data.data.type == 'SIDs') {
+                console.log("SIDs CO2 state");
+                console.log(data.data.value);
+                if (data.data.value['type'] === 'state') {
+                    if (data.data.value['value']) {
+                        updateSIDsState("start");
+                    } else {
+                        updateSIDsState("stop");
+                    }
+                    console.log(data.data.value['value']);
+                    console.log("haha");
+                }
+            }
             if (data.data.type == 'SIDsRead') { //real data
                 //console.log("CO2 raw reading");
                 //console.log(data.data.value);
@@ -79,10 +92,10 @@ $(function () {
         //update ACC chart
         chart.series[0].addPoint(data.value.z, true, true);
         /*
-		chart.series[0].addPoint(data.value.x, false, true);
-		chart.series[1].addPoint(data.value.y, false, true);
-		chart.series[2].addPoint(data.value.z, true, true);
-		*/
+        chart.series[0].addPoint(data.value.x, false, true);
+        chart.series[1].addPoint(data.value.y, false, true);
+        chart.series[2].addPoint(data.value.z, true, true);
+        */
     }
 
     /**
@@ -99,28 +112,28 @@ $(function () {
         var point = chartHum.series[0].points[0];
         point.update(data[10], true);
         /*
-		//check if alert need to be sent		
-		if(alertSet == true){
-			if(data[9] < tempRangeMin || data[9] > tempRangeMax || data[10] > humRangeMax){
-				//send alert TBD
-				var data = {
-						'temp': data[9],
-						'hum': data[10],
-						'tempRangeMin': tempRangeMin,
-						'tempRangeMax': tempRangeMax,
-						'humRangeMin': humRangeMin,
-						'humRangeMax': humRangeMax,
-						'email': email
-				};
-				socket.send(JSON.stringify(data));
-				//alert has been send wait enough time to start alert again
-				alertSet = false;
-				setTimeout(function(){
-					alertSet = true;
-				}, 60000); //60s delay
-			}
-		}
-		*/
+        //check if alert need to be sent        
+        if(alertSet == true){
+            if(data[9] < tempRangeMin || data[9] > tempRangeMax || data[10] > humRangeMax){
+                //send alert TBD
+                var data = {
+                        'temp': data[9],
+                        'hum': data[10],
+                        'tempRangeMin': tempRangeMin,
+                        'tempRangeMax': tempRangeMax,
+                        'humRangeMin': humRangeMin,
+                        'humRangeMax': humRangeMax,
+                        'email': email
+                };
+                socket.send(JSON.stringify(data));
+                //alert has been send wait enough time to start alert again
+                alertSet = false;
+                setTimeout(function(){
+                    alertSet = true;
+                }, 60000); //60s delay
+            }
+        }
+        */
     }
 
     var init = function () {
@@ -143,12 +156,12 @@ $(function () {
     function demoScriptInit() {
         setTimeout(function () {
             //set temp to 37
-            //			slider.setValue(37);
+            //          slider.setValue(37);
 
             //set CO2 to 0.05;
             //update Hum chart
-            //			var point = chartHum.series[0].points[0];			
-            //			point.update(0.05, true);
+            //          var point = chartHum.series[0].points[0];           
+            //          point.update(0.05, true);
 
 
             //set risk level to Low
@@ -161,11 +174,11 @@ $(function () {
                 }
                 var val = 0.7 - (Math.random() * 0.2) - gradual;
                 if (val > 0.0) {
-                    //	        		chart.series[0].addPoint(val, false, true);
-                    //	        		chart.series[1].addPoint(-val, true, true);
+                    //                  chart.series[0].addPoint(val, false, true);
+                    //                  chart.series[1].addPoint(-val, true, true);
                 } else {
-                    //	        		chart.series[0].addPoint(0, false, true);
-                    //	        		chart.series[1].addPoint(0, true, true);
+                    //                  chart.series[0].addPoint(0, false, true);
+                    //                  chart.series[1].addPoint(0, true, true);
                     //clearInterval(fakeItrv);
                     //no sound over 5 sec
                     setTimeout(function () {
@@ -240,11 +253,11 @@ $(function () {
         stateEmergency = $('<div/>').text('emergency').attr('class', 'noLevel').appendTo(riskDiv);
 
         /*
-		toggleState("low");
-		toggleState("medium");
-		toggleState("high");
-		toggleState("emergency");
-		*/
+        toggleState("low");
+        toggleState("medium");
+        toggleState("high");
+        toggleState("emergency");
+        */
     }
 
     //state: low: 0; medium: 1; high: 2; emergency: 3
@@ -279,9 +292,64 @@ $(function () {
         }
     }
 
+    function initSystem() {
+        socket.send("sendSIDsState" + name.trim());
+    }
+
+    var SIDsState = "stop";
+
+    function updateSIDsState(state) {
+        SIDsState = state;
+        if (SIDsState === "start") {
+            controlButton.text("Stop System");
+        } else if (SIDsState === "stop") {
+            controlButton.text("Start System");
+        } else {
+
+        }
+    }
+
+    function controlSIDs() {
+        if (SIDsState === "stop") {
+            SIDsState = "start";
+            startSIDs();
+        } else if (SIDsState === "start") {
+            SIDsState = "stop";
+            stopSIDs();
+        } else {
+
+        }
+    }
+
+    function disconnectSystem() {
+        socket.send("disconnectSIDs" + name.trim());
+        //window.location.href = 'http://localhost:8000';
+    }
+
     var emailSetButton, emailSRmvButton;
+    var controlButton, disconnectButton;
 
     function initAlert() {
+        // Control Panel for start/stop SIDs system
+        $('<div id="controlPanel" style="display: block; margin-top: 10px; color: #3E576F">Control Panel</div>')
+            .appendTo($('#alert'));
+        controlButton = $('<button>Start System</button>').css({
+            fontSize: 'smaller',
+            float: 'right',
+            display: "inline-box",
+            width: '130px',
+            height: '30px'
+        }).button();
+        controlButton.click(controlSIDs);
+        disconnectButton = $('<button>Disconnect</button>').css({
+            fontSize: 'smaller',
+            float: 'right'
+        }).button();
+        disconnectButton.click(disconnectSystem);
+        //$("#controlPanel").append(disconnectButton);
+        $("#controlPanel").append(controlButton);
+
+        // Alert
         $('<div style="display: block; margin-top: 10px; color: #3E576F">Alert Settings</div>')
             .appendTo($('#alert'));
         var emailDiv = $('<div id="emailSettings" />')
@@ -292,7 +360,7 @@ $(function () {
             }).appendTo($('#alert'));
         var emailLabel = $('<label for="email">Email to send for alert messages</label>');
         var emailTxt = $('<input type="text" name="email" \
-				id="email" class="text ui-widget-content ui-corner-all">')
+                id="email" class="text ui-widget-content ui-corner-all">')
             .css({
                 marginBottom: '0px'
             });
@@ -341,16 +409,16 @@ $(function () {
         });
 
         /*
-		var player = $('<div><audio autoplay="autoplay" \
-				src='+ soundUrl +' \
-				controls="controls" /></div>').css({
-				position: 'relative',
-				display: 'table',
-				top: '40%',
-			    margin: 'auto'
-				});
-		$('#sound').append(player);
-		*/
+        var player = $('<div><audio autoplay="autoplay" \
+                src='+ soundUrl +' \
+                controls="controls" /></div>').css({
+                position: 'relative',
+                display: 'table',
+                top: '40%',
+                margin: 'auto'
+                });
+        $('#sound').append(player);
+        */
 
 
         //$('audio,video').mediaelementplayer();
@@ -464,7 +532,7 @@ $(function () {
                 top: 100,
                 lineWidth: 2,
                 height: 50
-            	
+                
             },
             {
                 title: {
@@ -477,7 +545,7 @@ $(function () {
                 top: 160,
                 lineWidth: 2,
                 height: 50
-            	
+                
             }*/
             ],
             plotOptions: {
@@ -531,12 +599,12 @@ $(function () {
         });
         /*
         options.series.push({
-        	name: 'Y',
+            name: 'Y',
             data: data,
             yAxis: 1
         });
         options.series.push({
-        	name: 'Z',
+            name: 'Z',
             data: data,
             yAxis: 2
         });*/
@@ -699,15 +767,15 @@ $(function () {
         var loader = new THREE.OBJMTLLoader(); //OBJLoader( manager );
         loader.load('static/css/objs/baby.obj', 'static/css/objs/baby.mtl', function (object) {
             /*
-			object.traverse( function ( child ) {
+            object.traverse( function ( child ) {
 
-				if ( child instanceof THREE.Mesh ) {
+                if ( child instanceof THREE.Mesh ) {
 
-					child.material = new THREE.MeshBasicMaterial( { color: 0xFFDFC4 } );
+                    child.material = new THREE.MeshBasicMaterial( { color: 0xFFDFC4 } );
 
-				}
+                }
 
-			} );*/
+            } );*/
             object.position.z = -90;
             object.position.y = -200;
             object.position.x = -170;
@@ -722,10 +790,10 @@ $(function () {
         //parent.rotation.x = 1.57
         //alert(document.width);
         /*
-		if(simContainer.width()<250){
-			parent.scale.set(0.5,0.5,0.5);
-		}
-		*/
+        if(simContainer.width()<250){
+            parent.scale.set(0.5,0.5,0.5);
+        }
+        */
 
         scene.add(parent);
 
@@ -2123,92 +2191,92 @@ $(function () {
         //test widget       
         /*
         setInterval(function(){
-        	var val = Math.floor((Math.random()*8)+34);
-        	slider.setValue(val);
+            var val = Math.floor((Math.random()*8)+34);
+            slider.setValue(val);
         }, 1000);
         */
 
         /*
-		chartTemp = new Highcharts.Chart({
-		    
-	        chart: {
-	            renderTo: 'temperature',
-	            type: 'gauge',
-	            backgroundColor: 'transparent',
-	            plotBackgroundColor: null,
-	            plotBackgroundImage: null,
-	            plotBorderWidth: 1,
-	            plotShadow: false
-	        },
-	        exporting:{
-	        	enabled: false
-	        },
-	        credits: {
-	        	href: "http://cps.eng.uci.edu",
-	        	text: ""//"UCI Embedded System Lab"
-	        },
-	        
-	        title:{
-	            text: 'Skin Temperature Monitor'
-	        },
-	        
-	        pane: {
-	            startAngle: -100,
-	            endAngle: 100,
+        chartTemp = new Highcharts.Chart({
+            
+            chart: {
+                renderTo: 'temperature',
+                type: 'gauge',
+                backgroundColor: 'transparent',
+                plotBackgroundColor: null,
+                plotBackgroundImage: null,
+                plotBorderWidth: 1,
+                plotShadow: false
+            },
+            exporting:{
+                enabled: false
+            },
+            credits: {
+                href: "http://cps.eng.uci.edu",
+                text: ""//"UCI Embedded System Lab"
+            },
+            
+            title:{
+                text: 'Skin Temperature Monitor'
+            },
+            
+            pane: {
+                startAngle: -100,
+                endAngle: 100,
 
-	        },
-	           
-	        // the value axis
-	        yAxis: {
-	            min: 34,
-	            max: 42,
-	            
-	            minorTickInterval: 'auto',
-	            minorTickWidth: 1,
-	            minorTickLength: 10,
-	            minorTickPosition: 'inside',
-	            minorTickColor: '#666',
-	    
-	            tickInterval: 1,
-	            tickWidth: 2,
-	            tickPosition: 'inside',
-	            tickLength: 10,
-	            tickColor: '#666',
-	            labels: {
-	                step: 1,
-	                rotation: 'auto'
-	            },
-	            title: {
-	                text: '°C'
-	            },
-	            plotBands: [{
-	                from: 34,
-	                to: tempRangeMin,
-	                color: '#DDDF0D' // green
-	            },{
-	                from: tempRangeMin,
-	                to: tempRangeMax,
-	                color: '#55BF3B' // green
-	            }, {
-	                from: tempRangeMax,
-	                to: 39,
-	                color: '#DDDF0D' // yellow
-	            }, {
-	                from: 39,
-	                to: 42,
-	                color: '#DF5353' // red
-	            }]
-	        },
-	    
-	        series: [{
-	            name: 'Skin',
-	            data: [34],
-	            yAxis: 0,
-	            tooltip: {
-	                valueSuffix: ' Degree'
-	            },
-	        }]
-	    });*/
+            },
+               
+            // the value axis
+            yAxis: {
+                min: 34,
+                max: 42,
+                
+                minorTickInterval: 'auto',
+                minorTickWidth: 1,
+                minorTickLength: 10,
+                minorTickPosition: 'inside',
+                minorTickColor: '#666',
+        
+                tickInterval: 1,
+                tickWidth: 2,
+                tickPosition: 'inside',
+                tickLength: 10,
+                tickColor: '#666',
+                labels: {
+                    step: 1,
+                    rotation: 'auto'
+                },
+                title: {
+                    text: '°C'
+                },
+                plotBands: [{
+                    from: 34,
+                    to: tempRangeMin,
+                    color: '#DDDF0D' // green
+                },{
+                    from: tempRangeMin,
+                    to: tempRangeMax,
+                    color: '#55BF3B' // green
+                }, {
+                    from: tempRangeMax,
+                    to: 39,
+                    color: '#DDDF0D' // yellow
+                }, {
+                    from: 39,
+                    to: 42,
+                    color: '#DF5353' // red
+                }]
+            },
+        
+            series: [{
+                name: 'Skin',
+                data: [34],
+                yAxis: 0,
+                tooltip: {
+                    valueSuffix: ' Degree'
+                },
+            }]
+        });*/
     }
 
     var settingContainer, inputs;
@@ -2329,24 +2397,24 @@ $(function () {
         $("#dataTable").css({
             width: '100%'
         });
-        //		$("#co2Reading").attr('class', 'ui-layout-west');
+        //      $("#co2Reading").attr('class', 'ui-layout-west');
         $("#co2Reading").toggle();
         $("#dataTable").css({
             fontSize: 'small'
         });
-        //		$("#co2Reading").removeClass('ui-layout-west');
-        //		$("#charts").toggle();
+        //      $("#co2Reading").removeClass('ui-layout-west');
+        //      $("#charts").toggle();
         $("#charts_center").toggle();
-        //		$("#charts_south").toggle();
+        //      $("#charts_south").toggle();
     }
 
     function hideReadingDiv() {
-        //		$("#co2Reading").removeClass('ui-layout-west');
+        //      $("#co2Reading").removeClass('ui-layout-west');
         $("#co2Reading").toggle();
-        //		$("#charts").attr('class', 'ui-layout-west');
-        //		$("#charts").toggle();
+        //      $("#charts").attr('class', 'ui-layout-west');
+        //      $("#charts").toggle();
         $("#charts_center").toggle();
-        //		$("#charts_south").toggle();
+        //      $("#charts_south").toggle();
     }
 
     var showConfigButton;
@@ -2521,13 +2589,12 @@ $(function () {
 
     function startSIDs() {
         //disable all setting inputs
-        $.each(inputs, function (key, val) {
-            val.spinner("disable");
-        });
-        //fileInput.hide();
-        //startButton.hide();
-        //stopButton.show();
-        //updateButton.hide();
+        //        $.each(inputs, function (key, val) {
+        //            val.spinner("disable");
+        //        });
+        if (socket != null) {
+            socket.send("startSIDs" + name.trim());
+        }
         //socket.send("startSIDs" + name.trim());
         /*
         socket.send("startECG"+name.trim());
@@ -2535,6 +2602,23 @@ $(function () {
         redoButton.hide();
         stopButton.show();
         showSpinner();
+        */
+    }
+
+    function stopSIDs() {
+        //enable all setting inputs
+        //        $.each(inputs, function (key, val) {
+        //            if (val[0].id != "SAMPLE CACULATION") {
+        //                val.spinner("enable");
+        //            }
+        //        });
+        //socket.send("stopSIDs" + name.trim());
+        /*
+        socket.send("stopECG"+name.trim());
+        stopButton.hide();
+        hideSpinner();
+        showCompleteDialog();
+        //startButton.show();
         */
     }
 
@@ -2640,13 +2724,13 @@ $(function () {
                     distance: -40
                 },
                 /*
-	            title: {
-	                text: '%',
-	                style: {
-	                	fontSize: '18px'
-	                }
-	            },
-	            */
+                title: {
+                    text: '%',
+                    style: {
+                        fontSize: '18px'
+                    }
+                },
+                */
                 plotBands: [{
                     from: 0,
                     to: 35,
@@ -2694,7 +2778,7 @@ $(function () {
 
 
     // start of handling websocket connection
-    var socket = null; //websocket object	
+    var socket = null; //websocket object   
     var reconMsg = null; //reconnect div object
 
     /**
@@ -2726,17 +2810,18 @@ $(function () {
 
     function establishConnection() {
         /*
-		if(socket != null){
-			socket.close();
-			socket = null;
-		}
-		*/
+        if(socket != null){
+            socket.close();
+            socket = null;
+        }
+        */
         socket = new WebSocket(url);
         hideReconMsg();
         showReconMsg('connecting to server...');
         socket.onopen = function (event) {
             hideReconMsg();
             //socket.send("sendSIDsSet"+name.trim());
+            initSystem();
         };
         socket.onmessage = function (event) {
             onDataReceived($.parseJSON(event.data));
@@ -2772,17 +2857,17 @@ $(function () {
                     }, 5000);
                 }
                 /*
-				else {
-					alert('reconnect issued!');
-				}
-				*/
+                else {
+                    alert('reconnect issued!');
+                }
+                */
             }
             /*
-			else if(socket.readyState == 1) {
-				clearInterval(t);
-				hideReconMsg();
-			}
-			*/
+            else if(socket.readyState == 1) {
+                clearInterval(t);
+                hideReconMsg();
+            }
+            */
             //}, 6000);
         };
     }
@@ -2806,23 +2891,23 @@ $(function () {
         update();
 
         /*
-		setInterval(function(){
-			render();
-		}, 1000);
-		*/
+        setInterval(function(){
+            render();
+        }, 1000);
+        */
     });
 
     $(window).bind('online', function (e) {
         /*
-		if(socket != null)
-			alert('Network is back, readyState is: ' + socket.readyState);
-		*/
+        if(socket != null)
+            alert('Network is back, readyState is: ' + socket.readyState);
+        */
         /*
-		if(socket != null){
-			socket.close();
-			//socket = null;
-		}
-		*/
+        if(socket != null){
+            socket.close();
+            //socket = null;
+        }
+        */
         if (url.indexOf('ws://localhost') == -1) {
             hideReconMsg();
             showReconMsg('connection is back, connecting server in 5 secs...');

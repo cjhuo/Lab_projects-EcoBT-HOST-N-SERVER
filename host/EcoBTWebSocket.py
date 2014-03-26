@@ -70,13 +70,28 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
                 # cancel all other connection
                 self.ecoBTApp.managerWorker.cancelAllConnectionExcept(\
                                 self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).peripheral)
+            elif message.startswith("sendSIDsState"):
+                address = message[len("sendSIDsState"):]
+                sids = self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address)
+                sids.findSIDsStatus().sendState()
+
             elif message.startswith("startSIDs"):
                 address = message[9:]
-                self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsStatus().startSIDs()
-                
+                sids = self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address)
+                sids.findSIDsStatus().startSIDs()
+                sids.findACCControl().startACC()
+                sids.findBodyTempControl().startBodyTemp()
+                sids.findAudioControl().startAudioRead()
+
+
             elif message.startswith("stopSIDs"): 
                 address = message[8:]
-                self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsStatus().stopSIDs()         
+                sids = self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address)
+                sids.findSIDsStatus().stopSIDs()         
+                sids.findACCControl().stopACC()
+                sids.findBodyTempControl().stopBodyTemp()
+                sids.findAudioControl().stopAudioRead()
+
             elif message.startswith("sendSIDsSet"): 
                 address = message[11:]
                 self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsSet().sendSettingsToFrontend()   
@@ -84,6 +99,9 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
                 address = message[len("sendCO2Formula"):]
                 sids = self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsRead()
                 sids.sendParamsToFrontend()
+            elif message.startswith("disconnectSIDs"):
+                address = message[len("disconnectSIDs"):]
+                sids = self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).stop()
             else: #json
                 data = json.loads(message)
                 emailContent = "This is an alert sent from SIDs monitor\

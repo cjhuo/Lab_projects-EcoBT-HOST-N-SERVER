@@ -133,6 +133,15 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
     def findECGService(self):
         return self.findCharacteristicByUUID("FEC5")
 
+    def findACCControl(self):
+        return self.findCharacteristicByUUID("FFA1")
+
+    def findBodyTempControl(self):
+        return self.findCharacteristicByUUID("BDA1")
+
+    def findAudioControl(self):
+        return self.findCharacteristicByUUID("ADD2")
+
     def findSIDsStatus(self):
         return self.findCharacteristicByUUID("FE11")
     
