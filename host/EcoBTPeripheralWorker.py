@@ -140,7 +140,7 @@ class EcoBTPeripheralWorker(NSObject, EcoBTWorker):
         return self.findCharacteristicByUUID("BDA1")
 
     def findAudioControl(self):
-        return self.findCharacteristicByUUID("ADD2")
+        return self.findCharacteristicByUUID("ADD1")
 
     def findSIDsStatus(self):
         return self.findCharacteristicByUUID("FE11")

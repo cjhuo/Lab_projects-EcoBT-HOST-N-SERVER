@@ -48,7 +48,7 @@ class ACCEnable(Characteristic):
         NSLog(log)
         self.peripheralWorker.writeValueForCharacteristic(self.createEnableFlag(), self)
 
-    def stopAcc(self):
+    def stopACC(self):
         log = "Stopping ACC"
         NSLog(log)
         self.peripheralWorker.writeValueForCharacteristic(self.createDisableFlag(), self)

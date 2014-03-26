@@ -16,16 +16,16 @@ $(function () {
                     //updateACCChart(data.data);
                 }
             if (data.data.type == 'SIDs') {
-                console.log("SIDs CO2 state");
-                console.log(data.data.value);
+                //console.log("SIDs CO2 state");
+                //console.log(data.data.value);
                 if (data.data.value['type'] === 'state') {
                     if (data.data.value['value']) {
                         updateSIDsState("start");
                     } else {
                         updateSIDsState("stop");
                     }
-                    console.log(data.data.value['value']);
-                    console.log("haha");
+                    //console.log(data.data.value['value']);
+                    //console.log("haha");
                 }
             }
             if (data.data.type == 'SIDsRead') { //real data
@@ -314,6 +314,7 @@ $(function () {
             SIDsState = "start";
             startSIDs();
         } else if (SIDsState === "start") {
+            console.log("STOPSTOPSTOPSTOP")
             SIDsState = "stop";
             stopSIDs();
         } else {
@@ -2611,7 +2612,9 @@ $(function () {
         //                val.spinner("enable");
         //            }
         //        });
-        //socket.send("stopSIDs" + name.trim());
+        if (socket != null) {
+            socket.send("stopSIDs" + name.trim());
+        }
         /*
         socket.send("stopECG"+name.trim());
         stopButton.hide();

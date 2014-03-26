@@ -39,6 +39,7 @@ class SIDsAudioSet(Characteristic):
 #            self.peripheralWorker.writeValueForCharacteristic(self.createEnableAudioRead(window), self)
 
     def startAudioRead(self):
+        print "start audio read"
         self.peripheralWorker.writeValueForCharacteristic(self.createAudioReadConf(0x01, 0x01, 0x00), self)
 
     def stopAudioRead(self):

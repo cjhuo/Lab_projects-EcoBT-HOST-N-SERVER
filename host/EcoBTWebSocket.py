@@ -77,20 +77,20 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
 
             elif message.startswith("startSIDs"):
                 address = message[9:]
-                sids = self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address)
+                sids = self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address)                
                 sids.findSIDsStatus().startSIDs()
                 sids.findACCControl().startACC()
                 sids.findBodyTempControl().startBodyTemp()
                 sids.findAudioControl().startAudioRead()
 
-
-            elif message.startswith("stopSIDs"): 
+            elif message.startswith("stopSIDs"):
+                print "STOP !!!!" 
                 address = message[8:]
                 sids = self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address)
-                sids.findSIDsStatus().stopSIDs()         
                 sids.findACCControl().stopACC()
                 sids.findBodyTempControl().stopBodyTemp()
                 sids.findAudioControl().stopAudioRead()
+                sids.findSIDsStatus().stopSIDs()         
 
             elif message.startswith("sendSIDsSet"): 
                 address = message[11:]
