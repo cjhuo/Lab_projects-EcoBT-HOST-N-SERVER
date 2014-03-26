@@ -30,7 +30,7 @@ class SIDsAudioSet(Characteristic):
     def process(self):
         value = self.instance._.value
         self.power, self.enable, self.record = struct.unpack("<BBB", value)
-        print "SIDsAudioSet %d%d%d" % (power, enable, record)
+        print "SIDsAudioSet %d%d%d" % (self.power, self.enable, self.record)
 
 #        if (power != 0x01):
 #            self.peripheralWorker.writeValueForCharacteristic(self.createAudioReadConf(0x01, 0x01, 0x00), self)

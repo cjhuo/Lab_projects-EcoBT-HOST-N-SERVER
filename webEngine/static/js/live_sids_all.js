@@ -2595,7 +2595,6 @@ $(function () {
         if (socket != null) {
             socket.send("startSIDs" + name.trim());
         }
-        //socket.send("startSIDs" + name.trim());
         /*
         socket.send("startECG"+name.trim());
         startButton.hide();
