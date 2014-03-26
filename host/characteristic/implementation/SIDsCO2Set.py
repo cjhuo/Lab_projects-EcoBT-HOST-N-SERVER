@@ -16,6 +16,7 @@ import struct
 import json
 import os
 import csv
+import os.path
 
 from Characteristic import *
 
@@ -53,6 +54,7 @@ class SIDsCO2Set(Characteristic):
         Characteristic.__init__(self)
         self.privilege = 2
         self.settings = dict()
+        self.didLoadByFile = False
         
     def process(self):
         hex_str = binascii.hexlify(self.instance._.value)
@@ -65,6 +67,22 @@ class SIDsCO2Set(Characteristic):
             counter += 1
         
         self.sendSettingsToFrontend()
+        
+    def loadFile(self, address):
+        if self.didLoadByFile:
+            return
+        print "try to load settings from file"
+        path = os.path.join(os.path.dirname(__file__),
+            os.pardir,
+            os.pardir,
+            os.pardir,
+            "webEngine/static/Uploads/")
+        path = os.path.abspath(path)
+        fname = "config_" + address + ".csv"
+        fullpath = path + "/" + fname
+        if os.path.isfile(fullpath):
+            self.updateSettingsByFile(fullpath)
+            self.didLoadByFile = True
         
     
     def updateSettingsByDict(self, settings):
@@ -80,8 +98,8 @@ class SIDsCO2Set(Characteristic):
             reader = csv.reader(csvfile, delimiter=',')
             for row in reader:
                 sName = str(row[0])
-                sValue = int(row[1])
                 if sName in SETTING_NAMES:
+                    sValue = int(row[1])
                     self.settings[sName] = sValue
         self.sendSettingsToPeripheral()
                     

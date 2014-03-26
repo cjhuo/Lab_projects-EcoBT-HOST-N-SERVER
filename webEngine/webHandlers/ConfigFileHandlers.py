@@ -25,7 +25,8 @@ class ConfigHandler(BaseHandler):
                 ofd.close()
                 
                 # update settings in EcoBTApp
-                self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsSet().updateSettingsByFile(fname) 
+                self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsSet().updateSettingsByFile(fname)
+                self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsRead().updateParamsByFile(fname)  
 
                 
                 #self.ecg.setFile(path + orig_fname)               
@@ -41,14 +42,18 @@ class ConfigHandler(BaseHandler):
         print data
         address = str(data['address'])
         settings = data['settings']
+        params = data['params']
         path = os.path.join(os.path.dirname(__file__), os.pardir, "static/Uploads/")
-        fname = "config.csv"
+        fname = "config_" + address + ".csv"
         with open(path + fname, 'w') as csvfile:
             csvWriter = csv.writer(csvfile, delimiter=',')
             for key, val in settings.items():
                 csvWriter.writerow([str(key), int(val)])
+            for key, val in params.items():
+                csvWriter.writerow([str(key), float(val)])
         self.write({'url': self.static_url(path+fname)})
         self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsSet().updateSettingsByDict(settings)
+        self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsRead().updateParamsByDict(params)
         
     def put(self): # get current settings from UI, update settings to EcoBTApp
         data = json.loads(self.get_argument("data"))

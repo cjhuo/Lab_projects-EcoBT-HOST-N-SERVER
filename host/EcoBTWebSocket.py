@@ -75,9 +75,17 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
                 sids = self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address)
                 sids.findSIDsStatus().sendState()
 
+#            elif message.startswith("SIDsloadByFile"):
+#                address = message[len("SIDsloadByFile"):]
+#                sids = self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address)                
+#                sids.findSIDsSet().loadFile(address)
+#                sids.findSIDsRead().loadFile(address)
+
             elif message.startswith("startSIDs"):
                 address = message[9:]
                 sids = self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address)                
+                sids.findSIDsSet().loadFile(address)
+                sids.findSIDsRead().loadFile(address)
                 sids.findSIDsStatus().startSIDs()
                 sids.findACCControl().startACC()
                 sids.findBodyTempControl().startBodyTemp()
@@ -94,10 +102,13 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
 
             elif message.startswith("sendSIDsSet"): 
                 address = message[11:]
-                self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsSet().sendSettingsToFrontend()   
+                sids = self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsSet()
+                sids.loadFile(address)
+                sids.sendSettingsToFrontend()   
             elif message.startswith("sendCO2Formula"):
                 address = message[len("sendCO2Formula"):]
                 sids = self.ecoBTApp.managerWorker.findPeripheralWorkerByAddress(address).findSIDsRead()
+                sids.loadFile(address)
                 sids.sendParamsToFrontend()
             elif message.startswith("disconnectSIDs"):
                 address = message[len("disconnectSIDs"):]

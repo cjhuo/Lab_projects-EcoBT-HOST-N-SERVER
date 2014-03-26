@@ -50,6 +50,7 @@ class SIDsCO2Read(Characteristic):
             'm': 1,
             'n': 1,
         }
+        self.didLoadByFile = False
 
     def conversion(self, PD1, PD2, AMB1, AMB2, T, RH):
         # Constants
@@ -131,6 +132,22 @@ class SIDsCO2Read(Characteristic):
         return data
         '''
 
+    def loadFile(self, address):
+        if self.didLoadByFile:
+            return
+        print "try to load params from file"
+        path = os.path.join(os.path.dirname(__file__),
+            os.pardir,
+            os.pardir,
+            os.pardir,
+            "webEngine/static/Uploads/")
+        path = os.path.abspath(path)
+        fname = "config_" + address + ".csv"
+        fullpath = path + "/" + fname
+        if os.path.isfile(fullpath):
+            self.updateParamsByFile(fullpath)
+            self.didLoadByFile = True
+
     def sendParamsToFrontend(self):
         data = {
             'type': 'CO2FormulaParams',
@@ -140,8 +157,6 @@ class SIDsCO2Read(Characteristic):
 
     def updateParamsByDict(self, params):
         print params
-        for i in range(100):
-            print "haha"
         for key in params:
             try:
                 self.conv_params[key] = float(params[key])
@@ -149,20 +164,32 @@ class SIDsCO2Read(Characteristic):
                 pass
         self.sendParamsToFrontend()
 
-    def udpateParamsByFile(self, fname):
-        pass
+    def updateParamsByFile(self, fname):
+        print "update params"
+        with open(fname, 'r') as csvfile:
+            reader = csv.reader(csvfile, delimiter=',')
+            for row in reader:
+                sName = str(row[0])
+                if sName in self.conv_params:
+                    sValue = float(row[1])
+                    self.conv_params[sName] = sValue
+        self.sendParamsToFrontend()
 
     def logToFile(self, hour, minute, sec, LED00, LED01, LED10, LED11, amb0, amb1, rh, temp):
+        if not (hasattr(self.service, 'enable_log') and self.service.enable_log):
+            return
         if not hasattr(self.service, 'log_file') or self.service.log_file == False: # try to open a file
             prefix = os.path.join(os.path.dirname(__file__), os.path.pardir, os.pardir, os.pardir, "data/log_")
             name = datetime.now().strftime("%Y%m%d%H%M%S")
             postfix = '.csv'
             fd = None
             if not os.path.exists(prefix + name + postfix):
-                    fd = open(prefix + name + postfix, 'w')
-                    self.service.log_file = fd
-                    self.service.csvWriter = csv.writer(fd, delimiter=',')
-                    self.service.csvWriter.writerow(["Time", "LED1PD1", "LED1PD2", "LED2PD1", "LED2PD2", "AMBIENT1", "AMBIENT2", "RH", "TEMP"])
+                for i in range(100):
+                    print "create new log file"
+                fd = open(prefix + name + postfix, 'w')
+                self.service.log_file = fd
+                self.service.csvWriter = csv.writer(fd, delimiter=',')
+                self.service.csvWriter.writerow(["Time", "LED1PD1", "LED1PD2", "LED2PD1", "LED2PD2", "AMBIENT1", "AMBIENT2", "RH", "TEMP"])
             else:
                 raise Exception
         if self.service.log_file != False:

@@ -2456,6 +2456,7 @@ $(function () {
         showConfigButton.click(hideConfig);
         updateDataTable(null);
         updateConfButton.prop('disabled', false);
+        saveConfButton.prop('disabled', false);
     }
 
     function hideConfig() {
@@ -2466,6 +2467,7 @@ $(function () {
         showConfigButton.click(showConfig);
         updateDataTable(null);
         updateConfButton.prop('disabled', true);
+        saveConfButton.prop('disabled', true);
     }
 
     var closeReadingButton;
@@ -2499,6 +2501,93 @@ $(function () {
         clearReadingButton.button();
         clearReadingButton.click(clearTable);
         clearReadingButton.insertBefore("#co2ReadingContainer");
+    }
+
+    var fileInput;
+
+    function addFileUploadDiv() {
+        fileInput = $('<span class="file-wrapper" title="Submit a different Dicom file">\
+                <span>UPLOAD CONFIG FILE</span>\
+                <input type="file" name="uploaded_files" >\
+            </span>').css({
+            float: 'right',
+            fontSize: '30%',
+        });
+        fileInput.button();
+        fileInput.fileupload({
+            url: configUrl,
+            dataType: 'json',
+            formData: {
+                address: name.trim()
+            },
+            send: function (e, data) {
+                showSpinner();
+                //console.log(data);
+            },
+            done: function (e, data) {
+                //console.log(data.result);
+                hideSpinner();
+                alert("Update sent to Node successfully!");
+            },
+            fail: function (e, data) {
+                alert('invalid file');
+                hideSpinner();
+            }
+        });
+        fileInput.insertBefore("#co2ReadingContainer");
+    }
+
+    function addSaveConfButton() {
+        saveConfButton = $("<button>Save Config</button>").css({
+            "z-index": 99999,
+            float: 'right',
+            fontSize: '30%',
+            position: 'relative',
+            top: '0px'
+        });
+        saveConfButton.button();
+        saveConfButton.prop('disabled', true);
+        saveConfButton.click(saveConfig);
+        saveConfButton.insertBefore("#co2ReadingContainer");
+    }
+
+    function saveConfig() {
+        var config = {};
+        var formulaParam = {};
+        $.each(inputs, function (key, val) {
+            //config.push(val[0].value);
+
+            config[val[0].id] = val[0].value;
+
+        });
+        $.each(formulaInputs, function (key, val) {
+            formulaParam[val[0].id] = val[0].value;
+        });
+        console.log(config);
+        console.log(formulaParam);
+        var data = {
+            'address': name.trim(),
+            'settings': config,
+            'params': formulaParam
+        };
+        $.ajax({
+            type: 'get',
+            url: configUrl,
+            dataType: 'json',
+            cache: false,
+            data: {
+                "data": JSON.stringify(data)
+            },
+            beforeSend: showSpinner,
+            complete: hideSpinner,
+            success: function (data) {
+                window.open(data.url, '_self', false);
+            },
+            error: function () {
+                alert("Save Failed!!");
+            }
+        });
+
     }
 
     var updateConfButton;
@@ -2635,6 +2724,8 @@ $(function () {
         addClearReadingButton();
         addCloseReadingButton();
         addUpdateConfButton();
+        addSaveConfButton();
+        addFileUploadDiv();
 
         Highcharts.setOptions({
             lang: {

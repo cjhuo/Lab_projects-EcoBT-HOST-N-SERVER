@@ -83,6 +83,9 @@ class SIDsCO2Status(Characteristic):
         byte_array = struct.pack("<BBBBBB", 1, 1, 1, 1, 1, 1)
         val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
         self.peripheralWorker.writeValueForCharacteristic(val_data, self)
+        if hasattr(self.service, 'log_file'):
+            self.service.log_file = False
+        self.service.enable_log = True
         self.sendState()
 
     def stopSIDs(self):
@@ -91,8 +94,14 @@ class SIDsCO2Status(Characteristic):
         self.peripheralWorker.writeValueForCharacteristic(val_data, self)
         self.sendState()
         if hasattr(self.service, 'log_file'):
+            for i in range(100):
+                print "close log file"
+            self.service.log_file.flush()
             self.service.log_file.close() # close log file
             self.service.log_file = False
+            self.service.csvWriter = None
+        self.service.enable_log = False
+
         dataPath = os.path.join(os.path.dirname(__file__), os.path.pardir, os.pardir, os.pardir, "data")
         os.system('open "%s"' % dataPath)
     '''
