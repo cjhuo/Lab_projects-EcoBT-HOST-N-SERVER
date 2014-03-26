@@ -42,8 +42,8 @@ class SIDsCO2Read(Characteristic):
         self.conv_params = {
 #            'C': 1,
 #            'Ref0': 700.0,
-            'Tc': 12,
 #            'b': 5.8,
+            'Tc': 12,
             'S0A': 400,
             'o': -5.443,
             'p': -0.07764,
@@ -56,25 +56,25 @@ class SIDsCO2Read(Characteristic):
 
     def conversion(self, PD1, PD2, AMB1, AMB2, T, RH):
         # Constants
-#        C = self.conv_params['C']
-#        Ref0 = self.conv_params['Ref0']
-        Tc = self.conv_params['Tc']
-#        b = self.conv_params['b']
-        S0A = self.conv_params['S0A']
-        o = self.conv_params['o']
-        p = self.conv_params['p']
-        q = self.conv_params['q']
-        r = self.conv_params['r']
-        m = self.conv_params['m']
-        n = self.conv_params['n']
-        PD1 = PD1 + 0.0
-        PD2 = PD2 + 0.0
+        #        C = self.conv_params['C']
+        #        Ref0 = self.conv_params['Ref0']
+        #        b = self.conv_params['b']
+        Tc   = self.conv_params['Tc']
+        S0A  = self.conv_params['S0A']
+        o    = self.conv_params['o']
+        p    = self.conv_params['p']
+        q    = self.conv_params['q']
+        r    = self.conv_params['r']
+        m    = self.conv_params['m']
+        n    = self.conv_params['n']
+        PD1  = PD1 + 0.0
+        PD2  = PD2 + 0.0
         AMB1 = AMB1 + 0.0
         AMB2 = AMB2 + 0.0
-        print "PD1 ", PD1
-        print "PD2 ", PD2
-        print "AMB1 ", AMB1
-        print "AMB2 ", AMB2
+        print "PD1: ", PD1, "PD2: ", PD2, "AMB1: ", AMB1, "AMB2: ", AMB2
+        for key in self.conv_params:
+            print key + ": ", self.conv_params[key],
+        print ""
         # Conversion
 #        S = PD1 - AMB1
 #        print "S ", S
@@ -96,19 +96,15 @@ class SIDsCO2Read(Characteristic):
 #        print "a ", a
 #        CO2 = a * math.exp(b * SCTN) # uint: percentage
 #        print "CO2: ",  CO2
-        SC = PD1 - AMB1
-        print "SC ", SC
-        SCT = SC + (T - 30) * Tc
-        print "SCT ", SCT
-        S0 = m + n * S0A
-        print "S0 ", S0
+        SC   = PD1 - AMB1
+        SCT  = SC + (T - 30) * Tc
+        S0   = m + n * S0A
         SCTN = SCT / S0
-        print "SCTN ", SCTN
-        a = o + p * (RH - 45)
-        print "a ", a
-        b = q + r * (RH - 45)
-        print "b ", b
-        CO2 = 1 + a * SCTN + b * SCTN * SCTN
+        a    = o + p * (RH - 45)
+        b    = q + r * (RH - 45)
+        CO2  = 1 + a * SCTN + b * SCTN * SCTN
+        print "SC: ", SC, "SCT: ", SCT, "S0: ", S0
+        print "SCTN: ", SCTN, "a: ", a, "b: ", b
         print "CO2: ", CO2
         return CO2
 
@@ -117,8 +113,8 @@ class SIDsCO2Read(Characteristic):
         print "CO2 READING: ", hex_str
         value = self.instance._.value
         hour, minute, sec, LED00, LED01, LED10, LED11, amb0, amb1, rh, temp = struct.unpack("<BBBhhhhhhHH", value)
-        rh = rh & 0xFFFC
-        rh = -6.0 + (125.0 * rh) / 65536
+        rh   = rh & 0xFFFC
+        rh   = -6.0 + (125.0 * rh) / 65536
         temp = temp & 0xFFFC
         temp = -46.85 + (175.72 * temp) / 65536
         print "HUMIDITY and AMBIENT TEMP: ", rh, temp
