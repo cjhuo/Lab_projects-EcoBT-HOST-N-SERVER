@@ -157,9 +157,11 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
             self.sendFailMessage("power off")
         elif ble_state == CBCentralManagerStatePoweredOn:
             NSLog("ble is ready!!")
-            
-            
-            
+            print "haha"
+            self.manager.retrieveConnectedPeripheralsWithServices_(
+                NSArray.arrayWithObject_(CBUUID.UUIDWithString_(u"180D"))
+                )
+            print "hehe"
             self.state = 1
             self.sendState()
             '''
@@ -213,6 +215,8 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
 
     def centralManager_didRetrivePeripherals_(self, central, peripherals):
         NSLog("Retrive peripherals")
+        for p in peripherals:
+            NSLog(p)
 
     def centralManager_didConnectPeripheral_(self, central, peripheral):
         # Update UI

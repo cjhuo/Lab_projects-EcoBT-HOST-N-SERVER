@@ -10,6 +10,8 @@ from objc import *
 
 import array
 import binascii
+import csv
+import os
 
 from Characteristic import *
 
@@ -52,6 +54,31 @@ class ACCEnable(Characteristic):
         log = "Stopping ACC"
         NSLog(log)
         self.peripheralWorker.writeValueForCharacteristic(self.createDisableFlag(), self)
+
+    def createLogFile(self, timestamp):
+        self.service.enable_log = True
+        if not hasattr(self.service, 'log_acc') or self.service.log_acc == False:
+            prefix = os.path.join(os.path.dirname(__file__), os.path.pardir, os.pardir, os.pardir, "data/log_acc_")
+            name = timestamp.strftime("%Y%m%d%H%M%S")
+            postfix = ".csv"
+            fd = None
+            fname = prefix + name + postfix
+            if not os.path.exists(fname):
+                fd = open(fname, 'w')
+                self.service.log_acc = fd
+                self.service.csvWriter_acc = csv.writer(fd, delimiter=',')
+                self.service.csvWriter_acc.writerow(
+                    ["Time", "X", "Y", "Z"])
+            else:
+                raise Exception
+
+    def closeLogFile(self):
+        self.service.enable_log = False
+        if hasattr(self.service, 'log_acc'):
+            self.service.log_acc.flush()
+            self.service.log_acc.close()
+            self.service.log_acc = False
+            self.service.csvWriter_acc = None
 
     def createEnableFlag(self):
         return self.createFlag(ENABLE_FALG)

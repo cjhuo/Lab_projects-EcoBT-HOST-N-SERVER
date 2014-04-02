@@ -35,7 +35,9 @@ typedef union{
 } co2_reading_t;
 '''
 
+
 class SIDsCO2Read(Characteristic):
+
     def __init__(self):
         Characteristic.__init__(self)
         self.privilege = 0
@@ -67,31 +69,31 @@ class SIDsCO2Read(Characteristic):
         PD2 = PD2 + 0.0
         AMB1 = AMB1 + 0.0
         AMB2 = AMB2 + 0.0
-        print "PD1 ", PD1
-        print "PD2 ", PD2
-        print "AMB1 ", AMB1
-        print "AMB2 ", AMB2
+        # print "PD1 ", PD1
+        # print "PD2 ", PD2
+        # print "AMB1 ", AMB1
+        # print "AMB2 ", AMB2
         # Conversion
         S = PD1 - AMB1
-        print "S ", S
+        # print "S ", S
         Ref = PD2 - AMB2
         if Ref == 0:
             Ref = 1
-        print "Ref ", Ref
+        # print "Ref ", Ref
         d = (Ref0 - Ref) / Ref
-        print "d ", d
+        # print "d ", d
         SC = S * (1 + d * C)
-        print "SC ", SC
+        # print "SC ", SC
         SCT = SC + (T - 30) * Tc
-        print "SCT ", SCT
+        # print "SCT ", SCT
         S0 = m + n * S0A
-        print "S0 ", S0
+        # print "S0 ", S0
         SCTN = S0 / SCT
-        print "SCTN ", SCTN
+        # print "SCTN ", SCTN
         a = o + p * RH
-        print "a ", a
-        CO2 = a * math.exp(b * SCTN) # uint: percentage
-        print "CO2: ",  CO2
+        # print "a ", a
+        CO2 = a * math.exp(b * SCTN)  # uint: percentage
+        # print "CO2: ",  CO2
         return CO2
 
     def process(self):
@@ -108,12 +110,12 @@ class SIDsCO2Read(Characteristic):
         co2 = self.conversion(LED00, LED11, amb0, amb1, temp, rh)
 
         print hour, minute, sec, LED00, LED01, LED10, LED11, amb0, amb1, rh, temp
-        self.logToFile(hour, minute, sec, LED00, LED01, LED10, LED11, amb0, amb1, rh, temp)
+        self.logToFile(hour, minute, sec, LED00, LED01, LED10, LED11, amb0, amb1, rh, temp, co2)
 
         data = {
-                'type': 'SIDsRead',
-                'value': [hour, minute, sec, LED00, LED01, LED10, LED11, amb0, amb1, rh, temp, co2]
-                }
+            'type': 'SIDsRead',
+            'value': [hour, minute, sec, LED00, LED01, LED10, LED11, amb0, amb1, rh, temp, co2]
+        }
 
         self.peripheralWorker.delegateWorker.getQueue().put(data)
         data = {
@@ -137,10 +139,10 @@ class SIDsCO2Read(Characteristic):
             return
         print "try to load params from file"
         path = os.path.join(os.path.dirname(__file__),
-            os.pardir,
-            os.pardir,
-            os.pardir,
-            "webEngine/static/Uploads/")
+                            os.pardir,
+                            os.pardir,
+                            os.pardir,
+                            "webEngine/static/Uploads/")
         path = os.path.abspath(path)
         fname = "config_" + address + ".csv"
         fullpath = path + "/" + fname
@@ -175,32 +177,9 @@ class SIDsCO2Read(Characteristic):
                     self.conv_params[sName] = sValue
         self.sendParamsToFrontend()
 
-    def logToFile(self, hour, minute, sec, LED00, LED01, LED10, LED11, amb0, amb1, rh, temp):
+    def logToFile(self, hour, minute, sec, LED00, LED01, LED10, LED11, amb0, amb1, rh, temp, co2):
         if not (hasattr(self.service, 'enable_log') and self.service.enable_log):
             return
-        if not hasattr(self.service, 'log_file') or self.service.log_file == False: # try to open a file
-            prefix = os.path.join(os.path.dirname(__file__), os.path.pardir, os.pardir, os.pardir, "data/log_")
-            name = datetime.now().strftime("%Y%m%d%H%M%S")
-            postfix = '.csv'
-            fd = None
-            if not os.path.exists(prefix + name + postfix):
-                for i in range(100):
-                    print "create new log file"
-                fd = open(prefix + name + postfix, 'w')
-                self.service.log_file = fd
-                self.service.csvWriter = csv.writer(fd, delimiter=',')
-                self.service.csvWriter.writerow(["Time", "LED1PD1", "LED1PD2", "LED2PD1", "LED2PD2", "AMBIENT1", "AMBIENT2", "RH", "TEMP"])
-            else:
-                raise Exception
-        if self.service.log_file != False:
-            self.service.csvWriter.writerow([str(hour)+":"+str(minute)+":"+str(sec), LED00, LED01, LED10, LED11, amb0, amb1, rh, temp])
-
-
-
-
-
-
-
-
-
-
+        if self.service.log_co2 != False:
+            self.service.csvWriter_co2.writerow(
+                ["%02d:%02d:%02d" % (hour, minute, sec), LED00, LED01, LED10, LED11, amb0, amb1, rh, temp, co2])

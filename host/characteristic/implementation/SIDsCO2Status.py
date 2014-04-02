@@ -13,6 +13,7 @@ import array
 import binascii
 import struct
 import os
+import csv
 
 from host.characteristic.implementation.Characteristic import *
 
@@ -93,17 +94,36 @@ class SIDsCO2Status(Characteristic):
         val_data = NSData.dataWithBytes_length_(byte_array, len(byte_array))
         self.peripheralWorker.writeValueForCharacteristic(val_data, self)
         self.sendState()
-        if hasattr(self.service, 'log_file'):
-            for i in range(100):
-                print "close log file"
-            self.service.log_file.flush()
-            self.service.log_file.close() # close log file
-            self.service.log_file = False
-            self.service.csvWriter = None
-        self.service.enable_log = False
 
-        dataPath = os.path.join(os.path.dirname(__file__), os.path.pardir, os.pardir, os.pardir, "data")
-        os.system('open "%s"' % dataPath)
+        # open the data folder
+        # dataPath = os.path.join(os.path.dirname(__file__), os.path.pardir, os.pardir, os.pardir, "data")
+        # os.system('open "%s"' % dataPath)
+
+    def createLogFile(self, timestamp):
+        self.service.enable_log = True
+        if not hasattr(self.service, 'log_co2') or self.service.log_co2 == False:
+            prefix = os.path.join(os.path.dirname(__file__), os.path.pardir, os.pardir, os.pardir, "data/log_co2_")
+            name = timestamp.strftime("%Y%m%d%H%M%S")
+            postfix = ".csv"
+            fd = None
+            fname = prefix + name + postfix
+            if not os.path.exists(fname):
+                fd = open(fname, 'w')
+                self.service.log_co2 = fd
+                self.service.csvWriter_co2 = csv.writer(fd, delimiter=',')
+                self.service.csvWriter_co2.writerow(
+                    ["Time", "LED1PD1", "LED1PD2", "LED2PD1", "LED2PD2", "AMBIENT1", "AMBIENT2", "RH", "TEMP", "CO2"])
+            else:
+                raise Exception
+
+    def closeLogFile(self):
+        self.service.enable_log = False
+        if hasattr(self.service, 'log_co2'):
+            self.service.log_co2.flush()
+            self.service.log_co2.close()
+            self.service.log_co2 = False
+            self.service.csvWriter_co2 = None
+
     '''
     def createStartFlag(self):
         return self.createFlag(START_FLAG)
