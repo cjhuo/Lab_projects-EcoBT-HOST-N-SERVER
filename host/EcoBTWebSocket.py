@@ -93,6 +93,7 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
                 # prepare log files
                 sids.findSIDsStatus().createLogFile(timestamp)
                 sids.findACCControl().createLogFile(timestamp)
+                sids.findBodyTempControl().createLogFile(timestamp)
                 # start sensors
                 sids.findSIDsStatus().startSIDs()
                 sids.findACCControl().startACC()
@@ -105,6 +106,7 @@ class EcoBTWebSocket(tornado.websocket.WebSocketHandler):
                 # close log files
                 sids.findSIDsStatus().closeLogFile()
                 sids.findACCControl().closeLogFile()
+                sids.findBodyTempControl().closeLogFile()
                 # stop sensors
                 sids.findACCControl().stopACC()
                 sids.findBodyTempControl().stopBodyTemp()

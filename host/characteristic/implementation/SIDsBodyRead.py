@@ -11,6 +11,7 @@ from objc import *
 import array
 import struct
 import binascii
+from datetime import datetime
 
 from Characteristic import *
 
@@ -84,6 +85,7 @@ class SIDsBodyRead(Characteristic):
     def process(self):
         #hex_str = binascii.hexlify(self.instance._.value)
         #print "SIDsBodyRead", hex_str
+        timestamp = datetime.now()
         value, = struct.unpack("<H", self.instance._.value)
 #        print "SIDsBodyRead: ", value
 
@@ -113,13 +115,17 @@ class SIDsBodyRead(Characteristic):
 #        tempC = random.uniform(31, 40)
 
 
-
+        self.logToFile(timestamp, tempC)
         # send to frontend
         data = {
                 'type': 'BodyTemp',
                 'value': tempC
                 }
-
         self.peripheralWorker.delegateWorker.getQueue().put(data)
 
+    def logToFile(self, timestamp, temp):
+        if not (hasattr(self.service, 'enable_log') and self.service.enable_log):
+            return
+        if self.service.log_bodytemp != False:
+            self.service.csvWriter_bodytemp.writerow([timestamp.strftime("%H:%M:%S"), temp])
 

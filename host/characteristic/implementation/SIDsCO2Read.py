@@ -111,16 +111,16 @@ class SIDsCO2Read(Characteristic):
         return CO2
 
     def process(self):
-        hex_str = binascii.hexlify(self.instance._.value)
-        print "CO2 READING: ", hex_str
+        # hex_str = binascii.hexlify(self.instance._.value)
+        # print "CO2 READING: ", hex_str
         value = self.instance._.value
         hour, minute, sec, LED00, LED01, LED10, LED11, amb0, amb1, rh, temp = struct.unpack("<BBBhhhhhhHH", value)
         rh   = rh & 0xFFFC
         rh   = -6.0 + (125.0 * rh) / 65536
         temp = temp & 0xFFFC
         temp = -46.85 + (175.72 * temp) / 65536
-        print "HUMIDITY and AMBIENT TEMP: ", rh, temp
-        print "CO2 READINGS: ", LED00, LED01, LED10, LED11
+        # print "HUMIDITY and AMBIENT TEMP: ", rh, temp
+        # print "CO2 READINGS: ", LED00, LED01, LED10, LED11
         co2 = self.conversion(LED00, LED11, amb0, amb1, temp, rh)
 
         print hour, minute, sec, LED00, LED01, LED10, LED11, amb0, amb1, rh, temp
