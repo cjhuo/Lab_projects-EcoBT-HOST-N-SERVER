@@ -157,12 +157,16 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
             self.sendFailMessage("power off")
         elif ble_state == CBCentralManagerStatePoweredOn:
             NSLog("ble is ready!!")
-            print "haha"
-            self.manager.retrieveConnectedPeripheralsWithServices_(
-                NSArray.arrayWithObject_(CBUUID.UUIDWithString_(u"180D"))
-                )
-            print "hehe"
             self.state = 1
+            while True:
+                connected = self.manager.retrieveConnectedPeripheralsWithServices_(
+                    NSArray.arrayWithObject_(CBUUID.UUIDWithString_(u"180D"))
+                    )
+                if len(connected):
+                    for p in connected:
+                        self.cancelPeripheralConnection(p)
+                else:
+                    break
             self.sendState()
             '''
             # for test purpose
@@ -222,7 +226,6 @@ class EcoBTCentralManagerWorker(NSObject, EcoBTWorker):
         # Update UI
         
         NSLog("Connected to peripheral %@", peripheral._.name)
-            
         #delegate.sockets = self.sockets     
         NSLog("number of peripherals: %@", len(self.peripheralWorkers))
         w = self.findWorkerForPeripheralInstance(peripheral)
