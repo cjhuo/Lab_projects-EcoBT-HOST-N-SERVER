@@ -42,9 +42,9 @@ class SIDsCO2Status(Characteristic):
 
     def process(self):
         hex_str = binascii.hexlify(self.instance._.value)
-        print "CO2 STATUS: ", hex_str
         value = self.instance._.value
         self.start, self.LED_ready, self.PD0, self.PD1, self.RH_T_ready, self.RH_T_enable = struct.unpack("<BBBBBB", value)
+        print "CO2 STATUS: LED(%d) PD0(%d) PD1(%d) RHT(%d)" % (self.LED_ready, self.PD0, self.PD1, self.RH_T_ready)
         #print self.start, self.LED_ready, self.PD0, self.PD1, self.RH_T_ready, self.RH_T_enable
         if int(self.start) == 0 and int(self.LED_ready) == 1 and int(self.PD0) == 1 and \
                                     int(self.PD1) == 1 and int(self.RH_T_ready) == 1 and int(self.RH_T_enable) == 1: # correct initial state

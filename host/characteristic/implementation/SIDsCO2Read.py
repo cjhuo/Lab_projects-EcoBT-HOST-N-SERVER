@@ -53,14 +53,12 @@ class SIDsCO2Read(Characteristic):
             'r': 0.07798,
             'm': 0,
             'n': 1,
+            'LED0': 1
         }
         self.didLoadByFile = False
 
     def conversion(self, PD1, PD2, AMB1, AMB2, T, RH):
         # Constants
-        #        C = self.conv_params['C']
-        #        Ref0 = self.conv_params['Ref0']
-        #        b = self.conv_params['b']
         Tc   = self.conv_params['Tc']
         S0A  = self.conv_params['S0A']
         o    = self.conv_params['o']
@@ -73,41 +71,19 @@ class SIDsCO2Read(Characteristic):
         PD2  = PD2 + 0.0
         AMB1 = AMB1 + 0.0
         AMB2 = AMB2 + 0.0
- #       print "PD1: ", PD1, "PD2: ", PD2, "AMB1: ", AMB1, "AMB2: ", AMB2
- #       for key in self.conv_params:
- #           print key + ": ", self.conv_params[key],
- #       print ""
-        # Conversion
-#        S = PD1 - AMB1
-#        print "S ", S
-#        Ref = PD2 - AMB2
-#        if Ref == 0:
-#            Ref = 1
-#        print "Ref ", Ref
-#        d = (Ref0 - Ref) / Ref
-#        print "d ", d
-#        SC = S * (1 + d * C)
-#        print "SC ", SC
-#        SCT = SC + (T - 30) * Tc
-#        print "SCT ", SCT
-#        S0 = m + n * S0A
-#        print "S0 ", S0
-#        SCTN = S0 / SCT
-#        print "SCTN ", SCTN
-#        a = o + p * RH
-#        print "a ", a
-#        CO2 = a * math.exp(b * SCTN) # uint: percentage
-#        print "CO2: ",  CO2
-        SC   = PD1 - AMB1
+        if self.conv_params['LED0'] > 0:
+            PD = PD1
+            AMB = AMB1
+        else:
+            PD = PD2
+            AMB = AMB2
+        SC   = PD - AMB
         SCT  = SC + (T - 30) * Tc
         S0   = m + n * S0A
         SCTN = SCT / S0
         a    = o + p * (RH - 45)
         b    = q + r * (RH - 45)
         CO2  = 1 + a * SCTN + b * SCTN * SCTN
-#        print "SC: ", SC, "SCT: ", SCT, "S0: ", S0
-#        print "SCTN: ", SCTN, "a: ", a, "b: ", b
-#        print "CO2: ", CO2
         return CO2
 
     def process(self):
