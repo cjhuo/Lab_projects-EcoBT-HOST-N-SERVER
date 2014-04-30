@@ -49,7 +49,7 @@ class WaveRecorder(Process):
     def setup(self):
         self.stream = self.pa.open(format=self.aformat,
                                    channels=self.channels,
-                                   rate-self.rate,
+                                   rate=self.rate,
                                    input=True,
                                    input_device_index=self.selected_dev,
                                    frames_per_buffer=self.chunk)
