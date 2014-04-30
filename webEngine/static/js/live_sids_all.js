@@ -71,7 +71,7 @@ $(function () {
                 open('/', '_self', true);
             }
         }
-        fakeCheckCondition(data.data);
+        //fakeCheckCondition(data.data);
     }
 
     jQuery.fn.center = function () {
