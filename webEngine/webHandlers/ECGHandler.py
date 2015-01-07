@@ -198,9 +198,11 @@ class DicomListHandler(BaseHandler):
     def get(self):
         fList = []
         for fname in os.listdir(DATA_PATH):
-            prefix, suffix = fname.split(".")
-            if suffix == 'dcm':
-                fList.append(fname)
+            path = os.path.join(DATA_PATH, fname)
+            if os.path.isfile(path):
+                prefix, suffix = fname.split(".")
+                if suffix == 'dcm':
+                    fList.append(fname)
         self.write({'fileList': fList})
 
 '''
