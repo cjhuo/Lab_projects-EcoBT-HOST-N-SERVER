@@ -592,7 +592,8 @@ $(function () {
 		});
     	
     	dicomListMenu = $('<ul>').css({
-    		zIndex: '2000'
+    		zIndex: '2000',
+    		width: '150px'
     	}).appendTo('body');
     	$.each(dicomList, function(key, val) {
     		var lnk = $('<li><a href="#">' + val + '</a></li>').click(function() {
